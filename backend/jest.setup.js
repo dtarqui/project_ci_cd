@@ -12,9 +12,9 @@ const originalLog = console.log;
 beforeAll(() => {
   console.error = (...args) => {
     if (
-      args[0] && 
-      typeof args[0] === 'string' && 
-      args[0].includes('Backend running on')
+      args[0] &&
+      typeof args[0] === "string" &&
+      args[0].includes("Backend running on")
     ) {
       return; // Suprimir logs del servidor
     }
@@ -28,9 +28,9 @@ beforeAll(() => {
 
   console.log = (...args) => {
     if (
-      args[0] && 
-      typeof args[0] === 'string' && 
-      args[0].includes('Backend running on')
+      args[0] &&
+      typeof args[0] === "string" &&
+      args[0].includes("Backend running on")
     ) {
       return; // Suprimir logs del servidor
     }

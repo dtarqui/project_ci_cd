@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  LineChart, 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
   Line,
-  ResponsiveContainer 
-} from 'recharts';
+  ResponsiveContainer,
+} from "recharts";
 
-const API_BASE_URL = 'http://localhost:4000';
+const API_BASE_URL = "http://localhost:4000";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function Dashboard({ user, onLogout }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('Dashboard');
+  const [activeSection, setActiveSection] = useState("Dashboard");
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Dashboard({ user, onLogout }) {
       const response = await axios.get(`${API_BASE_URL}/api/dashboard/data`);
       setDashboardData(response.data);
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      console.error("Error loading dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -44,17 +44,17 @@ export default function Dashboard({ user, onLogout }) {
     try {
       await axios.post(`${API_BASE_URL}/api/auth/logout`);
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     } finally {
       onLogout();
     }
   };
 
   const menuItems = [
-    { id: 'Dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'Productos', label: 'Productos', icon: '📦' },
-    { id: 'Clientes', label: 'Clientes', icon: '👥' },
-    { id: 'Configuraciones', label: 'Configuraciones', icon: '⚙️' }
+    { id: "Dashboard", label: "Dashboard", icon: "📊" },
+    { id: "Productos", label: "Productos", icon: "📦" },
+    { id: "Clientes", label: "Clientes", icon: "👥" },
+    { id: "Configuraciones", label: "Configuraciones", icon: "⚙️" },
   ];
 
   if (loading) {
@@ -75,7 +75,7 @@ export default function Dashboard({ user, onLogout }) {
         </div>
         <div className="header-right">
           <div className="user-menu">
-            <button 
+            <button
               className="user-button"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
@@ -99,10 +99,12 @@ export default function Dashboard({ user, onLogout }) {
         {/* Sidebar */}
         <aside className="dashboard-sidebar">
           <nav className="sidebar-nav">
-            {menuItems.map(item => (
+            {menuItems.map((item) => (
               <button
                 key={item.id}
-                className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                className={`nav-item ${
+                  activeSection === item.id ? "active" : ""
+                }`}
                 onClick={() => setActiveSection(item.id)}
               >
                 <span className="nav-icon">{item.icon}</span>
@@ -114,7 +116,7 @@ export default function Dashboard({ user, onLogout }) {
 
         {/* Main Content */}
         <main className="dashboard-main">
-          {activeSection === 'Dashboard' && dashboardData && (
+          {activeSection === "Dashboard" && dashboardData && (
             <div className="dashboard-overview">
               {/* Sales Summary */}
               <div className="sales-summary">
@@ -132,20 +134,26 @@ export default function Dashboard({ user, onLogout }) {
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={dashboardData.productSales}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="product" 
+                      <XAxis
+                        dataKey="product"
                         angle={-45}
                         textAnchor="end"
                         height={80}
                       />
-                      <YAxis label={{ value: 'Productos vendidos', angle: -90, position: 'insideLeft' }} />
+                      <YAxis
+                        label={{
+                          value: "Productos vendidos",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="quantity" 
-                        stroke="#8884d8" 
+                      <Line
+                        type="monotone"
+                        dataKey="quantity"
+                        stroke="#8884d8"
                         strokeWidth={2}
-                        dot={{ fill: '#8884d8', strokeWidth: 2 }}
+                        dot={{ fill: "#8884d8", strokeWidth: 2 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -158,7 +166,13 @@ export default function Dashboard({ user, onLogout }) {
                     <BarChart data={dashboardData.salesTrend}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="day" />
-                      <YAxis label={{ value: 'Y Axis Label', angle: -90, position: 'insideLeft' }} />
+                      <YAxis
+                        label={{
+                          value: "Y Axis Label",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
                       <Tooltip />
                       <Bar dataKey="sales" fill="#8884d8" />
                     </BarChart>
@@ -179,9 +193,14 @@ export default function Dashboard({ user, onLogout }) {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {dashboardData.branchSales.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                        {(dashboardData.branchSales || []).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
                       </Pie>
                       <Tooltip />
                     </PieChart>
@@ -201,9 +220,14 @@ export default function Dashboard({ user, onLogout }) {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {dashboardData.branchSales.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                        {(dashboardData.branchSales || []).map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          )
+                        )}
                       </Pie>
                       <Tooltip />
                     </PieChart>
@@ -216,7 +240,7 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           )}
 
-          {activeSection === 'Productos' && (
+          {activeSection === "Productos" && (
             <div className="section-content">
               <h2>Gestión de Productos</h2>
               <p>Aquí puedes administrar tu inventario de productos.</p>
@@ -227,7 +251,7 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           )}
 
-          {activeSection === 'Clientes' && (
+          {activeSection === "Clientes" && (
             <div className="section-content">
               <h2>Gestión de Clientes</h2>
               <p>Administra tu base de datos de clientes.</p>
@@ -238,7 +262,7 @@ export default function Dashboard({ user, onLogout }) {
             </div>
           )}
 
-          {activeSection === 'Configuraciones' && (
+          {activeSection === "Configuraciones" && (
             <div className="section-content">
               <h2>Configuraciones del Sistema</h2>
               <p>Ajusta las preferencias de tu tienda.</p>

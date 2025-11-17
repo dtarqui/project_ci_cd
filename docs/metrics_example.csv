@@ -1,4 +1,0 @@
-metric,baseline,after
-deployment_time_seconds,1800,600
-errors_per_month,12,3
-build_success_rate,0.75,0.95

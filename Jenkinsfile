@@ -12,7 +12,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "🔄 Obteniendo código del repositorio..."
+                echo "Obteniendo código del repositorio..."
                 checkout scm
             }
         }
@@ -296,7 +296,7 @@ pipeline {
 
     post {
         always {
-            echo "🧹 Limpiando workspace..."
+            echo "Limpiando workspace..."
             sh """
                 # Limpiar procesos Node.js que puedan estar corriendo
                 pkill -f "node index.js" || true
