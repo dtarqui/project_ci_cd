@@ -49,25 +49,17 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
-// Mock de localStorage
-const localStorageMock = (() => {
-  let store = {};
-  return {
-    getItem: (key) => store[key] || null,
-    setItem: (key, value) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
+// Mock de localStorage con jest functions
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
 
 Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
+  writable: true
 });
 
 // Suprimir warnings específicos de testing

@@ -9,17 +9,23 @@ export default function App() {
 
   useEffect(() => {
     // Verificar si hay una sesión guardada
-    const savedUser = localStorage.getItem("user");
-    const savedToken = localStorage.getItem("token");
+    try {
+      const savedUser = localStorage.getItem("user");
+      const savedToken = localStorage.getItem("token");
 
-    if (savedUser && savedToken) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Error parsing saved user:", error);
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+      if (savedUser && savedToken) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser && typeof parsedUser === 'object' && parsedUser.id) {
+          setUser(parsedUser);
+        } else {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+        }
       }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
 
     setLoading(false);

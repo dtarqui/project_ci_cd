@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { authService } from "./services/api";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 export default function Login({ onLogin }) {
   const [credentials, setCredentials] = useState({
@@ -97,7 +98,7 @@ export default function Login({ onLogin }) {
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
                 >
-                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                  {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
                 </button>
               </div>
             </div>
