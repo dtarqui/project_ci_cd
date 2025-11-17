@@ -19,7 +19,7 @@ pipeline {
 
         stage('Setup Node Environment') {
             steps {
-                echo "🔧 Instalando Node ${env.NODE_VERSION}"
+                echo "Instalando Node ${env.NODE_VERSION}"
                 sh """
                     # Verificar si Node ya está instalado
                     if ! command -v node &> /dev/null; then
@@ -36,7 +36,7 @@ pipeline {
         stage('Frontend - Install Dependencies') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    echo "📦 Instalando dependencias frontend..."
+                    echo "Instalando dependencias frontend..."
                     sh """
                         npm ci
                         # Verificar instalaciones críticas
@@ -49,7 +49,7 @@ pipeline {
         stage('Frontend - Lint') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    echo "🔍 Ejecutando ESLint..."
+                    echo "Ejecutando ESLint..."
                     sh "npm run lint"
                 }
             }
@@ -71,7 +71,7 @@ pipeline {
         stage('Frontend - Unit Tests') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    echo "🧪 Ejecutando pruebas automáticas (React Testing Library)..."
+                    echo "Ejecutando pruebas automáticas (React Testing Library)..."
                     sh """
                         # Configurar variables de entorno para tests
                         export CI=true
@@ -100,18 +100,18 @@ pipeline {
         stage('Frontend - Build Production') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    echo "🏗️ Construyendo el frontend para producción..."
+                    echo "Construyendo el frontend para producción..."
                     sh """
                         export NODE_ENV=production
                         npm run build
                         
                         # Verificar que el build se generó correctamente
                         if [ ! -d "build" ]; then
-                            echo "❌ Error: directorio build no fue generado"
+                            echo "Error: directorio build no fue generado"
                             exit 1
                         fi
                         
-                        echo "✅ Build generado correctamente en /build"
+                        echo "Build generado correctamente en /build"
                         ls -la build/
                     """
                 }
@@ -121,12 +121,12 @@ pipeline {
         stage('Backend - Install Dependencies') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    echo "📦 Instalando dependencias backend..."
+                    echo "Instalando dependencias backend..."
                     sh """
                         npm ci
                         
                         # Verificar dependencias críticas
-                        node -e "require('express'); require('cors'); console.log('✅ Dependencias backend OK')"
+                        node -e "require('express'); require('cors'); console.log('Dependencias backend OK')"
                     """
                 }
             }
@@ -135,7 +135,7 @@ pipeline {
         stage('Backend - Health Check') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    echo "🔍 Validando inicio del servidor backend..."
+                    echo "Validando inicio del servidor backend..."
                     sh """
                         # Iniciar servidor en background y verificar health endpoint
                         node index.js &
@@ -146,7 +146,7 @@ pipeline {
                         
                         # Verificar endpoint health
                         curl -f http://localhost:4000/health || {
-                            echo "❌ Health check failed"
+                            echo "Health check failed"
                             kill \$SERVER_PID 2>/dev/null || true
                             exit 1
                         }
@@ -155,7 +155,7 @@ pipeline {
                         kill \$SERVER_PID 2>/dev/null || true
                         sleep 2
                         
-                        echo "✅ Backend health check passed"
+                        echo "Backend health check passed"
                     """
                 }
             }
@@ -164,7 +164,7 @@ pipeline {
         stage('Backend - API Tests') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    echo "🧪 Ejecutando tests de API..."
+                    echo "Ejecutando tests de API..."
                     sh """
                         # Ejecutar tests básicos del backend
                         npm test
@@ -178,20 +178,20 @@ pipeline {
                         curl -X POST http://localhost:4000/api/auth/login \\
                              -H "Content-Type: application/json" \\
                              -d '{"username":"demo","password":"demo123"}' || {
-                            echo "❌ Login endpoint test failed"
+                            echo "Login endpoint test failed"
                             kill \$SERVER_PID 2>/dev/null || true
                             exit 1
                         }
                         
                         # Test dashboard data endpoint
                         curl -f http://localhost:4000/api/dashboard/data || {
-                            echo "❌ Dashboard endpoint test failed"
+                            echo "Dashboard endpoint test failed"
                             kill \$SERVER_PID 2>/dev/null || true
                             exit 1
                         }
                         
                         kill \$SERVER_PID 2>/dev/null || true
-                        echo "✅ API tests passed"
+                        echo "API tests passed"
                     """
                 }
             }
@@ -199,7 +199,7 @@ pipeline {
 
         stage('Package Artifacts') {
             steps {
-                echo "📦 Empaquetando artefactos generados..."
+                echo "Empaquetando artefactos generados..."
                 script {
                     // Archivar build del frontend
                     archiveArtifacts artifacts: "${FRONTEND_DIR}/build/**/*", 
@@ -232,12 +232,12 @@ pipeline {
                 }
             }
             steps {
-                echo "🐳 Construyendo imagen Docker..."
+                echo "Construyendo imagen Docker..."
                 dir("${BACKEND_DIR}") {
                     sh """
                         # Verificar que Dockerfile existe
                         if [ ! -f "Dockerfile" ]; then
-                            echo "❌ Dockerfile no encontrado"
+                            echo "Dockerfile no encontrado"
                             exit 1
                         fi
                         
@@ -245,7 +245,7 @@ pipeline {
                         docker build -t mi-tienda-backend:\${BUILD_NUMBER} .
                         docker build -t mi-tienda-backend:latest .
                         
-                        echo "✅ Imagen Docker creada: mi-tienda-backend:\${BUILD_NUMBER}"
+                        echo "Imagen Docker creada: mi-tienda-backend:\${BUILD_NUMBER}"
                     """
                 }
             }
@@ -256,20 +256,20 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo "🚀 Desplegando en entorno de staging..."
+                echo "Desplegando en entorno de staging..."
                 sh """
-                    echo '📁 Preparando archivos para despliegue...'
+                    echo 'Preparando archivos para despliegue...'
                     
                     # Simular despliegue del frontend
-                    echo '🎨 Desplegando frontend build...'
+                    echo 'Desplegando frontend build...'
                     # rsync -avz ${FRONTEND_DIR}/build/ user@staging-server:/var/www/mi-tienda/
                     
                     # Simular despliegue del backend
-                    echo '⚙️ Desplegando backend Dockerizado...'
+                    echo 'Desplegando backend Dockerizado...'
                     # docker save mi-tienda-backend:latest | ssh user@staging-server docker load
                     # ssh user@staging-server "docker stop mi-tienda || true && docker run -d --name mi-tienda -p 4000:4000 mi-tienda-backend:latest"
                     
-                    echo '✅ Despliegue simulado completado'
+                    echo 'Despliegue simulado completado'
                 """
             }
         }
@@ -279,7 +279,7 @@ pipeline {
                 branch 'main'
             }
             steps {
-                echo "⚡ Ejecutando tests de performance..."
+                echo "Ejecutando tests de performance..."
                 sh """
                     # Simular tests de performance
                     echo 'Ejecutando tests de carga con Apache Bench...'
@@ -288,7 +288,7 @@ pipeline {
                     echo 'Verificando métricas de performance...'
                     # lighthouse --chrome-flags="--headless" --output=json --output-path=lighthouse-report.json http://staging-server
                     
-                    echo '✅ Performance tests completados'
+                    echo 'Performance tests completados'
                 """
             }
         }
@@ -307,23 +307,23 @@ pipeline {
             """
         }
         success {
-            echo "✅ Pipeline ejecutado correctamente!"
+            echo "Pipeline ejecutado correctamente!"
             slackSend(
                 channel: '#deployments',
                 color: 'good',
-                message: "✅ Deploy exitoso de Mi Tienda - Build #${BUILD_NUMBER} en branch ${BRANCH_NAME}"
+                message: "Deploy exitoso de Mi Tienda - Build #${BUILD_NUMBER} en branch ${BRANCH_NAME}"
             )
         }
         failure {
-            echo "❌ Falla en el pipeline. Revisar logs."
+            echo "Falla en el pipeline. Revisar logs."
             slackSend(
                 channel: '#deployments',
                 color: 'danger',
-                message: "❌ Falla en deploy de Mi Tienda - Build #${BUILD_NUMBER} en branch ${BRANCH_NAME}"
+                message: "Falla en deploy de Mi Tienda - Build #${BUILD_NUMBER} en branch ${BRANCH_NAME}"
             )
         }
         unstable {
-            echo "⚠️ Pipeline inestable - algunas pruebas fallaron."
+            echo "Pipeline inestable - algunas pruebas fallaron."
         }
     }
 }
