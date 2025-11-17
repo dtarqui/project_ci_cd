@@ -116,34 +116,13 @@ export default function Login({ onLogin }) {
 
             <div className="demo-section">
               <p>Prueba la demo:</p>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="demo-button"
                 onClick={handleDemoLogin}
                 disabled={loading}
               >
                 Llenar datos de demo
-              </button>
-              
-              <button 
-                type="button" 
-                onClick={async () => {
-                  try {
-                    const response = await fetch('http://localhost:4000/health');
-                    const data = await response.json();
-                    alert('Backend Health Check: ' + JSON.stringify(data, null, 2));
-                  } catch (error) {
-                    alert('Error connecting to backend: ' + error.message);
-                  }
-                }}
-                style={{
-                  marginLeft: '10px',
-                  padding: '5px',
-                  fontSize: '12px',
-                  background: '#ddd'
-                }}
-              >
-                🏥 Test Backend
               </button>
             </div>
           </div>

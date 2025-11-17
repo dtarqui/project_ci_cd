@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { MdDashboard, MdError, MdRefresh, MdExitToApp, MdPeople, MdInventory, MdSettings, MdDescription, MdAccountCircle } from "react-icons/md";
 import { dashboardService, authService } from "./services/api";
 import {
   BarChart,
@@ -24,18 +25,15 @@ export default function Dashboard({ user, onLogout }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
-    console.log("📊 Dashboard component mounted, loading data...");
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
     try {
-      console.log("🔄 Loading dashboard data...");
       const data = await dashboardService.getData();
-      console.log("✅ Dashboard data loaded:", data);
       setDashboardData(data);
     } catch (error) {
-      console.error("❌ Error loading dashboard data:", error);
+      console.error("Error loading dashboard data:", error);
       // Si es un error 401, el interceptor se encargará de limpiar la sesión
     } finally {
       setLoading(false);
@@ -53,10 +51,10 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   const menuItems = [
-    { id: "Dashboard", label: "Dashboard", icon: "📊" },
-    { id: "Productos", label: "Productos", icon: "📦" },
-    { id: "Clientes", label: "Clientes", icon: "👥" },
-    { id: "Configuraciones", label: "Configuraciones", icon: "⚙️" },
+    { id: "Dashboard", label: "Dashboard", icon: <MdDashboard /> },
+    { id: "Productos", label: "Productos", icon: <MdInventory /> },
+    { id: "Clientes", label: "Clientes", icon: <MdPeople /> },
+    { id: "Configuraciones", label: "Configuraciones", icon: <MdSettings /> },
   ];
 
   if (loading) {
@@ -72,18 +70,11 @@ export default function Dashboard({ user, onLogout }) {
   if (!dashboardData) {
     return (
       <div className="loading-container">
-        <h3>⚠️ Error cargando dashboard</h3>
+        <h3><MdError /> Error cargando dashboard</h3>
         <p>No se pudieron cargar los datos del dashboard.</p>
         <button onClick={loadDashboardData} className="retry-button">
-          🔄 Reintentar
+          <MdRefresh /> Reintentar
         </button>
-        <details style={{marginTop: '20px', textAlign: 'left'}}>
-          <summary>Información de debug</summary>
-          <pre style={{background: '#f5f5f5', padding: '10px', marginTop: '10px'}}>
-            Token en localStorage: {localStorage.getItem('token') ? '✅ Presente' : '❌ Ausente'}
-            Usuario: {user ? JSON.stringify(user, null, 2) : '❌ No definido'}
-          </pre>
-        </details>
       </div>
     );
   }
@@ -101,7 +92,7 @@ export default function Dashboard({ user, onLogout }) {
               className="user-button"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
-              👤
+              <MdAccountCircle />
             </button>
             {showUserMenu && (
               <div className="user-dropdown">
@@ -267,7 +258,7 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Gestión de Productos</h2>
               <p>Aquí puedes administrar tu inventario de productos.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon">📦</div>
+                <div className="placeholder-icon"><MdInventory /></div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>
@@ -278,7 +269,7 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Gestión de Clientes</h2>
               <p>Administra tu base de datos de clientes.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon">👥</div>
+                <div className="placeholder-icon"><MdPeople /></div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>
@@ -289,7 +280,7 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Configuraciones del Sistema</h2>
               <p>Ajusta las preferencias de tu tienda.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon">⚙️</div>
+                <div className="placeholder-icon"><MdSettings /></div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>

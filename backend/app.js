@@ -55,11 +55,9 @@ const createApp = () => {
   // Endpoint de autenticación
   app.post("/api/auth/login", (req, res) => {
     const { username, password } = req.body;
-    console.log("🔐 Login attempt for user:", username);
 
     // Validación de campos requeridos
     if (!username || !password) {
-      console.log("❌ Missing credentials");
       return res.status(400).json({
         error: "Usuario y contraseña requeridos",
         code: "MISSING_CREDENTIALS",
@@ -68,7 +66,6 @@ const createApp = () => {
 
     // Validación de tipos
     if (typeof username !== "string" || typeof password !== "string") {
-      console.log("❌ Invalid credential types");
       return res.status(400).json({
         error: "Usuario y contraseña deben ser strings",
         code: "INVALID_CREDENTIALS_TYPE",
@@ -83,7 +80,6 @@ const createApp = () => {
     if (user) {
       const { password: userPassword, ...userWithoutPassword } = user;
       const token = `mock-jwt-token-${user.id}`;
-      console.log("✅ Login successful - Generated token:", token);
       
       res.json({
         success: true,
@@ -92,7 +88,6 @@ const createApp = () => {
         expiresIn: 3600, // 1 hour
       });
     } else {
-      console.log("❌ Invalid credentials for user:", username);
       res.status(401).json({
         error: "Credenciales inválidas",
         code: "INVALID_CREDENTIALS",
@@ -104,10 +99,8 @@ const createApp = () => {
   app.get("/api/dashboard/data", (req, res) => {
     // Simular autenticación simple
     const authHeader = req.headers.authorization;
-    console.log("🔐 Dashboard request - Auth header:", authHeader);
 
     if (!authHeader) {
-      console.log("❌ No auth header provided");
       return res.status(401).json({
         error: "Token de autorización requerido",
         code: "MISSING_AUTH_TOKEN",
@@ -116,7 +109,6 @@ const createApp = () => {
 
     // Validar formato del token (debe empezar con "Bearer ")
     if (!authHeader.startsWith("Bearer ")) {
-      console.log("❌ Invalid auth header format:", authHeader);
       return res.status(401).json({
         error: "Formato de token inválido - debe usar 'Bearer '",
         code: "INVALID_TOKEN_FORMAT",
@@ -125,18 +117,15 @@ const createApp = () => {
 
     // Extraer el token sin "Bearer "
     const token = authHeader.replace("Bearer ", "");
-    console.log("🔑 Extracted token:", token);
     
     // Validar que el token tenga el formato esperado
     if (!token.startsWith("mock-jwt-token-")) {
-      console.log("❌ Invalid token format:", token);
       return res.status(401).json({
         error: "Token inválido",
         code: "INVALID_TOKEN",
       });
     }
 
-    console.log("✅ Token valid, returning dashboard data");
     res.json({
       ...mockData,
       timestamp: new Date().toISOString(),

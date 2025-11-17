@@ -26,11 +26,9 @@ export default function App() {
   }, []);
 
   const handleLogin = (userData, token) => {
-    console.log("🔐 Login successful:", { userData, token });
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
-    console.log("💾 Token saved to localStorage:", token);
   };
 
   const handleLogout = () => {
