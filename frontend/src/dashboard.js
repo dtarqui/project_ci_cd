@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { dashboardService, authService } from "./services/api";
 import {
   BarChart,
   Bar,
@@ -15,8 +15,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const API_BASE_URL = "http://localhost:4000";
-
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function Dashboard({ user, onLogout }) {
@@ -26,15 +24,19 @@ export default function Dashboard({ user, onLogout }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
+    console.log("📊 Dashboard component mounted, loading data...");
     loadDashboardData();
   }, []);
 
   const loadDashboardData = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/dashboard/data`);
-      setDashboardData(response.data);
+      console.log("🔄 Loading dashboard data...");
+      const data = await dashboardService.getData();
+      console.log("✅ Dashboard data loaded:", data);
+      setDashboardData(data);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
+      console.error("❌ Error loading dashboard data:", error);
+      // Si es un error 401, el interceptor se encargará de limpiar la sesión
     } finally {
       setLoading(false);
     }
@@ -42,7 +44,7 @@ export default function Dashboard({ user, onLogout }) {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/logout`);
+      await authService.logout();
     } catch (error) {
       console.error("Error logging out:", error);
     } finally {
@@ -60,8 +62,28 @@ export default function Dashboard({ user, onLogout }) {
   if (loading) {
     return (
       <div className="loading-container">
-        <div className="loading-spinner"></div>
+        <div className="loading-spinner" data-testid="loading-spinner"></div>
         <p>Cargando dashboard...</p>
+        <small>Verificando autenticación y cargando datos...</small>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="loading-container">
+        <h3>⚠️ Error cargando dashboard</h3>
+        <p>No se pudieron cargar los datos del dashboard.</p>
+        <button onClick={loadDashboardData} className="retry-button">
+          🔄 Reintentar
+        </button>
+        <details style={{marginTop: '20px', textAlign: 'left'}}>
+          <summary>Información de debug</summary>
+          <pre style={{background: '#f5f5f5', padding: '10px', marginTop: '10px'}}>
+            Token en localStorage: {localStorage.getItem('token') ? '✅ Presente' : '❌ Ausente'}
+            Usuario: {user ? JSON.stringify(user, null, 2) : '❌ No definido'}
+          </pre>
+        </details>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+const API_BASE_URL = "http://localhost:4000";
 
 // Configuración de axios
 const api = axios.create({
@@ -14,12 +14,20 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    console.log("🔑 Token found in localStorage:", token ? "Yes" : "No");
     if (token) {
+      console.log("📤 Adding Authorization header:", `Bearer ${token}`);
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log("📋 Final request config:", {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      headers: config.headers,
+    });
     return config;
   },
   (error) => {
+    console.error("❌ Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -27,10 +35,23 @@ api.interceptors.request.use(
 // Interceptor para manejar respuestas de error
 api.interceptors.response.use(
   (response) => {
+    console.log("✅ API Response successful:", {
+      status: response.status,
+      url: response.config?.url,
+      data: response.data,
+    });
     return response;
   },
   (error) => {
+    console.error("❌ API Response error:", {
+      status: error.response?.status,
+      url: error.config?.url,
+      message: error.message,
+      data: error.response?.data,
+    });
+    
     if (error.response?.status === 401) {
+      console.log("🚨 401 Unauthorized - clearing session");
       // Token expirado o inválido
       localStorage.removeItem("token");
       localStorage.removeItem("user");

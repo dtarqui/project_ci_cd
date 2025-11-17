@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-
-const API_BASE_URL = "http://localhost:4000";
+import { authService } from "./services/api";
 
 export default function Login({ onLogin }) {
   const [credentials, setCredentials] = useState({
@@ -34,11 +32,8 @@ export default function Login({ onLogin }) {
     setError("");
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/auth/login`,
-        credentials
-      );
-      const { user, token } = response.data;
+      const data = await authService.login(credentials);
+      const { user, token } = data;
       onLogin(user, token);
     } catch (error) {
       setError(
@@ -119,7 +114,7 @@ export default function Login({ onLogin }) {
               {loading ? "Ingresando..." : "Ingresar"}
             </button>
 
-            {/* <div className="demo-section">
+            <div className="demo-section">
               <p>Prueba la demo:</p>
               <button 
                 type="button" 
@@ -129,7 +124,28 @@ export default function Login({ onLogin }) {
               >
                 Llenar datos de demo
               </button>
-            </div> */}
+              
+              <button 
+                type="button" 
+                onClick={async () => {
+                  try {
+                    const response = await fetch('http://localhost:4000/health');
+                    const data = await response.json();
+                    alert('Backend Health Check: ' + JSON.stringify(data, null, 2));
+                  } catch (error) {
+                    alert('Error connecting to backend: ' + error.message);
+                  }
+                }}
+                style={{
+                  marginLeft: '10px',
+                  padding: '5px',
+                  fontSize: '12px',
+                  background: '#ddd'
+                }}
+              >
+                🏥 Test Backend
+              </button>
+            </div>
           </div>
         </form>
 
