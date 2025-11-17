@@ -1,0 +1,1 @@
+Guía breve de despliegue y CI/CD. Ver README.
