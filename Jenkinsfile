@@ -213,18 +213,6 @@ pipeline {
                     }
                 }
             }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: env.FRONTEND_DIR,
-                        reportFiles: 'lint-results.html',
-                        reportName: 'Frontend ESLint Report'
-                    ])
-                }
-            }
         }
 
         stage('Backend Lint') {
@@ -273,18 +261,6 @@ pipeline {
                     }
                 }
             }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true, // evita fallo si la carpeta de cobertura no se generó
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: "${env.FRONTEND_DIR}/coverage/lcov-report",
-                        reportFiles: 'index.html',
-                        reportName: 'Frontend Coverage Report'
-                    ])
-                }
-            }
         }
 
         stage('Backend Tests') {
@@ -310,18 +286,6 @@ pipeline {
                             '''
                         }
                     }
-                }
-            }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: false,
-                        keepAll: true,
-                        reportDir: "${env.BACKEND_DIR}/coverage/lcov-report",
-                        reportFiles: 'index.html',
-                        reportName: 'Backend Coverage Report'
-                    ])
                 }
             }
         }
