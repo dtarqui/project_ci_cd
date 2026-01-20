@@ -76,14 +76,14 @@ pipeline {
                         sh '''
                             # Verificar Node.js
                             if ! command -v node &> /dev/null; then
-                                echo "Instalando Node.js..."
-                                curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -
-                                sudo apt-get install -y nodejs
+                                echo "Node.js no está instalado en el agente." >&2
+                                echo "Instálalo en la imagen/host antes de correr el pipeline." >&2
+                                exit 1
                             fi
-                            
+
                             echo "Node version: $(node --version)"
                             echo "NPM version: $(npm --version)"
-                            
+
                             # Limpiar caché NPM
                             npm cache clean --force
                         '''
