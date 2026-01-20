@@ -2,10 +2,14 @@ import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Dashboard from "../dashboard";
-import * as apiModule from "../services/api";
+import { dashboardService, authService } from "../services/api";
 
-// Mock complete del módulo api
-jest.mock("../services/api");
+// Mock completo del módulo api
+jest.mock("../services/api", () => {
+  const dashboardService = { getData: jest.fn() };
+  const authService = { login: jest.fn(), logout: jest.fn() };
+  return { dashboardService, authService };
+});
 
 // Mock de react-icons
 jest.mock("react-icons/md", () => ({
@@ -58,30 +62,18 @@ describe("Dashboard Tests", () => {
     ]
   };
 
-  let mockDashboardService;
-  let mockAuthService;
-
   beforeEach(() => {
     jest.clearAllMocks();
     mockOnLogout.mockClear();
-    
-    // Configurar mocks
-    mockDashboardService = {
-      getData: jest.fn()
-    };
-    
-    mockAuthService = {
-      login: jest.fn(),
-      logout: jest.fn()
-    };
-    
-    apiModule.dashboardService = mockDashboardService;
-    apiModule.authService = mockAuthService;
+
+    dashboardService.getData.mockReset();
+    authService.login.mockReset();
+    authService.logout.mockReset();
   });
 
   describe("Rendering", () => {
     test("should show loading state initially", () => {
-      mockDashboardService.getData.mockImplementation(() => new Promise(() => {})); // Never resolves
+      dashboardService.getData.mockImplementation(() => new Promise(() => {})); // Never resolves
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -90,7 +82,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should render dashboard with data successfully", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -102,7 +94,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should show error state when data loading fails", async () => {
-      mockDashboardService.getData.mockRejectedValue(new Error("API Error"));
+      dashboardService.getData.mockRejectedValue(new Error("API Error"));
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -113,7 +105,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should render navigation menu items", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -126,7 +118,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should render user account button", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -136,7 +128,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should render charts when data is available", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -150,7 +142,7 @@ describe("Dashboard Tests", () => {
 
   describe("User Interactions", () => {
     test("should toggle user menu when account button is clicked", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       const user = userEvent.setup();
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
@@ -171,8 +163,8 @@ describe("Dashboard Tests", () => {
     });
 
     test("should call logout when logout button is clicked", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
-      mockAuthService.logout.mockResolvedValue();
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
+      authService.logout.mockResolvedValue();
       const user = userEvent.setup();
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
@@ -199,13 +191,13 @@ describe("Dashboard Tests", () => {
       });
       
       await waitFor(() => {
-        expect(mockAuthService.logout).toHaveBeenCalled();
+        expect(authService.logout).toHaveBeenCalled();
         expect(mockOnLogout).toHaveBeenCalled();
       });
     });
 
     test("should change active section when nav items are clicked", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       const user = userEvent.setup();
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
@@ -225,9 +217,9 @@ describe("Dashboard Tests", () => {
 
     test("should retry data loading when retry button is clicked", async () => {
       // First call fails
-      mockDashboardService.getData.mockRejectedValueOnce(new Error("API Error"));
+      dashboardService.getData.mockRejectedValueOnce(new Error("API Error"));
       // Second call succeeds
-      mockDashboardService.getData.mockResolvedValueOnce(mockDashboardData);
+      dashboardService.getData.mockResolvedValueOnce(mockDashboardData);
       
       const user = userEvent.setup();
       
@@ -249,14 +241,14 @@ describe("Dashboard Tests", () => {
         expect(screen.getByText("$5,234")).toBeInTheDocument();
       });
       
-      expect(mockDashboardService.getData).toHaveBeenCalledTimes(2);
+      expect(dashboardService.getData).toHaveBeenCalledTimes(2);
     });
   });
 
   describe("Error Handling", () => {
     test("should handle logout error gracefully", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
-      mockAuthService.logout.mockRejectedValue(new Error("Logout failed"));
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
+      authService.logout.mockRejectedValue(new Error("Logout failed"));
       const user = userEvent.setup();
       
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -293,7 +285,7 @@ describe("Dashboard Tests", () => {
     test("should handle data loading error and show error message", async () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
-      mockDashboardService.getData.mockRejectedValue(new Error("Network error"));
+      dashboardService.getData.mockRejectedValue(new Error("Network error"));
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -308,18 +300,18 @@ describe("Dashboard Tests", () => {
 
   describe("Service Calls", () => {
     test("should call dashboardService.getData on mount", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
       await waitFor(() => {
-        expect(mockDashboardService.getData).toHaveBeenCalledTimes(1);
+        expect(dashboardService.getData).toHaveBeenCalledTimes(1);
       });
     });
 
     test("should call authService.logout when logging out", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
-      mockAuthService.logout.mockResolvedValue();
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
+      authService.logout.mockResolvedValue();
       const user = userEvent.setup();
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
@@ -343,14 +335,14 @@ describe("Dashboard Tests", () => {
       });
       
       await waitFor(() => {
-        expect(mockAuthService.logout).toHaveBeenCalledTimes(1);
+        expect(authService.logout).toHaveBeenCalledTimes(1);
       });
     });
   });
 
   describe("Data Display", () => {
     test("should display sales data correctly", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       
@@ -361,7 +353,7 @@ describe("Dashboard Tests", () => {
     });
 
     test("should render different sections based on navigation", async () => {
-      mockDashboardService.getData.mockResolvedValue(mockDashboardData);
+      dashboardService.getData.mockResolvedValue(mockDashboardData);
       
       render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
       

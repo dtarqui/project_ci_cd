@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { authService } from "./services/api";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
@@ -141,3 +142,7 @@ export default function Login({ onLogin }) {
     </div>
   );
 }
+
+Login.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+};

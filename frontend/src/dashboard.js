@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { MdDashboard, MdError, MdRefresh, MdExitToApp, MdPeople, MdInventory, MdSettings, MdDescription, MdAccountCircle } from "react-icons/md";
+import PropTypes from "prop-types";
+import { MdDashboard, MdError, MdRefresh, MdPeople, MdInventory, MdSettings, MdAccountCircle } from "react-icons/md";
 import { dashboardService, authService } from "./services/api";
 import {
   BarChart,
@@ -97,7 +98,7 @@ export default function Dashboard({ user, onLogout }) {
             {showUserMenu && (
               <div className="user-dropdown">
                 <div className="user-info">
-                  <span>Cuenta</span>
+                  <span>{user?.name || "Cuenta"}</span>
                 </div>
                 <button onClick={handleLogout} className="logout-button">
                   Salir
@@ -290,3 +291,12 @@ export default function Dashboard({ user, onLogout }) {
     </div>
   );
 }
+
+Dashboard.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    username: PropTypes.string,
+  }),
+  onLogout: PropTypes.func.isRequired,
+};
