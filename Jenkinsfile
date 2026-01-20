@@ -279,7 +279,7 @@ pipeline {
                         allowMissing: true, // evita fallo si la carpeta de cobertura no se generó
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
-                        reportDir: "${env.WORKSPACE}/${env.FRONTEND_DIR}/coverage/lcov-report",
+                        reportDir: "${env.FRONTEND_DIR}/coverage/lcov-report",
                         reportFiles: 'index.html',
                         reportName: 'Frontend Coverage Report'
                     ])
