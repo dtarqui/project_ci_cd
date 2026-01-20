@@ -123,295 +123,279 @@ pipeline {
             }
         }
 
-        stage('Dependencies Installation') {
-            parallel {
-                stage('Frontend Dependencies') {
-                    steps {
-                        echo "Instalando dependencias del frontend..."
-                        dir(env.FRONTEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        npm ci --cache .npm --prefer-offline
-                                        
-                                        # Verificar instalaciones críticas
-                                        npm list webpack webpack-cli || npm install webpack webpack-cli
-                                        
-                                        echo "Dependencias frontend instaladas correctamente"
-                                    '''
-                                } else {
-                                    bat '''
-                                        npm ci --cache .npm --prefer-offline
-                                        
-                                        npm list webpack webpack-cli || npm install webpack webpack-cli
-                                        
-                                        echo Dependencias frontend instaladas correctamente
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                    post {
-                        failure {
-                            echo "Error al instalar dependencias del frontend"
+        stage('Frontend Dependencies') {
+            steps {
+                echo "Instalando dependencias del frontend..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                npm ci --cache .npm --prefer-offline
+                                
+                                # Verificar instalaciones críticas
+                                npm list webpack webpack-cli || npm install webpack webpack-cli
+                                
+                                echo "Dependencias frontend instaladas correctamente"
+                            '''
+                        } else {
+                            bat '''
+                                npm ci --cache .npm --prefer-offline
+                                
+                                npm list webpack webpack-cli || npm install webpack webpack-cli
+                                
+                                echo Dependencias frontend instaladas correctamente
+                            '''
                         }
                     }
                 }
-                
-                stage('Backend Dependencies') {
-                    steps {
-                        echo "Instalando dependencias del backend..."
-                        dir(env.BACKEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        npm ci --cache .npm --prefer-offline
-                                        
-                                        # Verificar dependencias críticas
-                                        node -e "
-                                            require('express'); 
-                                            require('cors'); 
-                                            console.log('Dependencias backend verificadas')
-                                        "
-                                        
-                                        echo "Dependencias backend instaladas correctamente"
-                                    '''
-                                } else {
-                                    bat '''
-                                        npm ci --cache .npm --prefer-offline
-                                        
-                                        node -e "require('express'); require('cors'); console.log('Dependencias backend verificadas')"
-                                        
-                                        echo Dependencias backend instaladas correctamente
-                                    '''
-                                }
-                            }
+            }
+            post {
+                failure {
+                    echo "Error al instalar dependencias del frontend"
+                }
+            }
+        }
+
+        stage('Backend Dependencies') {
+            steps {
+                echo "Instalando dependencias del backend..."
+                dir(env.BACKEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                npm ci --cache .npm --prefer-offline
+                                
+                                # Verificar dependencias críticas
+                                node -e "
+                                    require('express'); 
+                                    require('cors'); 
+                                    console.log('Dependencias backend verificadas')
+                                "
+                                
+                                echo "Dependencias backend instaladas correctamente"
+                            '''
+                        } else {
+                            bat '''
+                                npm ci --cache .npm --prefer-offline
+                                
+                                node -e "require('express'); require('cors'); console.log('Dependencias backend verificadas')"
+                                
+                                echo Dependencias backend instaladas correctamente
+                            '''
                         }
                     }
-                    post {
-                        failure {
-                            echo "Error al instalar dependencias del backend"
+                }
+            }
+            post {
+                failure {
+                    echo "Error al instalar dependencias del backend"
+                }
+            }
+        }
+
+        stage('Frontend Lint') {
+            steps {
+                echo "Analizando calidad de codigo frontend..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        try {
+                            if (isUnix()) {
+                                sh 'npm run lint'
+                            } else {
+                                bat 'npm run lint'
+                            }
+                        } catch (Exception e) {
+                            echo "ESLint falló o no esta configurado: ${e.message}"
+                            currentBuild.result = 'UNSTABLE'
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: env.FRONTEND_DIR,
+                        reportFiles: 'lint-results.html',
+                        reportName: 'Frontend ESLint Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Backend Lint') {
+            steps {
+                echo "Analizando calidad de codigo backend..."
+                dir(env.BACKEND_DIR) {
+                    script {
+                        try {
+                            if (isUnix()) {
+                                sh 'npm run lint 2>/dev/null || echo "No hay lint configurado para backend"'
+                            } else {
+                                bat 'npm run lint 2>nul || echo No hay lint configurado para backend'
+                            }
+                        } catch (Exception e) {
+                            echo "Lint backend no configurado"
                         }
                     }
                 }
             }
         }
 
-        stage('Code Quality') {
-            parallel {
-                stage('Frontend Lint') {
-                    steps {
-                        echo "Analizando calidad de codigo frontend..."
-                        dir(env.FRONTEND_DIR) {
-                            script {
-                                try {
-                                    if (isUnix()) {
-                                        sh 'npm run lint'
-                                    } else {
-                                        bat 'npm run lint'
-                                    }
-                                } catch (Exception e) {
-                                    echo "ESLint falló o no esta configurado: ${e.message}"
-                                    currentBuild.result = 'UNSTABLE'
-                                }
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            publishHTML([
-                                allowMissing: true,
-                                alwaysLinkToLastBuild: false,
-                                keepAll: true,
-                                reportDir: env.FRONTEND_DIR,
-                                reportFiles: 'lint-results.html',
-                                reportName: 'Frontend ESLint Report'
-                            ])
+        stage('Frontend Tests') {
+            steps {
+                echo "Ejecutando tests del frontend..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                export CI=true
+                                export NODE_ENV=test
+                                
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
+                                
+                                echo "Tests frontend completados"
+                            '''
+                        } else {
+                            bat '''
+                                set CI=true
+                                set NODE_ENV=test
+                                
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
+                                
+                                echo Tests frontend completados
+                            '''
                         }
                     }
                 }
-                
-                stage('Backend Lint') {
-                    steps {
-                        echo "Analizando calidad de codigo backend..."
-                        dir(env.BACKEND_DIR) {
-                            script {
-                                try {
-                                    if (isUnix()) {
-                                        sh 'npm run lint 2>/dev/null || echo "No hay lint configurado para backend"'
-                                    } else {
-                                        bat 'npm run lint 2>nul || echo No hay lint configurado para backend'
-                                    }
-                                } catch (Exception e) {
-                                    echo "Lint backend no configurado"
-                                }
-                            }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true, // evita fallo si la carpeta de cobertura no se generó
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: "${env.WORKSPACE}/${env.FRONTEND_DIR}/coverage/lcov-report",
+                        reportFiles: 'index.html',
+                        reportName: 'Frontend Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Backend Tests') {
+            steps {
+                echo "Ejecutando tests del backend..."
+                dir(env.BACKEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                export NODE_ENV=test
+                                
+                                npm test -- --coverage --coverageReporters=html,text-lcov
+                                
+                                echo "Tests backend completados"
+                            '''
+                        } else {
+                            bat '''
+                                set NODE_ENV=test
+                                
+                                npm test -- --coverage --coverageReporters=html,text-lcov
+                                
+                                echo Tests backend completados
+                            '''
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: "${env.BACKEND_DIR}/coverage/lcov-report",
+                        reportFiles: 'index.html',
+                        reportName: 'Backend Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                echo "Construyendo frontend para produccion..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                export NODE_ENV=production
+                                
+                                npm run build
+                                
+                                # Verificar build (acepta build/ o dist/)
+                                if [ -d "build" ]; then
+                                    BUILD_DIR="build"
+                                elif [ -d "dist" ]; then
+                                    BUILD_DIR="dist"
+                                else
+                                    echo "Error: no se generó directorio build/ ni dist/"
+                                    exit 1
+                                fi
+
+                                echo "Build frontend generado en $(pwd)/$BUILD_DIR"
+                                ls -la "$BUILD_DIR" | head -10
+                            '''
+                        } else {
+                            bat '''
+                                set NODE_ENV=production
+                                
+                                npm run build
+                                
+                                if not exist "build" (
+                                    echo Error: directorio build no generado
+                                    exit 1
+                                )
+                                
+                                echo Build frontend generado
+                                dir build
+                            '''
                         }
                     }
                 }
             }
         }
 
-        stage('Unit Testing') {
-            parallel {
-                stage('Frontend Tests') {
-                    steps {
-                        echo "Ejecutando tests del frontend..."
-                        dir(env.FRONTEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        export CI=true
-                                        export NODE_ENV=test
-                                        
-                                        npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
-                                        
-                                        echo "Tests frontend completados"
-                                    '''
-                                } else {
-                                    bat '''
-                                        set CI=true
-                                        set NODE_ENV=test
-                                        
-                                        npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
-                                        
-                                        echo Tests frontend completados
-                                    '''
+        stage('Backend Validation') {
+            steps {
+                echo "Validando backend para produccion..."
+                dir(env.BACKEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                # Verificar que el servidor puede iniciarse
+                                timeout 10s node index.js &
+                                SERVER_PID=$!
+                                
+                                sleep 3
+                                
+                                # Health check
+                                curl -f http://localhost:4000/health || {
+                                    echo "Health check fallido"
+                                    kill $SERVER_PID 2>/dev/null || true
+                                    exit 1
                                 }
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            publishHTML([
-                                allowMissing: true, // evita fallo si la carpeta de cobertura no se generó
-                                alwaysLinkToLastBuild: false,
-                                keepAll: true,
-                                reportDir: "${env.WORKSPACE}/${env.FRONTEND_DIR}/coverage/lcov-report",
-                                reportFiles: 'index.html',
-                                reportName: 'Frontend Coverage Report'
-                            ])
-                        }
-                    }
-                }
-                
-                stage('Backend Tests') {
-                    steps {
-                        echo "Ejecutando tests del backend..."
-                        dir(env.BACKEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        export NODE_ENV=test
-                                        
-                                        npm test -- --coverage --coverageReporters=html,text-lcov
-                                        
-                                        echo "Tests backend completados"
-                                    '''
-                                } else {
-                                    bat '''
-                                        set NODE_ENV=test
-                                        
-                                        npm test -- --coverage --coverageReporters=html,text-lcov
-                                        
-                                        echo Tests backend completados
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                    post {
-                        always {
-                            publishHTML([
-                                allowMissing: true,
-                                alwaysLinkToLastBuild: false,
-                                keepAll: true,
-                                reportDir: "${env.BACKEND_DIR}/coverage/lcov-report",
-                                reportFiles: 'index.html',
-                                reportName: 'Backend Coverage Report'
-                            ])
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Build Applications') {
-            parallel {
-                stage('Frontend Build') {
-                    steps {
-                        echo "Construyendo frontend para produccion..."
-                        dir(env.FRONTEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        export NODE_ENV=production
-                                        
-                                        npm run build
-                                        
-                                        # Verificar build (acepta build/ o dist/)
-                                        if [ -d "build" ]; then
-                                            BUILD_DIR="build"
-                                        elif [ -d "dist" ]; then
-                                            BUILD_DIR="dist"
-                                        else
-                                            echo "Error: no se generó directorio build/ ni dist/"
-                                            exit 1
-                                        fi
-
-                                        echo "Build frontend generado en $(pwd)/$BUILD_DIR"
-                                        ls -la "$BUILD_DIR" | head -10
-                                    '''
-                                } else {
-                                    bat '''
-                                        set NODE_ENV=production
-                                        
-                                        npm run build
-                                        
-                                        if not exist "build" (
-                                            echo Error: directorio build no generado
-                                            exit 1
-                                        )
-                                        
-                                        echo Build frontend generado
-                                        dir build
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                stage('Backend Validation') {
-                    steps {
-                        echo "Validando backend para produccion..."
-                        dir(env.BACKEND_DIR) {
-                            script {
-                                if (isUnix()) {
-                                    sh '''
-                                        # Verificar que el servidor puede iniciarse
-                                        timeout 10s node index.js &
-                                        SERVER_PID=$!
-                                        
-                                        sleep 3
-                                        
-                                        # Health check
-                                        curl -f http://localhost:4000/health || {
-                                            echo "Health check fallido"
-                                            kill $SERVER_PID 2>/dev/null || true
-                                            exit 1
-                                        }
-                                        
-                                        kill $SERVER_PID 2>/dev/null || true
-                                        echo "Backend validado correctamente"
-                                    '''
-                                } else {
-                                    bat '''
-                                        echo Validacion de backend en Windows pendiente
-                                        echo Backend validation OK
-                                    '''
-                                }
-                            }
+                                
+                                kill $SERVER_PID 2>/dev/null || true
+                                echo "Backend validado correctamente"
+                            '''
+                        } else {
+                            bat '''
+                                echo Validacion de backend en Windows pendiente
+                                echo Backend validation OK
+                            '''
                         }
                     }
                 }
