@@ -396,22 +396,24 @@ pipeline {
             steps {
                 echo "Desplegando frontend a Vercel..."
                 dir(env.FRONTEND_DIR) {
-                    script {
-                        if (isUnix()) {
-                            sh '''
-                                set -e
-                                npm install -g vercel
-                                vercel pull --yes --environment=production --token $VERCEL_TOKEN
-                                vercel build --prod --token $VERCEL_TOKEN
-                                vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
-                            '''
-                        } else {
-                            bat '''
-                                npm install -g vercel
-                                vercel pull --yes --environment=production --token %VERCEL_TOKEN%
-                                vercel build --prod --token %VERCEL_TOKEN%
-                                vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
-                            '''
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                        script {
+                            if (isUnix()) {
+                                sh '''
+                                    set -e
+                                    npm install -g vercel
+                                    vercel pull --yes --environment=production --token $VERCEL_TOKEN
+                                    vercel build --prod --token $VERCEL_TOKEN
+                                    vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+                                '''
+                            } else {
+                                bat '''
+                                    npm install -g vercel
+                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN%
+                                    vercel build --prod --token %VERCEL_TOKEN%
+                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
+                                '''
+                            }
                         }
                     }
                 }
