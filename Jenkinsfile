@@ -372,39 +372,67 @@ pipeline {
             steps {
                 echo "Empaquetando artefactos..."
                 script {
-                    // Archivar frontend build
-                    archiveArtifacts(
-                        artifacts: "${env.FRONTEND_DIR}/build/**/*", 
-                        fingerprint: true, 
-                        allowEmptyArchive: false
-                    )
-                    
+                    // Detect frontend build folder (build/ or dist/)
+                    def frontendBuildDir = null
+                    if (fileExists("${env.FRONTEND_DIR}/build")) {
+                        frontendBuildDir = "build"
+                    } else if (fileExists("${env.FRONTEND_DIR}/dist")) {
+                        frontendBuildDir = "dist"
+                    }
+
+                    if (frontendBuildDir) {
+                        archiveArtifacts(
+                            artifacts: "${env.FRONTEND_DIR}/${frontendBuildDir}/**/*",
+                            fingerprint: true,
+                            allowEmptyArchive: false
+                        )
+                    } else {
+                        echo "No se encontró build de frontend (build/ o dist/). Saltando archivo de frontend."
+                    }
+
                     // Archivar backend files
                     archiveArtifacts(
                         artifacts: "${env.BACKEND_DIR}/**/*.js,${env.BACKEND_DIR}/package*.json,${env.BACKEND_DIR}/Dockerfile",
                         fingerprint: true
                     )
-                    
+
                     // Crear artefacto comprimido con timestamp
                     def timestamp = new Date().format('yyyyMMdd-HHmmss')
                     def artifactName = "mi-tienda-${env.BUILD_NUMBER}-${timestamp}.tar.gz"
-                    
+
                     if (isUnix()) {
-                        sh """
-                            tar -czf ${artifactName} \\
-                                ${env.FRONTEND_DIR}/build \\
-                                ${env.BACKEND_DIR}/*.js \\
-                                ${env.BACKEND_DIR}/package*.json \\
-                                ${env.BACKEND_DIR}/Dockerfile \\
-                                README.md
-                        """
+                        if (frontendBuildDir) {
+                            sh """
+                                tar -czf ${artifactName} \\
+                                    ${env.FRONTEND_DIR}/${frontendBuildDir} \\
+                                    ${env.BACKEND_DIR}/*.js \\
+                                    ${env.BACKEND_DIR}/package*.json \\
+                                    ${env.BACKEND_DIR}/Dockerfile \\
+                                    README.md
+                            """
+                        } else {
+                            sh """
+                                tar -czf ${artifactName} \\
+                                    ${env.BACKEND_DIR}/*.js \\
+                                    ${env.BACKEND_DIR}/package*.json \\
+                                    ${env.BACKEND_DIR}/Dockerfile \\
+                                    README.md
+                            """
+                        }
                     } else {
-                        bat """
-                            echo Creating artifact ${artifactName}
-                            7z a ${artifactName} ${env.FRONTEND_DIR}\\build ${env.BACKEND_DIR}\\*.js ${env.BACKEND_DIR}\\package*.json ${env.BACKEND_DIR}\\Dockerfile README.md
-                        """
+                        if (frontendBuildDir) {
+                            bat """
+                                echo Creating artifact ${artifactName}
+                                7z a ${artifactName} ${env.FRONTEND_DIR}\\${frontendBuildDir} ${env.BACKEND_DIR}\\*.js ${env.BACKEND_DIR}\\package*.json ${env.BACKEND_DIR}\\Dockerfile README.md
+                            """
+                        } else {
+                            bat """
+                                echo Creating artifact ${artifactName}
+                                7z a ${artifactName} ${env.BACKEND_DIR}\\*.js ${env.BACKEND_DIR}\\package*.json ${env.BACKEND_DIR}\\Dockerfile README.md
+                            """
+                        }
                     }
-                    
+
                     archiveArtifacts(artifacts: artifactName, fingerprint: true)
                     env.ARTIFACT_NAME = artifactName
                 }
