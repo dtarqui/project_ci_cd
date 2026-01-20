@@ -349,14 +349,18 @@ pipeline {
                                         
                                         npm run build
                                         
-                                        # Verificar build
-                                        if [ ! -d "build" ]; then
-                                            echo "Error: directorio build no generado"
+                                        # Verificar build (acepta build/ o dist/)
+                                        if [ -d "build" ]; then
+                                            BUILD_DIR="build"
+                                        elif [ -d "dist" ]; then
+                                            BUILD_DIR="dist"
+                                        else
+                                            echo "Error: no se generó directorio build/ ni dist/"
                                             exit 1
                                         fi
-                                        
-                                        echo "Build frontend generado en $(pwd)/build"
-                                        ls -la build/ | head -10
+
+                                        echo "Build frontend generado en $(pwd)/$BUILD_DIR"
+                                        ls -la "$BUILD_DIR" | head -10
                                     '''
                                 } else {
                                     bat '''
