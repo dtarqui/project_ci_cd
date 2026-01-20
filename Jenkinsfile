@@ -134,6 +134,7 @@ pipeline {
                                 
                                 # Verificar instalaciones críticas
                                 npm list webpack webpack-cli || npm install webpack webpack-cli
+                                npm list eslint-plugin-react eslint-plugin-react-hooks || npm install eslint-plugin-react eslint-plugin-react-hooks
                                 
                                 echo "Dependencias frontend instaladas correctamente"
                             '''
@@ -142,6 +143,7 @@ pipeline {
                                 npm ci --cache .npm --prefer-offline
                                 
                                 npm list webpack webpack-cli || npm install webpack webpack-cli
+                                npm list eslint-plugin-react eslint-plugin-react-hooks || npm install eslint-plugin-react eslint-plugin-react-hooks
                                 
                                 echo Dependencias frontend instaladas correctamente
                             '''
