@@ -74,10 +74,13 @@ pipeline {
                     
                     if (isUnix()) {
                         sh '''
+                            echo "PATH actual: $PATH"
+                            echo "which node: $(which node || true)"
+
                             # Verificar Node.js
                             if ! command -v node &> /dev/null; then
-                                echo "Node.js no está instalado en el agente." >&2
-                                echo "Instálalo en la imagen/host antes de correr el pipeline." >&2
+                                echo "Node.js no está en PATH en el agente." >&2
+                                echo "Asegúrate de que 'node' esté accesible (agrega su ruta al PATH del agente)." >&2
                                 exit 1
                             fi
 
