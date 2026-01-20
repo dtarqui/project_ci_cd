@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    // Usa la instalación NodeJS definida en Jenkins (Manage Jenkins > Tools > NodeJS installations)
+    // Asegúrate que el nombre aquí coincida con el configurado en la UI (ej: Node18)
+    tools {
+        nodejs 'Node18'
+    }
+
     environment {
         NODE_VERSION = "18"
         FRONTEND_DIR = "frontend"
