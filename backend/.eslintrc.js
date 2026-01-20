@@ -12,5 +12,6 @@ module.exports = {
         sourceType: 'script'
     },
     rules: {
+        'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
     }
 };

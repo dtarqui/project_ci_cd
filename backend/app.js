@@ -78,7 +78,7 @@ const createApp = () => {
     );
 
     if (user) {
-      const { password: userPassword, ...userWithoutPassword } = user;
+      const { password: _password, ...userWithoutPassword } = user;
       const token = `mock-jwt-token-${user.id}`;
       
       res.json({
@@ -179,7 +179,7 @@ const createApp = () => {
       });
     }
 
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     res.json({
       success: true,
       user: userWithoutPassword,
@@ -197,7 +197,7 @@ const createApp = () => {
   });
 
   // Middleware para manejar errores
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, _next) => {
     console.error("Error interno del servidor:", err);
     res.status(500).json({
       error: "Error interno del servidor",

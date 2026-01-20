@@ -227,7 +227,7 @@ describe("Unit Tests - App Components", () => {
 
     test("user data sanitization", () => {
       const sanitizeUser = (user) => {
-        const { password, ...userWithoutPassword } = user;
+        const { password: _password, ...userWithoutPassword } = user;
         return userWithoutPassword;
       };
 

@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { createApp, mockData, users } = require("../app");
+const { createApp, mockData } = require("../app");
 
 describe("Backend API Tests", () => {
   let app;

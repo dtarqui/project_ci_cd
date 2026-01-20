@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { createApp, mockData, users } = require("../app");
+const { createApp } = require("../app");
 
 describe("Additional API Coverage Tests", () => {
   let app;
