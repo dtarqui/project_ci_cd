@@ -80,13 +80,21 @@ pipeline {
                     
                     if (isUnix()) {
                         sh '''
-                            echo "PATH actual: $PATH"
+                            echo "PATH inicial: $PATH"
+                            echo "NODEJS_HOME: ${NODEJS_HOME:-'(unset)'}"
+
+                            # Si Jenkins inyectó la tool NodeJS, usa esa ruta
+                            if [ -n "$NODEJS_HOME" ]; then
+                                export PATH="$NODEJS_HOME/bin:$PATH"
+                            fi
+
+                            echo "PATH tras inyectar NodeJS_HOME: $PATH"
                             echo "which node: $(which node || true)"
 
                             # Verificar Node.js
-                            if ! command -v node &> /dev/null; then
+                            if ! command -v node >/dev/null 2>&1; then
                                 echo "Node.js no está en PATH en el agente." >&2
-                                echo "Asegúrate de que 'node' esté accesible (agrega su ruta al PATH del agente)." >&2
+                                echo "Verifica que el tool NodeJS en Jenkins se llame 'Node18' o ajusta el nombre en tools { nodejs '...' }." >&2
                                 exit 1
                             fi
 
