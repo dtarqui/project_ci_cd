@@ -368,6 +368,56 @@ pipeline {
             }
         }
 
+        stage('Backend Docker Build & Push') {
+            when {
+                expression { return isUnix() } 
+            }
+            environment {
+                DOCKER_IMAGE = "${DOCKER_REGISTRY}/${env.DOCKERHUB_USER ?: 'your-namespace'}/${IMAGE_NAME}:${GIT_COMMIT_SHORT ?: 'latest'}"
+            }
+            steps {
+                echo "Construyendo y publicando imagen backend ${DOCKER_IMAGE}..."
+                dir(env.BACKEND_DIR) {
+                    script {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh '''
+                                set -e
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin ${DOCKER_REGISTRY}
+                                docker build -t ${DOCKER_IMAGE} .
+                                docker push ${DOCKER_IMAGE}
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Vercel') {
+            steps {
+                echo "Desplegando frontend a Vercel..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                set -e
+                                npm install -g vercel
+                                vercel pull --yes --environment=production --token $VERCEL_TOKEN
+                                vercel build --prod --token $VERCEL_TOKEN
+                                vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+                            '''
+                        } else {
+                            bat '''
+                                npm install -g vercel
+                                vercel pull --yes --environment=production --token %VERCEL_TOKEN%
+                                vercel build --prod --token %VERCEL_TOKEN%
+                                vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Package Artifacts') {
             steps {
                 echo "Empaquetando artefactos..."
