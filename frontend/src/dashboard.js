@@ -98,7 +98,8 @@ export default function Dashboard({ user, onLogout }) {
             {showUserMenu && (
               <div className="user-dropdown">
                 <div className="user-info">
-                  <span>{user?.name || "Cuenta"}</span>
+                  <span>Cuenta</span>
+                  {user?.name && <small className="user-name">{user.name}</small>}
                 </div>
                 <button onClick={handleLogout} className="logout-button">
                   Salir
