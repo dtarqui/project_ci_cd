@@ -478,63 +478,15 @@ pipeline {
         }
         success {
             echo "Pipeline ejecutado correctamente!"
-            script {
-                try {
-                    slackSend(
-                        channel: '#deployments',
-                        color: 'good',
-                        message: """
-                            Deploy exitoso de Mi Tienda
-                            Build: #${env.BUILD_NUMBER}
-                            Branch: ${env.BRANCH_NAME}
-                            Commit: ${env.GIT_COMMIT_SHORT}
-                            Autor: ${env.GIT_AUTHOR}
-                            Artefacto: ${env.ARTIFACT_NAME}
-                        """.stripIndent()
-                    )
-                } catch (Exception e) {
-                    echo "No se pudo enviar notificación a Slack: ${e.message}"
-                }
-            }
+            echo "Notificación Slack omitida (slackSend no disponible)"
         }
         failure {
             echo "Falla en el pipeline - revisar logs"
-            script {
-                try {
-                    slackSend(
-                        channel: '#deployments',
-                        color: 'danger',
-                        message: """
-                            FALLA en deploy de Mi Tienda
-                            Build: #${env.BUILD_NUMBER}
-                            Branch: ${env.BRANCH_NAME}
-                            Commit: ${env.GIT_COMMIT_SHORT}
-                            Error en stage: ${env.STAGE_NAME}
-                        """.stripIndent()
-                    )
-                } catch (Exception e) {
-                    echo "No se pudo enviar notificación a Slack: ${e.message}"
-                }
-            }
+            echo "Notificación Slack omitida (slackSend no disponible)"
         }
         unstable {
             echo "Pipeline inestable - algunas pruebas fallaron"
-            script {
-                try {
-                    slackSend(
-                        channel: '#deployments',
-                        color: 'warning',
-                        message: """
-                            Pipeline INESTABLE de Mi Tienda
-                            Build: #${env.BUILD_NUMBER}
-                            Branch: ${env.BRANCH_NAME}
-                            Algunas pruebas fallaron
-                        """.stripIndent()
-                    )
-                } catch (Exception e) {
-                    echo "No se pudo enviar notificación a Slack: ${e.message}"
-                }
-            }
+            echo "Notificación Slack omitida (slackSend no disponible)"
         }
     }
 }
