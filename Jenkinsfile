@@ -368,30 +368,6 @@ pipeline {
             }
         }
 
-        stage('Backend Docker Build & Push') {
-            when {
-                expression { return isUnix() } 
-            }
-            environment {
-                DOCKER_IMAGE = "${DOCKER_REGISTRY}/${env.DOCKERHUB_USER ?: 'your-namespace'}/${IMAGE_NAME}:${GIT_COMMIT_SHORT ?: 'latest'}"
-            }
-            steps {
-                echo "Construyendo y publicando imagen backend ${DOCKER_IMAGE}..."
-                dir(env.BACKEND_DIR) {
-                    script {
-                        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh '''
-                                set -e
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin ${DOCKER_REGISTRY}
-                                docker build -t ${DOCKER_IMAGE} .
-                                docker push ${DOCKER_IMAGE}
-                            '''
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Deploy Vercel') {
             steps {
                 echo "Desplegando frontend a Vercel..."
