@@ -259,8 +259,7 @@ pipeline {
                                 # Generar reportes en múltiples formatos para métricas
                                 npm test -- --ci --runInBand --watchAll=false \
                                     --coverage \
-                                    --coverageReporters=text-lcov,html,cobertura \
-                                    --reporters=default,jest-junit
+                                    --coverageReporters=text-lcov,html,cobertura
                                 
                                 echo "Tests frontend completados"
                             '''
@@ -269,7 +268,7 @@ pipeline {
                                 set CI=true
                                 set NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html,cobertura --reporters=default,jest-junit
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html,cobertura
                                 
                                 echo Tests frontend completados
                             '''
@@ -280,7 +279,7 @@ pipeline {
             post {
                 always {
                     script {
-                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
                         echo "Frontend Tests duration: ${duration}s"
                         
                         // Publicar resultados de tests (formato JUnit)
@@ -314,8 +313,7 @@ pipeline {
                                 
                                 # Generar reportes en múltiples formatos
                                 npm test -- --coverage \
-                                    --coverageReporters=html,text-lcov,cobertura \
-                                    --reporters=default,jest-junit
+                                    --coverageReporters=html,text-lcov,cobertura
                                 
                                 echo "Tests backend completados"
                             '''
@@ -323,7 +321,7 @@ pipeline {
                             bat '''
                                 set NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html,text-lcov,cobertura --reporters=default,jest-junit
+                                npm test -- --coverage --coverageReporters=html,text-lcov,cobertura
                                 
                                 echo Tests backend completados
                             '''
@@ -334,7 +332,7 @@ pipeline {
             post {
                 always {
                     script {
-                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
                         echo "Backend Tests duration: ${duration}s"
                         
                         // Publicar resultados de tests
@@ -471,7 +469,7 @@ pipeline {
             post {
                 always {
                     script {
-                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
                         echo "Docker Build & Push duration: ${duration}s"
                     }
                 }
@@ -518,7 +516,7 @@ pipeline {
             post {
                 always {
                     script {
-                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
                         echo "Vercel Deploy duration: ${duration}s"
                     }
                 }
