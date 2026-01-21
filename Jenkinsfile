@@ -23,7 +23,7 @@ pipeline {
         COVERAGE_THRESHOLD = "70"
         
         // Email notifications
-        NOTIFICATION_EMAIL = "devops-team@example.com"
+        NOTIFICATION_EMAIL = "dmtarqui@gmail.com"
     }
 
     options {
