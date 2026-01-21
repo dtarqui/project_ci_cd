@@ -431,6 +431,13 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
+            agent {
+                // Usa contenedor con Docker CLI y monta el socket del host
+                docker {
+                    image 'docker:24-cli'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             when {
                 expression { isUnix() } // Solo en agentes Linux
             }
@@ -446,6 +453,9 @@ pipeline {
                             passwordVariable: 'DOCKER_PASS'
                         )]) {
                             sh '''
+                                # Verificar acceso al daemon
+                                docker info
+                                
                                 # Login a Docker Hub
                                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                                 
