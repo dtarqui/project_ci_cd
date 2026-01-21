@@ -430,59 +430,6 @@ pipeline {
             }
         }
 
-        stage('Docker Build & Push') {
-            when {
-                expression { isUnix() }
-            }
-            steps {
-                script {
-                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
-                    echo "Construyendo imagen Docker del backend en host local..."
-                    
-                    withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
-                    )]) {
-                        sh '''
-                            # Asignar variables
-                            IMAGE_TAG="${DOCKER_REGISTRY}/${DOCKER_USER}/${IMAGE_NAME}"
-                            BUILD_DIR="${PWD}/${BACKEND_DIR}"
-                            
-                            # Login a Docker Hub (usa el docker local del host)
-                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                            
-                            # Build con tags múltiples para versionado
-                            docker build -t "${IMAGE_TAG}:${BUILD_NUMBER}" \
-                                         -t "${IMAGE_TAG}:latest" \
-                                         -t "${IMAGE_TAG}:${GIT_COMMIT_SHORT}" \
-                                         "$BUILD_DIR"
-                            
-                            # Push todas las tags
-                            docker push "${IMAGE_TAG}:${BUILD_NUMBER}"
-                            docker push "${IMAGE_TAG}:latest"
-                            docker push "${IMAGE_TAG}:${GIT_COMMIT_SHORT}"
-                            
-                            echo "Imagen publicada: ${IMAGE_TAG}:${BUILD_NUMBER}"
-                        '''
-                    }
-                }
-            }
-            post {
-                always {
-                    script {
-                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
-                        echo "Docker Build & Push duration: ${duration}s"
-                    }
-                }
-                success {
-                    script {
-                        env.DOCKER_IMAGE_PUBLISHED = "${env.DOCKER_REGISTRY}/${env.DOCKER_USER}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    }
-                }
-            }
-        }
-
         stage('Deploy Vercel') {
             steps {
                 script {
