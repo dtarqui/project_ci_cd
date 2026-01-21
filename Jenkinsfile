@@ -431,48 +431,40 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
-            agent {
-                // Usa contenedor con Docker CLI y monta el socket del host
-                docker {
-                    image 'docker:24-cli'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             when {
-                expression { isUnix() } // Solo en agentes Linux
+                expression { isUnix() }
             }
             steps {
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
-                    echo "Construyendo imagen Docker del backend..."
+                    echo "Construyendo imagen Docker del backend en host local..."
                     
-                    dir(env.BACKEND_DIR) {
-                        withCredentials([usernamePassword(
-                            credentialsId: 'dockerhub-creds',
-                            usernameVariable: 'DOCKER_USER',
-                            passwordVariable: 'DOCKER_PASS'
-                        )]) {
-                            sh '''
-                                # Verificar acceso al daemon
-                                docker info
-                                
-                                # Login a Docker Hub
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                
-                                # Build con tags múltiples para versionado
-                                IMAGE_TAG="${DOCKER_REGISTRY}/${DOCKER_USER}/${IMAGE_NAME}"
-                                docker build -t "${IMAGE_TAG}:${BUILD_NUMBER}" \
-                                             -t "${IMAGE_TAG}:latest" \
-                                             -t "${IMAGE_TAG}:${GIT_COMMIT_SHORT}" .
-                                
-                                # Push todas las tags
-                                docker push "${IMAGE_TAG}:${BUILD_NUMBER}"
-                                docker push "${IMAGE_TAG}:latest"
-                                docker push "${IMAGE_TAG}:${GIT_COMMIT_SHORT}"
-                                
-                                echo "Imagen publicada: ${IMAGE_TAG}:${BUILD_NUMBER}"
-                            '''
-                        }
+                    withCredentials([usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        sh '''
+                            # Asignar variables
+                            IMAGE_TAG="${DOCKER_REGISTRY}/${DOCKER_USER}/${IMAGE_NAME}"
+                            BUILD_DIR="${PWD}/${BACKEND_DIR}"
+                            
+                            # Login a Docker Hub (usa el docker local del host)
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            
+                            # Build con tags múltiples para versionado
+                            docker build -t "${IMAGE_TAG}:${BUILD_NUMBER}" \
+                                         -t "${IMAGE_TAG}:latest" \
+                                         -t "${IMAGE_TAG}:${GIT_COMMIT_SHORT}" \
+                                         "$BUILD_DIR"
+                            
+                            # Push todas las tags
+                            docker push "${IMAGE_TAG}:${BUILD_NUMBER}"
+                            docker push "${IMAGE_TAG}:latest"
+                            docker push "${IMAGE_TAG}:${GIT_COMMIT_SHORT}"
+                            
+                            echo "Imagen publicada: ${IMAGE_TAG}:${BUILD_NUMBER}"
+                        '''
                     }
                 }
             }
