@@ -15,6 +15,15 @@ pipeline {
         DOCKER_REGISTRY = "docker.io"
         IMAGE_NAME = "mi-tienda-backend"
         GITHUB_REPO = "https://github.com/dtarqui/project_ci_cd.git"
+        
+        // Métricas y monitoreo
+        STAGE_START_TIME = ""
+        TOTAL_TEST_COUNT = "0"
+        FAILED_TEST_COUNT = "0"
+        COVERAGE_THRESHOLD = "70"
+        
+        // Email notifications
+        NOTIFICATION_EMAIL = "devops-team@example.com"
     }
 
     options {
@@ -236,6 +245,9 @@ pipeline {
 
         stage('Frontend Tests') {
             steps {
+                script {
+                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
+                }
                 echo "Ejecutando tests del frontend..."
                 dir(env.FRONTEND_DIR) {
                     script {
@@ -244,7 +256,11 @@ pipeline {
                                 export CI=true
                                 export NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
+                                # Generar reportes en múltiples formatos para métricas
+                                npm test -- --ci --runInBand --watchAll=false \
+                                    --coverage \
+                                    --coverageReporters=text-lcov,html,cobertura \
+                                    --reporters=default,jest-junit
                                 
                                 echo "Tests frontend completados"
                             '''
@@ -253,7 +269,7 @@ pipeline {
                                 set CI=true
                                 set NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html,cobertura --reporters=default,jest-junit
                                 
                                 echo Tests frontend completados
                             '''
@@ -261,10 +277,34 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    script {
+                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        echo "⏱️  Frontend Tests duration: ${duration}s"
+                        
+                        // Publicar resultados de tests (formato JUnit)
+                        junit(testResults: "${env.FRONTEND_DIR}/junit.xml", allowEmptyResults: true)
+                        
+                        // Publicar coverage HTML
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: "${env.FRONTEND_DIR}/coverage",
+                            reportFiles: 'index.html',
+                            reportName: 'Frontend Coverage Report'
+                        ])
+                    }
+                }
+            }
         }
 
         stage('Backend Tests') {
             steps {
+                script {
+                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
+                }
                 echo "Ejecutando tests del backend..."
                 dir(env.BACKEND_DIR) {
                     script {
@@ -272,7 +312,10 @@ pipeline {
                             sh '''
                                 export NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html,text-lcov
+                                # Generar reportes en múltiples formatos
+                                npm test -- --coverage \
+                                    --coverageReporters=html,text-lcov,cobertura \
+                                    --reporters=default,jest-junit
                                 
                                 echo "Tests backend completados"
                             '''
@@ -280,11 +323,32 @@ pipeline {
                             bat '''
                                 set NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html,text-lcov
+                                npm test -- --coverage --coverageReporters=html,text-lcov,cobertura --reporters=default,jest-junit
                                 
                                 echo Tests backend completados
                             '''
                         }
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        echo "⏱️  Backend Tests duration: ${duration}s"
+                        
+                        // Publicar resultados de tests
+                        junit(testResults: "${env.BACKEND_DIR}/junit.xml", allowEmptyResults: true)
+                        
+                        // Publicar coverage HTML
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: "${env.BACKEND_DIR}/coverage",
+                            reportFiles: 'index.html',
+                            reportName: 'Backend Coverage Report'
+                        ])
                     }
                 }
             }
@@ -368,20 +432,77 @@ pipeline {
             }
         }
 
+        stage('Docker Build & Push') {
+            when {
+                expression { isUnix() } // Solo en agentes Linux
+            }
+            steps {
+                script {
+                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
+                    echo "Construyendo imagen Docker del backend..."
+                    
+                    dir(env.BACKEND_DIR) {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'dockerhub-creds',
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                        )]) {
+                            sh '''
+                                # Login a Docker Hub
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                
+                                # Build con tags múltiples para versionado
+                                IMAGE_TAG="${DOCKER_REGISTRY}/${DOCKER_USER}/${IMAGE_NAME}"
+                                docker build -t "${IMAGE_TAG}:${BUILD_NUMBER}" \
+                                             -t "${IMAGE_TAG}:latest" \
+                                             -t "${IMAGE_TAG}:${GIT_COMMIT_SHORT}" .
+                                
+                                # Push todas las tags
+                                docker push "${IMAGE_TAG}:${BUILD_NUMBER}"
+                                docker push "${IMAGE_TAG}:latest"
+                                docker push "${IMAGE_TAG}:${GIT_COMMIT_SHORT}"
+                                
+                                echo "✅ Imagen publicada: ${IMAGE_TAG}:${BUILD_NUMBER}"
+                            '''
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        echo "⏱️  Docker Build & Push duration: ${duration}s"
+                    }
+                }
+                success {
+                    script {
+                        env.DOCKER_IMAGE_PUBLISHED = "${env.DOCKER_REGISTRY}/${env.DOCKER_USER}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    }
+                }
+            }
+        }
+
         stage('Deploy Vercel') {
             steps {
+                script {
+                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
+                }
                 echo "Desplegando frontend a Vercel..."
                 dir(env.FRONTEND_DIR) {
                     withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
                         script {
                             if (isUnix()) {
-                                sh '''
-                                    set -e
-                                    npm install -g vercel
-                                    vercel pull --yes --environment=production --token $VERCEL_TOKEN
-                                    vercel build --prod --token $VERCEL_TOKEN
-                                    vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
-                                '''
+                                env.VERCEL_URL = sh(
+                                    script: '''
+                                        set -e
+                                        npm install -g vercel
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN
+                                        vercel build --prod --token $VERCEL_TOKEN
+                                        vercel deploy --prebuilt --prod --token $VERCEL_TOKEN | tail -1
+                                    ''',
+                                    returnStdout: true
+                                ).trim()
                             } else {
                                 bat '''
                                     npm install -g vercel
@@ -390,6 +511,21 @@ pipeline {
                                     vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
                                 '''
                             }
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        def duration = (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000
+                        echo "⏱️  Vercel Deploy duration: ${duration}s"
+                    }
+                }
+                success {
+                    script {
+                        if (env.VERCEL_URL) {
+                            echo "✅ Frontend deployed: ${env.VERCEL_URL}"
                         }
                     }
                 }
@@ -473,6 +609,36 @@ pipeline {
         always {
             echo "Ejecutando limpieza..."
             script {
+                // Generar reporte de métricas del pipeline
+                def buildDuration = currentBuild.duration / 1000
+                def metricsReport = """
+                📊 REPORTE DE MÉTRICAS CI/CD
+                ═══════════════════════════════════════
+                🔢 Build: #${env.BUILD_NUMBER}
+                📝 Commit: ${env.GIT_COMMIT_SHORT}
+                👤 Autor: ${env.GIT_AUTHOR}
+                💬 Mensaje: ${env.GIT_COMMIT_MSG}
+                ⏱️  Duración total: ${buildDuration}s
+                📈 Estado: ${currentBuild.result ?: 'SUCCESS'}
+                
+                🚀 DEPLOYMENTS:
+                ${env.VERCEL_URL ? "   Frontend: ${env.VERCEL_URL}" : "   Frontend: N/A"}
+                ${env.DOCKER_IMAGE_PUBLISHED ? "   Backend: ${env.DOCKER_IMAGE_PUBLISHED}" : "   Backend: N/A"}
+                
+                📦 Artefacto: ${env.ARTIFACT_NAME ?: 'N/A'}
+                ═══════════════════════════════════════
+                """
+                
+                echo metricsReport
+                
+                // Guardar métricas en archivo
+                writeFile(
+                    file: "metrics-${env.BUILD_NUMBER}.txt",
+                    text: metricsReport
+                )
+                archiveArtifacts(artifacts: "metrics-${env.BUILD_NUMBER}.txt", allowEmptyArchive: true)
+                
+                // Limpieza
                 if (isUnix()) {
                     sh '''
                         # Limpiar procesos Node.js
@@ -497,16 +663,76 @@ pipeline {
             }
         }
         success {
-            echo "Pipeline ejecutado correctamente!"
-            echo "Notificación Slack omitida (slackSend no disponible)"
+            echo "✅ Pipeline ejecutado correctamente!"
+            script {
+                def emailBody = """
+                <h2>✅ Build Exitoso - #${env.BUILD_NUMBER}</h2>
+                <p><strong>Proyecto:</strong> ${env.JOB_NAME}</p>
+                <p><strong>Commit:</strong> ${env.GIT_COMMIT_SHORT} - ${env.GIT_COMMIT_MSG}</p>
+                <p><strong>Autor:</strong> ${env.GIT_AUTHOR}</p>
+                <p><strong>Duración:</strong> ${currentBuild.durationString}</p>
+                
+                <h3>🚀 Deployments:</h3>
+                <ul>
+                    ${env.VERCEL_URL ? "<li><strong>Frontend:</strong> <a href='${env.VERCEL_URL}'>${env.VERCEL_URL}</a></li>" : "<li>Frontend: N/A</li>"}
+                    ${env.DOCKER_IMAGE_PUBLISHED ? "<li><strong>Backend:</strong> ${env.DOCKER_IMAGE_PUBLISHED}</li>" : "<li>Backend: N/A</li>"}
+                </ul>
+                
+                <h3>📊 Reportes:</h3>
+                <ul>
+                    <li><a href='${env.BUILD_URL}artifact/'>Artefactos</a></li>
+                    <li><a href='${env.BUILD_URL}Frontend_20Coverage_20Report/'>Frontend Coverage</a></li>
+                    <li><a href='${env.BUILD_URL}Backend_20Coverage_20Report/'>Backend Coverage</a></li>
+                    <li><a href='${env.BUILD_URL}testReport/'>Test Results</a></li>
+                </ul>
+                
+                <p><a href='${env.BUILD_URL}'>Ver build completo</a></p>
+                """
+                
+                emailext(
+                    subject: "✅ Build Success - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: emailBody,
+                    to: env.NOTIFICATION_EMAIL,
+                    mimeType: 'text/html',
+                    attachLog: false
+                )
+            }
         }
         failure {
-            echo "Falla en el pipeline - revisar logs"
-            echo "Notificación Slack omitida (slackSend no disponible)"
+            echo "❌ Falla en el pipeline - revisar logs"
+            script {
+                def emailBody = """
+                <h2>❌ Build Fallido - #${env.BUILD_NUMBER}</h2>
+                <p><strong>Proyecto:</strong> ${env.JOB_NAME}</p>
+                <p><strong>Commit:</strong> ${env.GIT_COMMIT_SHORT} - ${env.GIT_COMMIT_MSG}</p>
+                <p><strong>Autor:</strong> ${env.GIT_AUTHOR}</p>
+                <p><strong>Duración:</strong> ${currentBuild.durationString}</p>
+                
+                <h3>🔍 Acción requerida:</h3>
+                <p>Revisa los logs para identificar el error.</p>
+                
+                <p><a href='${env.BUILD_URL}console'>Ver logs completos</a></p>
+                """
+                
+                emailext(
+                    subject: "❌ Build Failed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: emailBody,
+                    to: env.NOTIFICATION_EMAIL,
+                    mimeType: 'text/html',
+                    attachLog: true
+                )
+            }
         }
         unstable {
-            echo "Pipeline inestable - algunas pruebas fallaron"
-            echo "Notificación Slack omitida (slackSend no disponible)"
+            echo "⚠️  Pipeline inestable - algunas pruebas fallaron"
+            script {
+                emailext(
+                    subject: "⚠️  Build Unstable - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: "El build #${env.BUILD_NUMBER} es inestable. <a href='${env.BUILD_URL}testReport/'>Ver resultados de tests</a>",
+                    to: env.NOTIFICATION_EMAIL,
+                    mimeType: 'text/html'
+                )
+            }
         }
     }
 }
