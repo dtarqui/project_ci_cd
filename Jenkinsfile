@@ -406,7 +406,7 @@ pipeline {
                                 env.BACKEND_VERCEL_URL = sh(
                                     script: '''
                                         set -e
-                                        npm install -g vercel
+                                        npm install -g vercel 1>&2
 
                                         PROJECT_ARGS=""
                                         if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
@@ -426,9 +426,10 @@ pipeline {
                                             done
                                         fi
 
-                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS
-                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS
-                                        vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        BACKEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
+                                        printf "%s" "$BACKEND_URL"
                                     ''',
                                     returnStdout: true
                                 ).trim()
