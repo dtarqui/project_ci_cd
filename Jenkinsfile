@@ -267,7 +267,7 @@ pipeline {
                                 npm test -- --ci --runInBand --watchAll=false \
                                     --coverage \
                                     --coverageReporters=html \
-                                    --coverageReporters=text-lcov \
+                                    --coverageReporters=lcov \
                                     --coverageReporters=cobertura
                                 
                                 echo "Tests frontend completados"
@@ -277,7 +277,7 @@ pipeline {
                                 set CI=true
                                 set NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=html --coverageReporters=text-lcov --coverageReporters=cobertura
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura
                                 
                                 echo Tests frontend completados
                             '''
@@ -323,7 +323,7 @@ pipeline {
                                 # Generar reportes en múltiples formatos
                                 npm test -- --coverage \
                                     --coverageReporters=html \
-                                    --coverageReporters=text-lcov \
+                                    --coverageReporters=lcov \
                                     --coverageReporters=cobertura
                                 
                                 echo "Tests backend completados"
@@ -332,7 +332,7 @@ pipeline {
                             bat '''
                                 set NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html --coverageReporters=text-lcov --coverageReporters=cobertura
+                                npm test -- --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura
                                 
                                 echo Tests backend completados
                             '''

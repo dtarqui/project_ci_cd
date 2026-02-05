@@ -1,189 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="89" failures="0" errors="0" time="5.529">
-  <testsuite name="Unit Tests - App Components" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:35:33" time="4.045" tests="28">
-    <testcase classname="Unit Tests - App Components Mock Data Validation mockData should have correct structure" name="Unit Tests - App Components Mock Data Validation mockData should have correct structure" time="0.006">
+<testsuites name="jest tests" tests="89" failures="0" errors="0" time="5.101">
+  <testsuite name="Index.js Module Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:56:47" time="2.653" tests="3">
+    <testcase classname="Index.js Module Tests should require and execute index.js code" name="Index.js Module Tests should require and execute index.js code" time="0.056">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation dailySales should be a string" name="Unit Tests - App Components Mock Data Validation dailySales should be a string" time="0">
+    <testcase classname="Index.js Module Tests should handle PORT environment variable" name="Index.js Module Tests should handle PORT environment variable" time="0.003">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation branchSales should be valid array" name="Unit Tests - App Components Mock Data Validation branchSales should be valid array" time="0.002">
+    <testcase classname="Index.js Module Tests should export the app instance" name="Index.js Module Tests should export the app instance" time="0.003">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" name="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" time="0.003">
+  </testsuite>
+  <testsuite name="Unit Tests - App Components" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:56:47" time="2.746" tests="28">
+    <testcase classname="Unit Tests - App Components Mock Data Validation mockData should have correct structure" name="Unit Tests - App Components Mock Data Validation mockData should have correct structure" time="0.025">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation productSales should be valid array" name="Unit Tests - App Components Mock Data Validation productSales should be valid array" time="0.004">
+    <testcase classname="Unit Tests - App Components Mock Data Validation dailySales should be a string" name="Unit Tests - App Components Mock Data Validation dailySales should be a string" time="0.002">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation should have expected number of data points" name="Unit Tests - App Components Mock Data Validation should have expected number of data points" time="0">
+    <testcase classname="Unit Tests - App Components Mock Data Validation branchSales should be valid array" name="Unit Tests - App Components Mock Data Validation branchSales should be valid array" time="0.009">
+    </testcase>
+    <testcase classname="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" name="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" time="0.018">
+    </testcase>
+    <testcase classname="Unit Tests - App Components Mock Data Validation productSales should be valid array" name="Unit Tests - App Components Mock Data Validation productSales should be valid array" time="0.011">
+    </testcase>
+    <testcase classname="Unit Tests - App Components Mock Data Validation should have expected number of data points" name="Unit Tests - App Components Mock Data Validation should have expected number of data points" time="0.001">
     </testcase>
     <testcase classname="Unit Tests - App Components Mock Data Validation branch sales values should sum to 100" name="Unit Tests - App Components Mock Data Validation branch sales values should sum to 100" time="0.001">
     </testcase>
     <testcase classname="Unit Tests - App Components Users Data Validation users should be valid array" name="Unit Tests - App Components Users Data Validation users should be valid array" time="0">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation each user should have required properties" name="Unit Tests - App Components Users Data Validation each user should have required properties" time="0.003">
+    <testcase classname="Unit Tests - App Components Users Data Validation each user should have required properties" name="Unit Tests - App Components Users Data Validation each user should have required properties" time="0.006">
     </testcase>
     <testcase classname="Unit Tests - App Components Users Data Validation user IDs should be unique" name="Unit Tests - App Components Users Data Validation user IDs should be unique" time="0">
     </testcase>
     <testcase classname="Unit Tests - App Components Users Data Validation usernames should be unique" name="Unit Tests - App Components Users Data Validation usernames should be unique" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation should include expected test users" name="Unit Tests - App Components Users Data Validation should include expected test users" time="0">
+    <testcase classname="Unit Tests - App Components Users Data Validation should include expected test users" name="Unit Tests - App Components Users Data Validation should include expected test users" time="0.001">
     </testcase>
     <testcase classname="Unit Tests - App Components Users Data Validation admin user should exist with correct properties" name="Unit Tests - App Components Users Data Validation admin user should exist with correct properties" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" name="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" time="0">
+    <testcase classname="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" name="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components App Creation createApp should return Express app instance" name="Unit Tests - App Components App Creation createApp should return Express app instance" time="0.003">
+    <testcase classname="Unit Tests - App Components App Creation createApp should return Express app instance" name="Unit Tests - App Components App Creation createApp should return Express app instance" time="0.009">
     </testcase>
-    <testcase classname="Unit Tests - App Components App Creation createApp should create independent app instances" name="Unit Tests - App Components App Creation createApp should create independent app instances" time="0.002">
+    <testcase classname="Unit Tests - App Components App Creation createApp should create independent app instances" name="Unit Tests - App Components App Creation createApp should create independent app instances" time="0.004">
     </testcase>
-    <testcase classname="Unit Tests - App Components App Creation app should have required middleware" name="Unit Tests - App Components App Creation app should have required middleware" time="0">
+    <testcase classname="Unit Tests - App Components App Creation app should have required middleware" name="Unit Tests - App Components App Creation app should have required middleware" time="0.002">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations sales trend should have realistic values" name="Unit Tests - App Components Data Calculations sales trend should have realistic values" time="0.001">
+    <testcase classname="Unit Tests - App Components Data Calculations sales trend should have realistic values" name="Unit Tests - App Components Data Calculations sales trend should have realistic values" time="0.005">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations product quantities should be realistic" name="Unit Tests - App Components Data Calculations product quantities should be realistic" time="0">
+    <testcase classname="Unit Tests - App Components Data Calculations product quantities should be realistic" name="Unit Tests - App Components Data Calculations product quantities should be realistic" time="0.003">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations branch sales percentages should be valid" name="Unit Tests - App Components Data Calculations branch sales percentages should be valid" time="0.001">
+    <testcase classname="Unit Tests - App Components Data Calculations branch sales percentages should be valid" name="Unit Tests - App Components Data Calculations branch sales percentages should be valid" time="0.004">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" name="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" time="0.001">
+    <testcase classname="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" name="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" time="0.002">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency branch names should be descriptive" name="Unit Tests - App Components Data Consistency branch names should be descriptive" time="0">
+    <testcase classname="Unit Tests - App Components Data Consistency branch names should be descriptive" name="Unit Tests - App Components Data Consistency branch names should be descriptive" time="0.003">
     </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency product names should follow pattern" name="Unit Tests - App Components Data Consistency product names should follow pattern" time="0">
+    <testcase classname="Unit Tests - App Components Data Consistency product names should follow pattern" name="Unit Tests - App Components Data Consistency product names should follow pattern" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Helper Functions users finder should work correctly" name="Unit Tests - App Components Helper Functions users finder should work correctly" time="0">
+    <testcase classname="Unit Tests - App Components Helper Functions users finder should work correctly" name="Unit Tests - App Components Helper Functions users finder should work correctly" time="0.001">
     </testcase>
     <testcase classname="Unit Tests - App Components Helper Functions token generation should be consistent" name="Unit Tests - App Components Helper Functions token generation should be consistent" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Helper Functions user data sanitization" name="Unit Tests - App Components Helper Functions user data sanitization" time="0">
+    <testcase classname="Unit Tests - App Components Helper Functions user data sanitization" name="Unit Tests - App Components Helper Functions user data sanitization" time="0.002">
     </testcase>
-    <testcase classname="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" name="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" time="0">
+    <testcase classname="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" name="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Timestamp Generation timestamps should be recent" name="Unit Tests - App Components Timestamp Generation timestamps should be recent" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="Index.js Module Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:35:33" time="4.05" tests="3">
-    <testcase classname="Index.js Module Tests should require and execute index.js code" name="Index.js Module Tests should require and execute index.js code" time="0.037">
-    </testcase>
-    <testcase classname="Index.js Module Tests should handle PORT environment variable" name="Index.js Module Tests should handle PORT environment variable" time="0.001">
-    </testcase>
-    <testcase classname="Index.js Module Tests should export the app instance" name="Index.js Module Tests should export the app instance" time="0.002">
+    <testcase classname="Unit Tests - App Components Timestamp Generation timestamps should be recent" name="Unit Tests - App Components Timestamp Generation timestamps should be recent" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="Additional API Coverage Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:35:33" time="4.185" tests="26">
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" name="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" time="0.064">
+  <testsuite name="Additional API Coverage Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:56:47" time="3.702" tests="26">
+    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" name="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" time="0.141">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" name="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" time="0.006">
+    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" name="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" time="0.017">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" name="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" time="0.004">
+    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" name="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle very long usernames" name="Additional API Coverage Tests Login Edge Cases should handle very long usernames" time="0.016">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle very long usernames" name="Additional API Coverage Tests Login Edge Cases should handle very long usernames" time="0.055">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" name="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" time="0.005">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" name="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" time="0.016">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null username" name="Additional API Coverage Tests Login Edge Cases should handle null username" time="0.003">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null username" name="Additional API Coverage Tests Login Edge Cases should handle null username" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null password" name="Additional API Coverage Tests Login Edge Cases should handle null password" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null password" name="Additional API Coverage Tests Login Edge Cases should handle null password" time="0.012">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as username" name="Additional API Coverage Tests Login Edge Cases should handle number as username" time="0.005">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as username" name="Additional API Coverage Tests Login Edge Cases should handle number as username" time="0.012">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as password" name="Additional API Coverage Tests Login Edge Cases should handle number as password" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as password" name="Additional API Coverage Tests Login Edge Cases should handle number as password" time="0.016">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as username" name="Additional API Coverage Tests Login Edge Cases should handle boolean as username" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as username" name="Additional API Coverage Tests Login Edge Cases should handle boolean as username" time="0.015">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as password" name="Additional API Coverage Tests Login Edge Cases should handle boolean as password" time="0.005">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as password" name="Additional API Coverage Tests Login Edge Cases should handle boolean as password" time="0.013">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as username" name="Additional API Coverage Tests Login Edge Cases should handle object as username" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as username" name="Additional API Coverage Tests Login Edge Cases should handle object as username" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as password" name="Additional API Coverage Tests Login Edge Cases should handle object as password" time="0.003">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as password" name="Additional API Coverage Tests Login Edge Cases should handle object as password" time="0.018">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as username" name="Additional API Coverage Tests Login Edge Cases should handle array as username" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as username" name="Additional API Coverage Tests Login Edge Cases should handle array as username" time="0.012">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as password" name="Additional API Coverage Tests Login Edge Cases should handle array as password" time="0.004">
+    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as password" name="Additional API Coverage Tests Login Edge Cases should handle array as password" time="0.01">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" time="0.004">
+    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" time="0.004">
+    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" time="0.019">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" time="0.005">
+    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" name="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" time="0.003">
+    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" name="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" time="0.014">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" name="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" time="0.004">
+    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" name="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" time="0.012">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" name="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" time="0.003">
+    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" name="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" time="0.012">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" time="0.012">
+    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" time="0.052">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" time="0.007">
+    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" time="0.044">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" name="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" time="0.004">
+    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" name="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" time="0.019">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" name="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" time="0.004">
+    <testcase classname="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" name="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" time="0.011">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" name="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" time="0.003">
+    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" name="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" time="0.011">
     </testcase>
   </testsuite>
-  <testsuite name="Backend API Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:35:33" time="4.282" tests="32">
-    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return status ok" name="Backend API Tests Health Check Endpoint GET /health - should return status ok" time="0.063">
+  <testsuite name="Backend API Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:56:47" time="4.063" tests="32">
+    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return status ok" name="Backend API Tests Health Check Endpoint GET /health - should return status ok" time="0.151">
     </testcase>
-    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" name="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" time="0.006">
+    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" name="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" time="0.019">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" time="0.017">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" time="0.06">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" time="0.005">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" time="0.016">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" time="0.005">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" time="0.014">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" time="0.014">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" time="0.016">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" time="0.019">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" time="0.016">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" name="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" name="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" time="0.017">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" time="0.011">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" time="0.003">
+    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" time="0.01">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" time="0.004">
+    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" time="0.022">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" time="0.003">
+    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" time="0.012">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" time="0.006">
+    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" time="0.011">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" time="0.003">
+    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" time="0.012">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" name="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" time="0.004">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" name="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" time="0.016">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail without authorization header" name="Backend API Tests Dashboard Data Endpoint should fail without authorization header" time="0.003">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail without authorization header" name="Backend API Tests Dashboard Data Endpoint should fail without authorization header" time="0.014">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" time="0.003">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" time="0.014">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token" time="0.004">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token" time="0.012">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should return correct data structure" name="Backend API Tests Dashboard Data Endpoint should return correct data structure" time="0.004">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should return correct data structure" name="Backend API Tests Dashboard Data Endpoint should return correct data structure" time="0.017">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" name="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" time="0.008">
+    <testcase classname="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" name="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" time="0.048">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should return 404 for non-existent routes" name="Backend API Tests Error Handling should return 404 for non-existent routes" time="0.004">
+    <testcase classname="Backend API Tests Error Handling should return 404 for non-existent routes" name="Backend API Tests Error Handling should return 404 for non-existent routes" time="0.013">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should handle POST to non-existent routes" name="Backend API Tests Error Handling should handle POST to non-existent routes" time="0.004">
+    <testcase classname="Backend API Tests Error Handling should handle POST to non-existent routes" name="Backend API Tests Error Handling should handle POST to non-existent routes" time="0.015">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should handle malformed JSON" name="Backend API Tests Error Handling should handle malformed JSON" time="0.062">
+    <testcase classname="Backend API Tests Error Handling should handle malformed JSON" name="Backend API Tests Error Handling should handle malformed JSON" time="0.2">
     </testcase>
-    <testcase classname="Backend API Tests Integration Tests complete authentication flow" name="Backend API Tests Integration Tests complete authentication flow" time="0.01">
+    <testcase classname="Backend API Tests Integration Tests complete authentication flow" name="Backend API Tests Integration Tests complete authentication flow" time="0.035">
     </testcase>
-    <testcase classname="Backend API Tests Integration Tests should handle concurrent requests" name="Backend API Tests Integration Tests should handle concurrent requests" time="0.019">
+    <testcase classname="Backend API Tests Integration Tests should handle concurrent requests" name="Backend API Tests Integration Tests should handle concurrent requests" time="0.069">
     </testcase>
-    <testcase classname="Backend API Tests Performance Tests health check should respond quickly" name="Backend API Tests Performance Tests health check should respond quickly" time="0.007">
+    <testcase classname="Backend API Tests Performance Tests health check should respond quickly" name="Backend API Tests Performance Tests health check should respond quickly" time="0.018">
     </testcase>
-    <testcase classname="Backend API Tests Performance Tests login should respond within reasonable time" name="Backend API Tests Performance Tests login should respond within reasonable time" time="0.003">
+    <testcase classname="Backend API Tests Performance Tests login should respond within reasonable time" name="Backend API Tests Performance Tests login should respond within reasonable time" time="0.011">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should not expose sensitive information in error messages" name="Backend API Tests Security Tests should not expose sensitive information in error messages" time="0.003">
+    <testcase classname="Backend API Tests Security Tests should not expose sensitive information in error messages" name="Backend API Tests Security Tests should not expose sensitive information in error messages" time="0.012">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should handle SQL injection attempts safely" name="Backend API Tests Security Tests should handle SQL injection attempts safely" time="0.003">
+    <testcase classname="Backend API Tests Security Tests should handle SQL injection attempts safely" name="Backend API Tests Security Tests should handle SQL injection attempts safely" time="0.009">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should handle XSS attempts safely" name="Backend API Tests Security Tests should handle XSS attempts safely" time="0.003">
+    <testcase classname="Backend API Tests Security Tests should handle XSS attempts safely" name="Backend API Tests Security Tests should handle XSS attempts safely" time="0.014">
     </testcase>
   </testsuite>
 </testsuites>
