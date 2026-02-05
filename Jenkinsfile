@@ -498,7 +498,19 @@ pipeline {
                             sh '''
                                 export NODE_ENV=production
 
-                                # Inyectar API_BASE_URL desde el backend desplegado
+                                # Reemplazar placeholder en rewrites de Vercel con URL real del backend
+                                if [ -n "$BACKEND_VERCEL_URL" ]; then
+                                    echo "Reemplazando __BACKEND_URL__ con $BACKEND_VERCEL_URL en vercel.json..."
+                                    # Extraer solo el dominio (sin https://)
+                                    BACKEND_HOST="${BACKEND_VERCEL_URL#https://}"
+                                    BACKEND_HOST="${BACKEND_HOST#http://}"
+                                    # Reemplazar en vercel.json
+                                    sed -i.bak "s|__BACKEND_URL__|$BACKEND_HOST|g" vercel.json
+                                    cat vercel.json
+                                    rm -f vercel.json.bak
+                                fi
+
+                                # Inyectar API_BASE_URL desde el backend desplegado (fallback)
                                 if [ -n "$BACKEND_VERCEL_URL" ]; then
                                     echo "API_BASE_URL=$BACKEND_VERCEL_URL" > .env
                                 fi
@@ -521,6 +533,11 @@ pipeline {
                         } else {
                             bat '''
                                 set NODE_ENV=production
+
+                                if not "%BACKEND_VERCEL_URL%"=="" (
+                                    echo Reemplazando __BACKEND_URL__ con %BACKEND_VERCEL_URL% en vercel.json...
+                                    powershell -NoProfile -Command "$url=$env:BACKEND_VERCEL_URL; if ($url) { $host=$url -replace '^https?://',''; (Get-Content vercel.json) -replace '__BACKEND_URL__',$host | Set-Content vercel.json; Get-Content vercel.json }"
+                                )
 
                                 if not "%BACKEND_VERCEL_URL%"=="" (
                                     echo API_BASE_URL=%BACKEND_VERCEL_URL%> .env
