@@ -295,14 +295,14 @@ pipeline {
                         junit(testResults: "${env.FRONTEND_DIR}/junit.xml", allowEmptyResults: true)
                         
                         // Publicar coverage HTML
-                        // publishHTML([
-                        //     allowMissing: true,
-                        //     alwaysLinkToLastBuild: true,
-                        //     keepAll: true,
-                        //     reportDir: "${env.FRONTEND_DIR}/coverage",
-                        //     reportFiles: 'index.html',
-                        //     reportName: 'Frontend Coverage Report'
-                        // ])
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: "${env.FRONTEND_DIR}/coverage",
+                            reportFiles: 'index.html',
+                            reportName: 'Frontend Coverage Report'
+                        ])
                     }
                 }
             }
@@ -334,7 +334,7 @@ pipeline {
                                 
                                 npm test -- --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura
                                 
-                                echo Tests backend completados
+                                echo "Tests backend completados"
                             '''
                         }
                     }
@@ -350,14 +350,14 @@ pipeline {
                         junit(testResults: "${env.BACKEND_DIR}/junit.xml", allowEmptyResults: true)
                         
                         // Publicar coverage HTML
-                        // publishHTML([
-                        //     allowMissing: true,
-                        //     alwaysLinkToLastBuild: true,
-                        //     keepAll: true,
-                        //     reportDir: "${env.BACKEND_DIR}/coverage",
-                        //     reportFiles: 'index.html',
-                        //     reportName: 'Backend Coverage Report'
-                        // ])
+                        publishHTML([
+                            allowMissing: true,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: "${env.BACKEND_DIR}/coverage",
+                            reportFiles: 'index.html',
+                            reportName: 'Backend Coverage Report'
+                        ])
                     }
                 }
             }
