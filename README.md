@@ -1,6 +1,6 @@
-# 🛒 Mi Tienda - Template CI/CD
+# 🛒 Mi Tienda - Demo CI/CD (Jenkins)
 
-Un template completo de aplicación web full-stack para tiendas online con sistema de autenticación, dashboard de métricas y pipeline CI/CD automatizado.
+Aplicación web full-stack de ejemplo con autenticación y dashboard de métricas, enfocada en demostrar un pipeline CI/CD con Jenkins.
 
 ## 📋 Características
 
@@ -9,8 +9,8 @@ Un template completo de aplicación web full-stack para tiendas online con siste
 - 🎨 **Diseño moderno** - UI responsive basada en mockups
 - 🧪 **Testing completo** - Tests unitarios con Jest y React Testing Library
 - 🔧 **Backend robusto** - API REST con Express.js
-- 🚀 **CI/CD automatizado** - Pipeline con GitHub Actions
-- 📦 **Docker ready** - Containerización incluida
+- 🚀 **CI/CD automatizado** - Pipeline con Jenkins (lint, tests, build, deploy)
+- 📦 **Docker ready** - Backend containerizado
 
 ## 🏗️ Arquitectura
 
@@ -120,18 +120,20 @@ npm run build
 # Servir build/ con tu servidor web favorito
 ```
 
-### GitHub Actions
-El proyecto incluye CI/CD automatizado que:
-- ✅ Ejecuta tests en cada PR
-- ✅ Hace linting del código
-- ✅ Construye la aplicación
-- ✅ Despliega automáticamente
+### Jenkins
+El pipeline principal está en [Jenkinsfile](Jenkinsfile) e incluye:
+- ✅ Lint y tests (frontend/backend)
+- ✅ Build frontend
+- ✅ Validación de backend (health check)
+- ✅ Deploy frontend a Vercel
+- ✅ Docker build/push del backend (si el daemon está disponible)
+- ✅ Reportes JUnit/HTML y métricas
 
 ## 📁 Scripts Disponibles
 
 ### Frontend
 - `npm start` - Desarrollo con hot reload
-- `npm build` - Build para producción
+- `npm run build` - Build para producción
 - `npm test` - Ejecutar tests
 - `npm run lint` - Linting con ESLint
 
@@ -145,14 +147,16 @@ El proyecto incluye CI/CD automatizado que:
 ### Variables de Entorno
 
 #### Frontend
+Usa [frontend/.env](frontend/.env) y [frontend/sample.env](frontend/sample.env):
 ```env
-REACT_APP_API_URL=http://localhost:4000
+API_BASE_URL=http://localhost:4000
 ```
 
 #### Backend
+Usa [backend/.env](backend/.env) y [backend/sample.env](backend/sample.env):
 ```env
 PORT=4000
-NODE_ENV=production
+NODE_ENV=development
 ```
 
 ## 🤝 Contribuir
@@ -163,14 +167,11 @@ NODE_ENV=production
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📝 Roadmap
+## 📝 Roadmap (opcional)
 
 - [ ] Sistema de roles y permisos
-- [ ] Gestión completa de productos
 - [ ] Base de datos real (PostgreSQL/MongoDB)
-- [ ] Notificaciones en tiempo real
-- [ ] Panel de administración avanzado
-- [ ] Integración con pasarelas de pago
+- [ ] Despliegue backend en un host remoto
 
 ## 📄 Licencia
 
@@ -188,4 +189,3 @@ Este proyecto está bajo la licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ⭐ **¡Dale una estrella al proyecto si te ha sido útil!**
 
 📧 **Contacto**: Tu email aquí
-🌐 **Demo live**: [Próximamente]
