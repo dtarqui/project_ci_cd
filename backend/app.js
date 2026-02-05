@@ -38,20 +38,20 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Middleware CORS manual - completamente abierto para todos los orígenes
+  // Middleware CORS - COMPLETAMENTE ABIERTO SIN RESTRICCIONES
   app.use((req, res, next) => {
-    // Permitir CUALQUIER origen
+    // Aceptar CUALQUIER origen - devolver el origen del request o * si no hay
     const origin = req.headers.origin || '*';
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type, Authorization');
-    res.setHeader('Access-Control-Max-Age', '86400');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '3600');
     
-    // Manejar preflight requests (OPTIONS)
+    // Manejar preflight requests (OPTIONS) - responder inmediatamente
     if (req.method === 'OPTIONS') {
-      return res.status(204).end();
+      res.status(200).end();
+      return;
     }
     
     next();
