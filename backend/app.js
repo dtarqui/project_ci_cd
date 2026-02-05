@@ -44,11 +44,18 @@ const createApp = () => {
       // Permitir requests sin origin (como mobile apps o curl requests)
       if (!origin) return callback(null, true);
       
-      // Lista de orígenes permitidos
+      // Leer orígenes permitidos desde variable de entorno
+      // Formato: URLs separadas por comas (ej: https://frontend.vercel.app,http://localhost:3000)
+      const envOrigins = process.env.ALLOWED_ORIGINS 
+        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+        : [];
+      
+      // Lista de orígenes permitidos (combinando env + defaults)
       const allowedOrigins = [
         'http://localhost:3000',
         'http://localhost:4000',
-        /\.vercel\.app$/,  // Permite cualquier dominio de Vercel
+        ...envOrigins,
+        /\.vercel\.app$/,  // Permite cualquier dominio de Vercel (fallback)
       ];
       
       // Verificar si el origin está permitido
@@ -62,6 +69,7 @@ const createApp = () => {
       if (isAllowed) {
         callback(null, true);
       } else {
+        console.warn(`CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
