@@ -587,48 +587,6 @@ pipeline {
             }
         }
 
-        stage('Update Backend CORS') {
-            when {
-                expression { env.VERCEL_URL && env.BACKEND_VERCEL_URL }
-            }
-            steps {
-                echo "Configurando CORS del backend con URL del frontend..."
-                dir(env.BACKEND_DIR) {
-                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
-                        script {
-                            if (isUnix()) {
-                                sh '''
-                                    set -e
-                                    
-                                    PROJECT_ARGS=""
-                                    if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
-                                        PROJECT_ARGS="--project $VERCEL_BACKEND_PROJECT --org $VERCEL_BACKEND_ORG"
-                                    fi
-                                    
-                                    # Configurar variable de entorno ALLOWED_ORIGINS en Vercel
-                                    echo "Configurando ALLOWED_ORIGINS=$VERCEL_URL"
-                                    printf "%s" "$VERCEL_URL" | vercel env add ALLOWED_ORIGINS production --force --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2 || true
-                                    
-                                    # Re-desplegar backend para aplicar cambios
-                                    echo "Re-desplegando backend con nueva configuración CORS..."
-                                    vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                    
-                                    echo "CORS configurado exitosamente"
-                                '''
-                            } else {
-                                bat '''
-                                    echo Configurando ALLOWED_ORIGINS=%VERCEL_URL%
-                                    echo %VERCEL_URL% | vercel env add ALLOWED_ORIGINS production --force --token %VERCEL_TOKEN%
-                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
-                                    echo CORS configurado exitosamente
-                                '''
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Package Artifacts') {
             steps {
                 echo "Empaquetando artefactos..."

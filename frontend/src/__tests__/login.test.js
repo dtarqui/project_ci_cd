@@ -112,5 +112,73 @@ describe("Login Tests", () => {
       expect(usernameInput.value).toBe("demo");
       expect(passwordInput.value).toBe("demo123");
     });
+
+    test("should handle login error without server response", async () => {
+      const user = userEvent.setup();
+      
+      mockAuthService.login.mockRejectedValue(new Error("Network error"));
+      
+      render(<Login onLogin={mockOnLogin} />);
+      
+      const usernameInput = screen.getByPlaceholderText("Usuario");
+      const passwordInput = screen.getByPlaceholderText("Contraseña");
+      const submitButton = screen.getByRole("button", { name: /ingresar/i });
+      
+      await act(async () => {
+        await user.type(usernameInput, "testuser");
+        await user.type(passwordInput, "password123");
+        await user.click(submitButton);
+      });
+      
+      await waitFor(() => {
+        expect(screen.getByText("Error al iniciar sesión. Por favor intenta nuevamente.")).toBeInTheDocument();
+        expect(mockOnLogin).not.toHaveBeenCalled();
+      });
+    });
+
+    test("should clear error when user starts typing", async () => {
+      const user = userEvent.setup();
+      
+      render(<Login onLogin={mockOnLogin} />);
+      
+      const submitButton = screen.getByRole("button", { name: /ingresar/i });
+      const usernameInput = screen.getByPlaceholderText("Usuario");
+      
+      // Generar un error primero
+      await act(async () => {
+        await user.click(submitButton);
+      });
+      
+      expect(screen.getByText("Por favor ingresa usuario y contraseña")).toBeInTheDocument();
+      
+      // Empezar a escribir
+      await act(async () => {
+        await user.type(usernameInput, "t");
+      });
+      
+      // El error debe desaparecer
+      expect(screen.queryByText("Por favor ingresa usuario y contraseña")).not.toBeInTheDocument();
+    });
+
+    test("should handle whitespace-only credentials", async () => {
+      const user = userEvent.setup();
+      
+      render(<Login onLogin={mockOnLogin} />);
+      
+      const usernameInput = screen.getByPlaceholderText("Usuario");
+      const passwordInput = screen.getByPlaceholderText("Contraseña");
+      const submitButton = screen.getByRole("button", { name: /ingresar/i });
+      
+      await act(async () => {
+        await user.type(usernameInput, "   ");
+        await user.type(passwordInput, "   ");
+        await user.click(submitButton);
+      });
+      
+      await waitFor(() => {
+        expect(screen.getByText("Por favor ingresa usuario y contraseña")).toBeInTheDocument();
+        expect(mockOnLogin).not.toHaveBeenCalled();
+      });
+    });
   });
 });

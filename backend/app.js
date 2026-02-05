@@ -38,41 +38,9 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Configuración CORS para producción
+  // Configuración CORS permisiva - permite todos los orígenes
   const corsOptions = {
-    origin: function (origin, callback) {
-      // Permitir requests sin origin (como mobile apps o curl requests)
-      if (!origin) return callback(null, true);
-      
-      // Leer orígenes permitidos desde variable de entorno
-      // Formato: URLs separadas por comas (ej: https://frontend.vercel.app,http://localhost:3000)
-      const envOrigins = process.env.ALLOWED_ORIGINS 
-        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-        : [];
-      
-      // Lista de orígenes permitidos (combinando env + defaults)
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:4000',
-        ...envOrigins,
-        /\.vercel\.app$/,  // Permite cualquier dominio de Vercel (fallback)
-      ];
-      
-      // Verificar si el origin está permitido
-      const isAllowed = allowedOrigins.some(allowed => {
-        if (allowed instanceof RegExp) {
-          return allowed.test(origin);
-        }
-        return allowed === origin;
-      });
-      
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        console.warn(`CORS blocked origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: true, // Permite todos los orígenes
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
