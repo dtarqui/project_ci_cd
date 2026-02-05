@@ -135,7 +135,8 @@ describe("Dashboard Tests", () => {
       await waitFor(() => {
         const containers = screen.getAllByTestId("responsive-container");
         expect(containers.length).toBeGreaterThan(0);
-        expect(screen.getByTestId("line-chart")).toBeInTheDocument();
+        const lineCharts = screen.getAllByTestId("line-chart");
+        expect(lineCharts.length).toBeGreaterThan(0);
       });
     });
   });

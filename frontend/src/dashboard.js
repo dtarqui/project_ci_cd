@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { MdDashboard, MdError, MdRefresh, MdPeople, MdInventory, MdSettings, MdAccountCircle } from "react-icons/md";
+import {
+  MdDashboard,
+  MdError,
+  MdRefresh,
+  MdPeople,
+  MdInventory,
+  MdSettings,
+  MdAccountCircle,
+} from "react-icons/md";
 import { dashboardService, authService } from "./services/api";
 import {
   BarChart,
@@ -71,7 +79,9 @@ export default function Dashboard({ user, onLogout }) {
   if (!dashboardData) {
     return (
       <div className="loading-container">
-        <h3><MdError /> Error cargando dashboard</h3>
+        <h3>
+          <MdError /> Error cargando dashboard
+        </h3>
         <p>No se pudieron cargar los datos del dashboard.</p>
         <button onClick={loadDashboardData} className="retry-button">
           <MdRefresh /> Reintentar
@@ -99,7 +109,9 @@ export default function Dashboard({ user, onLogout }) {
               <div className="user-dropdown">
                 <div className="user-info">
                   <span>Cuenta</span>
-                  {user?.name && <small className="user-name">{user.name}</small>}
+                  {user?.name && (
+                    <small className="user-name">{user.name}</small>
+                  )}
                 </div>
                 <button onClick={handleLogout} className="logout-button">
                   Salir
@@ -138,6 +150,22 @@ export default function Dashboard({ user, onLogout }) {
                 <div className="summary-card main-metric">
                   <h3>{dashboardData.dailySales}</h3>
                   <p>Ventas diarias</p>
+                </div>
+                <div className="summary-card">
+                  <h3>
+                    {dashboardData.totalOrders?.toLocaleString() || "N/A"}
+                  </h3>
+                  <p>Órdenes Totales</p>
+                </div>
+                <div className="summary-card">
+                  <h3>
+                    {dashboardData.activeCustomers?.toLocaleString() || "N/A"}
+                  </h3>
+                  <p>Clientes Activos</p>
+                </div>
+                <div className="summary-card">
+                  <h3>${dashboardData.averageTicket || "0.00"}</h3>
+                  <p>Ticket Promedio</p>
                 </div>
               </div>
 
@@ -214,7 +242,7 @@ export default function Dashboard({ user, onLogout }) {
                               key={`cell-${index}`}
                               fill={COLORS[index % COLORS.length]}
                             />
-                          )
+                          ),
                         )}
                       </Pie>
                       <Tooltip />
@@ -222,33 +250,111 @@ export default function Dashboard({ user, onLogout }) {
                   </ResponsiveContainer>
                 </div>
 
-                {/* Product Performance */}
+                {/* Category Distribution */}
                 <div className="chart-card">
-                  <h4>Y Axis Label</h4>
+                  <h4>Distribución por Categoría</h4>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
-                        data={dashboardData.branchSales}
+                        data={
+                          dashboardData.categoryDistribution ||
+                          dashboardData.branchSales
+                        }
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
                         fill="#8884d8"
                         dataKey="value"
+                        label={({ name, value }) => `${name}: ${value}%`}
                       >
-                        {(dashboardData.branchSales || []).map(
-                          (entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          )
-                        )}
+                        {(
+                          dashboardData.categoryDistribution ||
+                          dashboardData.branchSales ||
+                          []
+                        ).map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
                       </Pie>
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="help-icon">
-                    <span>❓</span>
+                </div>
+
+                {/* Monthly Trend - Wide Chart */}
+                <div className="chart-card chart-wide">
+                  <h4>Tendencia de Ventas Mensuales</h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart
+                      data={
+                        dashboardData.monthlySales || dashboardData.salesTrend
+                      }
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis
+                        yAxisId="left"
+                        label={{
+                          value: "Ventas",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        label={{
+                          value: "Revenue (K)",
+                          angle: 90,
+                          position: "insideRight",
+                        }}
+                      />
+                      <Tooltip />
+                      <Line
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="sales"
+                        stroke="#8884d8"
+                        strokeWidth={3}
+                        dot={{ fill: "#8884d8", strokeWidth: 2, r: 5 }}
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#82ca9d"
+                        strokeWidth={3}
+                        dot={{ fill: "#82ca9d", strokeWidth: 2, r: 5 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Top Products Table-like Chart */}
+                <div className="chart-card">
+                  <h4>Top 5 Productos</h4>
+                  <div className="top-products-list">
+                    {(dashboardData.topProducts || []).map((product, idx) => (
+                      <div key={idx} className="product-item">
+                        <div className="product-rank">#{idx + 1}</div>
+                        <div className="product-info">
+                          <div className="product-name">{product.name}</div>
+                          <div className="product-stats">
+                            <span>{product.sales} ventas</span>
+                            <span className="product-revenue">
+                              ${(product.revenue / 1000).toFixed(1)}K
+                            </span>
+                            <span
+                              className={`product-trend ${product.trend.includes("+") ? "positive" : "negative"}`}
+                            >
+                              {product.trend}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -260,7 +366,9 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Gestión de Productos</h2>
               <p>Aquí puedes administrar tu inventario de productos.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon"><MdInventory /></div>
+                <div className="placeholder-icon">
+                  <MdInventory />
+                </div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>
@@ -271,7 +379,9 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Gestión de Clientes</h2>
               <p>Administra tu base de datos de clientes.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon"><MdPeople /></div>
+                <div className="placeholder-icon">
+                  <MdPeople />
+                </div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>
@@ -282,7 +392,9 @@ export default function Dashboard({ user, onLogout }) {
               <h2>Configuraciones del Sistema</h2>
               <p>Ajusta las preferencias de tu tienda.</p>
               <div className="feature-placeholder">
-                <div className="placeholder-icon"><MdSettings /></div>
+                <div className="placeholder-icon">
+                  <MdSettings />
+                </div>
                 <p>Esta sección está en desarrollo</p>
               </div>
             </div>
