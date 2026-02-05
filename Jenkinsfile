@@ -16,6 +16,13 @@ pipeline {
         IMAGE_NAME = "mi-tienda-backend"
         GITHUB_REPO = "https://github.com/dtarqui/project_ci_cd.git"
         
+        // Vercel backend project identifiers (opcionales)
+        VERCEL_BACKEND_PROJECT = ""
+        VERCEL_BACKEND_ORG = ""
+        // Variables de entorno backend para Vercel (formato: KEY=VALUE por línea)
+        BACKEND_ENV_VARS = ""
+        BACKEND_VERCEL_ENV = "production"
+        
         // Métricas y monitoreo
         STAGE_START_TIME = ""
         TOTAL_TEST_COUNT = "0"
@@ -352,50 +359,6 @@ pipeline {
             }
         }
 
-        stage('Frontend Build') {
-            steps {
-                echo "Construyendo frontend para produccion..."
-                dir(env.FRONTEND_DIR) {
-                    script {
-                        if (isUnix()) {
-                            sh '''
-                                export NODE_ENV=production
-                                
-                                npm run build
-                                
-                                # Verificar build (acepta build/ o dist/)
-                                if [ -d "build" ]; then
-                                    BUILD_DIR="build"
-                                elif [ -d "dist" ]; then
-                                    BUILD_DIR="dist"
-                                else
-                                    echo "Error: no se generó directorio build/ ni dist/"
-                                    exit 1
-                                fi
-
-                                echo "Build frontend generado en $(pwd)/$BUILD_DIR"
-                                ls -la "$BUILD_DIR" | head -10
-                            '''
-                        } else {
-                            bat '''
-                                set NODE_ENV=production
-                                
-                                npm run build
-                                
-                                if not exist "build" (
-                                    echo Error: directorio build no generado
-                                    exit 1
-                                )
-                                
-                                echo Build frontend generado
-                                dir build
-                            '''
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Backend Validation') {
             steps {
                 echo "Validando backend para produccion..."
@@ -423,6 +386,127 @@ pipeline {
                             bat '''
                                 echo Validacion de backend en Windows pendiente
                                 echo Backend validation OK
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Backend Vercel') {
+            steps {
+                script {
+                    env.STAGE_START_TIME = System.currentTimeMillis().toString()
+                }
+                echo "Desplegando backend a Vercel..."
+                dir(env.BACKEND_DIR) {
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                        script {
+                            if (isUnix()) {
+                                env.BACKEND_VERCEL_URL = sh(
+                                    script: '''
+                                        set -e
+                                        npm install -g vercel
+
+                                        PROJECT_ARGS=""
+                                        if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
+                                            PROJECT_ARGS="--project $VERCEL_BACKEND_PROJECT --org $VERCEL_BACKEND_ORG"
+                                        fi
+
+                                        # Cargar variables de entorno del backend en Vercel si existen
+                                        if [ -n "$BACKEND_ENV_VARS" ]; then
+                                            echo "$BACKEND_ENV_VARS" | while IFS= read -r line; do
+                                                [ -z "$line" ] && continue
+                                                case "$line" in
+                                                    \#*) continue ;;
+                                                esac
+                                                NAME="${line%%=*}"
+                                                VALUE="${line#*=}"
+                                                printf "%s" "$VALUE" | vercel env add "$NAME" "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
+                                            done
+                                        fi
+
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS
+                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS
+                                        vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1
+                                    ''',
+                                    returnStdout: true
+                                ).trim()
+                            } else {
+                                bat '''
+                                    npm install -g vercel
+                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN%
+                                    vercel build --prod --token %VERCEL_TOKEN%
+                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+            post {
+                always {
+                    script {
+                        def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
+                        echo "Backend Vercel Deploy duration: ${duration}s"
+                    }
+                }
+                success {
+                    script {
+                        if (env.BACKEND_VERCEL_URL) {
+                            echo "Backend deployed: ${env.BACKEND_VERCEL_URL}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                echo "Construyendo frontend para produccion..."
+                dir(env.FRONTEND_DIR) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                export NODE_ENV=production
+
+                                # Inyectar API_BASE_URL desde el backend desplegado
+                                if [ -n "$BACKEND_VERCEL_URL" ]; then
+                                    echo "API_BASE_URL=$BACKEND_VERCEL_URL" > .env
+                                fi
+                                
+                                npm run build
+                                
+                                # Verificar build (acepta build/ o dist/)
+                                if [ -d "build" ]; then
+                                    BUILD_DIR="build"
+                                elif [ -d "dist" ]; then
+                                    BUILD_DIR="dist"
+                                else
+                                    echo "Error: no se generó directorio build/ ni dist/"
+                                    exit 1
+                                fi
+
+                                echo "Build frontend generado en $(pwd)/$BUILD_DIR"
+                                ls -la "$BUILD_DIR" | head -10
+                            '''
+                        } else {
+                            bat '''
+                                set NODE_ENV=production
+
+                                if not "%BACKEND_VERCEL_URL%"=="" (
+                                    echo API_BASE_URL=%BACKEND_VERCEL_URL%> .env
+                                )
+                                
+                                npm run build
+                                
+                                if not exist "build" (
+                                    echo Error: directorio build no generado
+                                    exit 1
+                                )
+                                
+                                echo Build frontend generado
+                                dir build
                             '''
                         }
                     }
@@ -570,7 +654,7 @@ pipeline {
                 
                 DEPLOYMENTS:
                 ${env.VERCEL_URL ? "   Frontend: ${env.VERCEL_URL}" : "   Frontend: N/A"}
-                ${env.DOCKER_IMAGE_PUBLISHED ? "   Backend: ${env.DOCKER_IMAGE_PUBLISHED}" : "   Backend: N/A"}
+                ${env.BACKEND_VERCEL_URL ? "   Backend: ${env.BACKEND_VERCEL_URL}" : "   Backend: N/A"}
                 
                 Artefacto: ${env.ARTIFACT_NAME ?: 'N/A'}
                 ═══════════════════════════════════════
@@ -622,7 +706,7 @@ pipeline {
                 <h3>Deployments:</h3>
                 <ul>
                     ${env.VERCEL_URL ? "<li><strong>Frontend:</strong> <a href='${env.VERCEL_URL}'>${env.VERCEL_URL}</a></li>" : "<li>Frontend: N/A</li>"}
-                    ${env.DOCKER_IMAGE_PUBLISHED ? "<li><strong>Backend:</strong> ${env.DOCKER_IMAGE_PUBLISHED}</li>" : "<li>Backend: N/A</li>"}
+                    ${env.BACKEND_VERCEL_URL ? "<li><strong>Backend:</strong> <a href='${env.BACKEND_VERCEL_URL}'>${env.BACKEND_VERCEL_URL}</a></li>" : "<li>Backend: N/A</li>"}
                 </ul>
                 
                 <h3>Reportes:</h3>
