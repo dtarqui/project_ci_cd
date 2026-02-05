@@ -38,17 +38,24 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Configuración CORS permisiva - permite todos los orígenes
+  // Configuración CORS completamente permisiva - permite TODOS los orígenes sin restricciones
   const corsOptions = {
-    origin: true, // Permite todos los orígenes
+    origin: (origin, callback) => {
+      // Permitir cualquier origen (incluso sin origen para requests locales)
+      callback(null, true);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    maxAge: 86400, // 24 horas de cache para preflight
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   };
 
   // Middleware
+  app.use(cors(corsOptions)); // CORS debe ir primero
   app.use(express.json());
-  app.use(cors(corsOptions));
 
   // Health check endpoint
   app.get("/health", (req, res) => {

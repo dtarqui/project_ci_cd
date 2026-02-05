@@ -2,12 +2,13 @@ import axios from "axios";
 
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:4000";
 
-// Configuración de axios
+// Configuración de axios con soporte CORS
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Habilitar credenciales para CORS
 });
 
 // Interceptor para agregar token de autorización
