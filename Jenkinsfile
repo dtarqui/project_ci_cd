@@ -1,78 +1,100 @@
 pipeline {
     agent any
 
-    environment {
-        // Configuración del pipeline
-        NODE_VERSION = '18'
-        NOTIFICATION_EMAIL = 'devops@example.com'
-        
-        // Directorios
-        BACKEND_DIR = './backend'
-        FRONTEND_DIR = './frontend'
-        
-        // Variables para Vercel
-        VERCEL_TOKEN = credentials('vercel-token')
-        VERCEL_BACKEND_PROJECT = credentials('vercel-backend-project')
-        VERCEL_BACKEND_ORG = credentials('vercel-backend-org')
-        VERCEL_FRONTEND_PROJECT = credentials('vercel-frontend-project')
-        VERCEL_FRONTEND_ORG = credentials('vercel-frontend-org')
-        FRONTEND_VERCEL_ENV = 'production'
-        BACKEND_VERCEL_ENV = 'production'
-    }
-
+    // Usa la instalación NodeJS definida en Jenkins (Manage Jenkins > Tools > NodeJS installations)
+    // Asegúrate que el nombre aquí coincida con el configurado en la UI (ej: Node18)
     tools {
         nodejs 'Node18'
     }
 
+    environment {
+        NODE_VERSION = "18"
+        FRONTEND_DIR = "frontend"
+        BACKEND_DIR = "backend"
+        CI = "true"
+        DOCKER_REGISTRY = "docker.io"
+        IMAGE_NAME = "mi-tienda-backend"
+        GITHUB_REPO = "https://github.com/dtarqui/project_ci_cd.git"
+        
+        // Vercel backend project identifiers (opcionales)
+        VERCEL_BACKEND_PROJECT = ""
+        VERCEL_BACKEND_ORG = ""
+        // Vercel frontend project identifiers (opcionales)
+        VERCEL_FRONTEND_PROJECT = ""
+        VERCEL_FRONTEND_ORG = ""
+        // Variables de entorno backend para Vercel (formato: KEY=VALUE por línea)
+        BACKEND_ENV_VARS = ""
+        BACKEND_VERCEL_ENV = "production"
+        // Variables de entorno frontend para Vercel
+        FRONTEND_VERCEL_ENV = "production"
+        
+        // Métricas y monitoreo
+        STAGE_START_TIME = ""
+        TOTAL_TEST_COUNT = "0"
+        FAILED_TEST_COUNT = "0"
+        COVERAGE_THRESHOLD = "70"
+        
+        // Email notifications
+        NOTIFICATION_EMAIL = "dmtarqui@gmail.com"
+    }
+
     options {
-        timeout(time: 2, unit: 'HOURS')
-        timestamps()
         buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 20, unit: 'MINUTES')
+        timestamps()
+        retry(2)
+        skipDefaultCheckout()
+    }
+
+    triggers {
+        // Poll GitHub cada 5 minutos (no requiere configuración adicional)
+        pollSCM('H/5 * * * *')
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('GitHub Checkout') {
             steps {
-                echo "Obteniendo código del repositorio..."
-                checkout scm
-                
                 script {
+                    echo "Obteniendo codigo del repositorio GitHub..."
+                    
+                    // Checkout desde GitHub (repositorio publico)
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions: [
+                            [$class: 'CloneOption', depth: 1, noTags: false, shallow: true],
+                            [$class: 'CheckoutOption', timeout: 20]
+                        ],
+                        submoduleCfg: [],
+                        userRemoteConfigs: [[
+                            url: env.GITHUB_REPO
+                        ]]
+                    ])
+                    
+                    // Obtener información del commit
                     env.GIT_COMMIT_SHORT = sh(
-                        script: "git rev-parse --short HEAD",
+                        script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    
                     env.GIT_COMMIT_MSG = sh(
-                        script: "git log -1 --pretty=%B",
+                        script: 'git log -1 --pretty=%B',
                         returnStdout: true
                     ).trim()
-                    
                     env.GIT_AUTHOR = sh(
-                        script: "git log -1 --pretty=%an",
+                        script: 'git log -1 --pretty=%an',
                         returnStdout: true
                     ).trim()
-                }
-            }
-        }
-
-        stage('Initialize') {
-            steps {
-                script {
-                    if (!fileExists("${env.BACKEND_DIR}/package.json")) {
-                        error "Backend package.json no encontrado en ${env.BACKEND_DIR}"
-                    }
-                    if (!fileExists("${env.FRONTEND_DIR}/package.json")) {
-                        error "Frontend package.json no encontrado en ${env.FRONTEND_DIR}"
-                    }
                     
-                    echo "Estructura del proyecto validada"
-                    echo "Backend: ${env.BACKEND_DIR}"
-                    echo "Frontend: ${env.FRONTEND_DIR}"
+                    echo "Commit: ${env.GIT_COMMIT_SHORT}"
+                    echo "Mensaje: ${env.GIT_COMMIT_MSG}"
+                    echo "Autor: ${env.GIT_AUTHOR}"
                 }
             }
         }
 
-        stage('Node.js Setup') {
+        stage('Environment Setup') {
             steps {
                 script {
                     echo "Configurando entorno Node.js ${env.NODE_VERSION}..."
@@ -405,32 +427,47 @@ pipeline {
                 }
                 echo "Desplegando backend a Vercel..."
                 dir(env.BACKEND_DIR) {
-                    script {
-                        if (isUnix()) {
-                            env.BACKEND_VERCEL_URL = sh(
-                                script: '''
-                                    set -e
-                                    npm install -g vercel 1>&2
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                        script {
+                            if (isUnix()) {
+                                env.BACKEND_VERCEL_URL = sh(
+                                    script: '''
+                                        set -e
+                                        npm install -g vercel 1>&2
 
-                                    PROJECT_ARGS=""
-                                    if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
-                                        PROJECT_ARGS="--project $VERCEL_BACKEND_PROJECT --org $VERCEL_BACKEND_ORG"
-                                    fi
+                                        PROJECT_ARGS=""
+                                        if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
+                                            PROJECT_ARGS="--project $VERCEL_BACKEND_PROJECT --org $VERCEL_BACKEND_ORG"
+                                        fi
 
-                                    vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                    vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                    BACKEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
-                                    printf "%s" "$BACKEND_URL"
-                                ''',
-                                returnStdout: true
-                            ).trim()
-                        } else {
-                            bat '''
-                                npm install -g vercel
-                                vercel pull --yes --environment=production --token %VERCEL_TOKEN%
-                                vercel build --prod --token %VERCEL_TOKEN%
-                                vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
-                            '''
+                                        # Cargar variables de entorno del backend en Vercel si existen
+                                        if [ -n "$BACKEND_ENV_VARS" ]; then
+                                            echo "$BACKEND_ENV_VARS" | while IFS= read -r line; do
+                                                [ -z "$line" ] && continue
+                                                case "$line" in
+                                                    #*) continue ;;
+                                                esac
+                                                NAME="${line%%=*}"
+                                                VALUE="${line#*=}"
+                                                printf "%s" "$VALUE" | vercel env add "$NAME" "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
+                                            done
+                                        fi
+
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        BACKEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
+                                        printf "%s" "$BACKEND_URL"
+                                    ''',
+                                    returnStdout: true
+                                ).trim()
+                            } else {
+                                bat '''
+                                    npm install -g vercel
+                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN%
+                                    vercel build --prod --token %VERCEL_TOKEN%
+                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
+                                '''
+                            }
                         }
                     }
                 }
@@ -460,6 +497,11 @@ pipeline {
                         if (isUnix()) {
                             sh '''
                                 export NODE_ENV=production
+
+                                # Inyectar API_BASE_URL desde el backend desplegado
+                                if [ -n "$BACKEND_VERCEL_URL" ]; then
+                                    echo "API_BASE_URL=$BACKEND_VERCEL_URL" > .env
+                                fi
                                 
                                 npm run build
                                 
@@ -479,6 +521,10 @@ pipeline {
                         } else {
                             bat '''
                                 set NODE_ENV=production
+
+                                if not "%BACKEND_VERCEL_URL%"=="" (
+                                    echo API_BASE_URL=%BACKEND_VERCEL_URL%> .env
+                                )
                                 
                                 npm run build
                                 
@@ -503,40 +549,49 @@ pipeline {
                 }
                 echo "Desplegando frontend a Vercel..."
                 dir(env.FRONTEND_DIR) {
-                    script {
-                        if (isUnix()) {
-                            env.VERCEL_URL = sh(
-                                script: '''
-                                    set -e
-                                    npm install -g vercel 1>&2
-                                    PROJECT_ARGS=""
-                                    if [ -n "$VERCEL_FRONTEND_PROJECT" ] && [ -n "$VERCEL_FRONTEND_ORG" ]; then
-                                        PROJECT_ARGS="--project $VERCEL_FRONTEND_PROJECT --org $VERCEL_FRONTEND_ORG"
-                                    fi
+                    withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                        script {
+                            if (isUnix()) {
+                                env.VERCEL_URL = sh(
+                                    script: '''
+                                        set -e
+                                        npm install -g vercel 1>&2
+                                        PROJECT_ARGS=""
+                                        if [ -n "$VERCEL_FRONTEND_PROJECT" ] && [ -n "$VERCEL_FRONTEND_ORG" ]; then
+                                            PROJECT_ARGS="--project $VERCEL_FRONTEND_PROJECT --org $VERCEL_FRONTEND_ORG"
+                                        fi
 
-                                    # Frontend usa Vercel rewrites para llamar al backend
-                                    # No necesita variables de entorno API_BASE_URL en Vercel
-                                    # El vercel.json tiene configuradas las rewrites
-                                    
-                                    vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                    vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                    FRONTEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
-                                    printf "%s" "$FRONTEND_URL"
-                                ''',
-                                returnStdout: true
-                            ).trim()
-                        } else {
-                            bat '''
-                                npm install -g vercel
-                                set PROJECT_ARGS=
-                                if not "%VERCEL_FRONTEND_PROJECT%"=="" if not "%VERCEL_FRONTEND_ORG%"=="" (
-                                    set PROJECT_ARGS=--project %VERCEL_FRONTEND_PROJECT% --org %VERCEL_FRONTEND_ORG%
-                                )
+                                        # Actualizar API_BASE_URL en Vercel con la URL del backend desplegado
+                                        if [ -n "$BACKEND_VERCEL_URL" ]; then
+                                            vercel env rm API_BASE_URL "$FRONTEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 1>/dev/null 2>&1 || true
+                                            printf "%s" "$BACKEND_VERCEL_URL" | vercel env add API_BASE_URL "$FRONTEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
+                                        fi
 
-                                vercel pull --yes --environment=production --token %VERCEL_TOKEN% %PROJECT_ARGS%
-                                vercel build --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
-                                vercel deploy --prebuilt --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
-                            '''
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        FRONTEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
+                                        printf "%s" "$FRONTEND_URL"
+                                    ''',
+                                    returnStdout: true
+                                ).trim()
+                            } else {
+                                bat '''
+                                    npm install -g vercel
+                                    set PROJECT_ARGS=
+                                    if not "%VERCEL_FRONTEND_PROJECT%"=="" if not "%VERCEL_FRONTEND_ORG%"=="" (
+                                        set PROJECT_ARGS=--project %VERCEL_FRONTEND_PROJECT% --org %VERCEL_FRONTEND_ORG%
+                                    )
+
+                                    if not "%BACKEND_VERCEL_URL%"=="" (
+                                        vercel env rm API_BASE_URL %FRONTEND_VERCEL_ENV% --yes --token %VERCEL_TOKEN% %PROJECT_ARGS% 1>nul 2>nul
+                                        echo %BACKEND_VERCEL_URL%| vercel env add API_BASE_URL %FRONTEND_VERCEL_ENV% --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    )
+
+                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    vercel build --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                '''
+                            }
                         }
                     }
                 }
@@ -573,84 +628,120 @@ pipeline {
                     if (frontendBuildDir) {
                         archiveArtifacts(
                             artifacts: "${env.FRONTEND_DIR}/${frontendBuildDir}/**/*",
-                            excludes: '**/node_modules/**',
-                            allowEmptyArchive: true
+                            fingerprint: true,
+                            allowEmptyArchive: false
                         )
-                        env.ARTIFACT_NAME = "${env.FRONTEND_DIR}/${frontendBuildDir}"
+                    } else {
+                        echo "No se encontró build de frontend (build/ o dist/). Saltando archivo de frontend."
                     }
+
+                    // Archivar backend files
+                    archiveArtifacts(
+                        artifacts: "${env.BACKEND_DIR}/**/*.js,${env.BACKEND_DIR}/package*.json,${env.BACKEND_DIR}/Dockerfile",
+                        fingerprint: true
+                    )
+
+                    // Crear artefacto comprimido con timestamp
+                    def timestamp = new Date().format('yyyyMMdd-HHmmss')
+                    def artifactName = "mi-tienda-${env.BUILD_NUMBER}-${timestamp}.tar.gz"
+
+                    if (isUnix()) {
+                        if (frontendBuildDir) {
+                            sh """
+                                tar -czf ${artifactName} \\
+                                    ${env.FRONTEND_DIR}/${frontendBuildDir} \\
+                                    ${env.BACKEND_DIR}/*.js \\
+                                    ${env.BACKEND_DIR}/package*.json \\
+                                    ${env.BACKEND_DIR}/Dockerfile \\
+                                    README.md
+                            """
+                        } else {
+                            sh """
+                                tar -czf ${artifactName} \\
+                                    ${env.BACKEND_DIR}/*.js \\
+                                    ${env.BACKEND_DIR}/package*.json \\
+                                    ${env.BACKEND_DIR}/Dockerfile \\
+                                    README.md
+                            """
+                        }
+                    } else {
+                        if (frontendBuildDir) {
+                            bat """
+                                echo Creating artifact ${artifactName}
+                                7z a ${artifactName} ${env.FRONTEND_DIR}\\${frontendBuildDir} ${env.BACKEND_DIR}\\*.js ${env.BACKEND_DIR}\\package*.json ${env.BACKEND_DIR}\\Dockerfile README.md
+                            """
+                        } else {
+                            bat """
+                                echo Creating artifact ${artifactName}
+                                7z a ${artifactName} ${env.BACKEND_DIR}\\*.js ${env.BACKEND_DIR}\\package*.json ${env.BACKEND_DIR}\\Dockerfile README.md
+                            """
+                        }
+                    }
+
+                    archiveArtifacts(artifacts: artifactName, fingerprint: true)
+                    env.ARTIFACT_NAME = artifactName
                 }
             }
         }
 
-        stage('Metrics') {
-            steps {
-                echo "Recopilando métricas..."
-                script {
-                    def buildDuration = (System.currentTimeMillis() - currentBuild.startTime) / 1000
-                    
-                    def metricsReport = """
-                    ═══════════════════════════════════════
-                    BUILD METRICS - BUILD #${env.BUILD_NUMBER}
-                    ═══════════════════════════════════════
-                    
-                    GIT INFO:
-                    Commit: ${env.GIT_COMMIT_SHORT}
-                    Autor: ${env.GIT_AUTHOR}
-                    Mensaje: ${env.GIT_COMMIT_MSG}
-                    Duración total: ${buildDuration}s
-                    Estado: ${currentBuild.result ?: 'SUCCESS'}
-                    
-                    DEPLOYMENTS:
-                    ${env.VERCEL_URL ? "   Frontend: ${env.VERCEL_URL}" : "   Frontend: N/A"}
-                    ${env.BACKEND_VERCEL_URL ? "   Backend: ${env.BACKEND_VERCEL_URL}" : "   Backend: N/A"}
-                    
-                    CONFIGURATION:
-                    Frontend usa rewrites de Vercel para llamar al backend
-                    No requiere variables de entorno API_BASE_URL en Vercel
-                    
-                    Artefacto: ${env.ARTIFACT_NAME ?: 'N/A'}
-                    ═══════════════════════════════════════
-                    """
-                    
-                    echo metricsReport
-                    
-                    // Guardar métricas en archivo
-                    writeFile(
-                        file: "metrics-${env.BUILD_NUMBER}.txt",
-                        text: metricsReport
-                    )
-                    archiveArtifacts(artifacts: "metrics-${env.BUILD_NUMBER}.txt", allowEmptyArchive: true)
-                    
-                    // Limpieza
-                    if (isUnix()) {
-                        sh '''
-                            # Limpiar procesos Node.js
-                            pkill -f "node index.js" 2>/dev/null || true
-                            
-                            # Limpiar puertos
-                            fuser -k 4000/tcp 2>/dev/null || true
-                            fuser -k 3000/tcp 2>/dev/null || true
-                            
-                            # Limpiar caché NPM
-                            npm cache clean --force 2>/dev/null || true
-                            
-                            echo "Limpieza completada"
-                        '''
-                    } else {
-                        bat '''
-                            echo Limpieza en Windows...
-                            taskkill /F /IM "node.exe" 2>nul || echo No hay procesos Node activos
-                            echo Limpieza completada
-                        '''
-                    }
-                }
-            }
-        }
     }
 
     post {
         always {
-            echo "===== FINAL PIPELINE SUMMARY ====="
+            echo "Ejecutando limpieza..."
+            script {
+                // Generar reporte de métricas del pipeline
+                def buildDuration = currentBuild.duration / 1000
+                def metricsReport = """
+                REPORTE DE MÉTRICAS CI/CD
+                ═══════════════════════════════════════
+                Build: #${env.BUILD_NUMBER}
+                Commit: ${env.GIT_COMMIT_SHORT}
+                Autor: ${env.GIT_AUTHOR}
+                Mensaje: ${env.GIT_COMMIT_MSG}
+                Duración total: ${buildDuration}s
+                Estado: ${currentBuild.result ?: 'SUCCESS'}
+                
+                DEPLOYMENTS:
+                ${env.VERCEL_URL ? "   Frontend: ${env.VERCEL_URL}" : "   Frontend: N/A"}
+                ${env.BACKEND_VERCEL_URL ? "   Backend: ${env.BACKEND_VERCEL_URL}" : "   Backend: N/A"}
+                
+                Artefacto: ${env.ARTIFACT_NAME ?: 'N/A'}
+                ═══════════════════════════════════════
+                """
+                
+                echo metricsReport
+                
+                // Guardar métricas en archivo
+                writeFile(
+                    file: "metrics-${env.BUILD_NUMBER}.txt",
+                    text: metricsReport
+                )
+                archiveArtifacts(artifacts: "metrics-${env.BUILD_NUMBER}.txt", allowEmptyArchive: true)
+                
+                // Limpieza
+                if (isUnix()) {
+                    sh '''
+                        # Limpiar procesos Node.js
+                        pkill -f "node index.js" 2>/dev/null || true
+                        
+                        # Limpiar puertos
+                        fuser -k 4000/tcp 2>/dev/null || true
+                        fuser -k 3000/tcp 2>/dev/null || true
+                        
+                        # Limpiar caché NPM
+                        npm cache clean --force 2>/dev/null || true
+                        
+                        echo "Limpieza completada"
+                    '''
+                } else {
+                    bat '''
+                        echo Limpieza en Windows...
+                        taskkill /F /IM "node.exe" 2>nul || echo No hay procesos Node activos
+                        echo Limpieza completada
+                    '''
+                }
+            }
         }
         success {
             echo "Pipeline ejecutado correctamente!"
