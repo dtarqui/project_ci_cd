@@ -39,21 +39,19 @@ const createApp = () => {
 
   // Middleware CORS - COMPLETAMENTE ABIERTO SIN RESTRICCIONES
   app.use((req, res, next) => {
-    // Aceptar CUALQUIER origen - devolver el origen del request o * si no hay
     const origin = req.headers.origin || "*";
+    const requestHeaders = req.headers["access-control-request-headers"] || "*";
+    const requestMethod = req.headers["access-control-request-method"] || "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD";
+
     res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
-    );
-    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Access-Control-Allow-Methods", requestMethod);
+    res.setHeader("Access-Control-Allow-Headers", requestHeaders);
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Max-Age", "3600");
+    res.setHeader("Vary", "Origin");
 
-    // Manejar preflight requests (OPTIONS) - responder inmediatamente
     if (req.method === "OPTIONS") {
-      res.status(200).end();
-      return;
+      return res.status(204).end();
     }
 
     next();
