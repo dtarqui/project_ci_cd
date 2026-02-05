@@ -8,7 +8,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Habilitar para que funcione con orígenes dinámicos
+  withCredentials: true,
 });
 
 // Interceptor para agregar token de autorización

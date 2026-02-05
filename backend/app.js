@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 
 // Mock data para el dashboard
 const mockData = {
@@ -37,25 +38,18 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Middleware CORS - COMPLETAMENTE ABIERTO SIN RESTRICCIONES
-  app.use((req, res, next) => {
-    const origin = req.headers.origin || "*";
-    const requestHeaders = req.headers["access-control-request-headers"] || "*";
-    const requestMethod = req.headers["access-control-request-method"] || "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD";
+  // Configuración CORS ultra permisiva usando el package cors
+  const corsOptions = {
+    origin: true, // Acepta CUALQUIER origen
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+    credentials: true,
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  };
 
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", requestMethod);
-    res.setHeader("Access-Control-Allow-Headers", requestHeaders);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader("Access-Control-Max-Age", "3600");
-    res.setHeader("Vary", "Origin");
-
-    if (req.method === "OPTIONS") {
-      return res.status(204).end();
-    }
-
-    next();
-  });
+  // Aplicar CORS ANTES de cualquier otra cosa
+  app.use(cors(corsOptions));
 
   // Middleware adicional
   app.use(express.json());
