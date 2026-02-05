@@ -38,9 +38,41 @@ const users = [
 const createApp = () => {
   const app = express();
 
+  // Configuración CORS para producción
+  const corsOptions = {
+    origin: function (origin, callback) {
+      // Permitir requests sin origin (como mobile apps o curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Lista de orígenes permitidos
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:4000',
+        /\.vercel\.app$/,  // Permite cualquier dominio de Vercel
+      ];
+      
+      // Verificar si el origin está permitido
+      const isAllowed = allowedOrigins.some(allowed => {
+        if (allowed instanceof RegExp) {
+          return allowed.test(origin);
+        }
+        return allowed === origin;
+      });
+      
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  };
+
   // Middleware
   app.use(express.json());
-  app.use(cors());
+  app.use(cors(corsOptions));
 
   // Health check endpoint
   app.get("/health", (req, res) => {
