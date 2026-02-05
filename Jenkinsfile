@@ -418,7 +418,7 @@ pipeline {
                                             echo "$BACKEND_ENV_VARS" | while IFS= read -r line; do
                                                 [ -z "$line" ] && continue
                                                 case "$line" in
-                                                    \#*) continue ;;
+                                                    #*) continue ;;
                                                 esac
                                                 NAME="${line%%=*}"
                                                 VALUE="${line#*=}"
