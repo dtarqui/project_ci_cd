@@ -38,23 +38,26 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Configuración CORS completamente permisiva - permite TODOS los orígenes sin restricciones
-  const corsOptions = {
-    origin: (origin, callback) => {
-      // Permitir cualquier origen (incluso sin origen para requests locales)
-      callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Length', 'Content-Type'],
-    maxAge: 86400, // 24 horas de cache para preflight
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-  };
+  // Middleware CORS manual - completamente abierto para todos los orígenes
+  app.use((req, res, next) => {
+    // Permitir CUALQUIER origen
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Type, Authorization');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    
+    // Manejar preflight requests (OPTIONS)
+    if (req.method === 'OPTIONS') {
+      return res.status(204).end();
+    }
+    
+    next();
+  });
 
-  // Middleware
-  app.use(cors(corsOptions)); // CORS debe ir primero
+  // Middleware adicional
   app.use(express.json());
 
   // Health check endpoint
