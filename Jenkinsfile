@@ -19,9 +19,14 @@ pipeline {
         // Vercel backend project identifiers (opcionales)
         VERCEL_BACKEND_PROJECT = ""
         VERCEL_BACKEND_ORG = ""
+        // Vercel frontend project identifiers (opcionales)
+        VERCEL_FRONTEND_PROJECT = ""
+        VERCEL_FRONTEND_ORG = ""
         // Variables de entorno backend para Vercel (formato: KEY=VALUE por línea)
         BACKEND_ENV_VARS = ""
         BACKEND_VERCEL_ENV = "production"
+        // Variables de entorno frontend para Vercel
+        FRONTEND_VERCEL_ENV = "production"
         
         // Métricas y monitoreo
         STAGE_START_TIME = ""
@@ -551,9 +556,20 @@ pipeline {
                                     script: '''
                                         set -e
                                         npm install -g vercel 1>&2
-                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN 1>&2
-                                        vercel build --prod --token $VERCEL_TOKEN 1>&2
-                                        FRONTEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN | tail -1)
+                                        PROJECT_ARGS=""
+                                        if [ -n "$VERCEL_FRONTEND_PROJECT" ] && [ -n "$VERCEL_FRONTEND_ORG" ]; then
+                                            PROJECT_ARGS="--project $VERCEL_FRONTEND_PROJECT --org $VERCEL_FRONTEND_ORG"
+                                        fi
+
+                                        # Actualizar API_BASE_URL en Vercel con la URL del backend desplegado
+                                        if [ -n "$BACKEND_VERCEL_URL" ]; then
+                                            vercel env rm API_BASE_URL "$FRONTEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 1>/dev/null 2>&1 || true
+                                            printf "%s" "$BACKEND_VERCEL_URL" | vercel env add API_BASE_URL "$FRONTEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
+                                        fi
+
+                                        vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                        FRONTEND_URL=$(vercel deploy --prebuilt --prod --token $VERCEL_TOKEN $PROJECT_ARGS | tail -1)
                                         printf "%s" "$FRONTEND_URL"
                                     ''',
                                     returnStdout: true
@@ -561,9 +577,19 @@ pipeline {
                             } else {
                                 bat '''
                                     npm install -g vercel
-                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN%
-                                    vercel build --prod --token %VERCEL_TOKEN%
-                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
+                                    set PROJECT_ARGS=
+                                    if not "%VERCEL_FRONTEND_PROJECT%"=="" if not "%VERCEL_FRONTEND_ORG%"=="" (
+                                        set PROJECT_ARGS=--project %VERCEL_FRONTEND_PROJECT% --org %VERCEL_FRONTEND_ORG%
+                                    )
+
+                                    if not "%BACKEND_VERCEL_URL%"=="" (
+                                        vercel env rm API_BASE_URL %FRONTEND_VERCEL_ENV% --yes --token %VERCEL_TOKEN% %PROJECT_ARGS% 1>nul 2>nul
+                                        echo %BACKEND_VERCEL_URL%| vercel env add API_BASE_URL %FRONTEND_VERCEL_ENV% --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    )
+
+                                    vercel pull --yes --environment=production --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    vercel build --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                    vercel deploy --prebuilt --prod --token %VERCEL_TOKEN% %PROJECT_ARGS%
                                 '''
                             }
                         }

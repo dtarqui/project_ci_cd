@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 
 // Mock data para el dashboard
 const mockData = {
@@ -41,19 +40,22 @@ const createApp = () => {
   // Middleware CORS - COMPLETAMENTE ABIERTO SIN RESTRICCIONES
   app.use((req, res, next) => {
     // Aceptar CUALQUIER origen - devolver el origen del request o * si no hay
-    const origin = req.headers.origin || '*';
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Max-Age', '3600');
-    
+    const origin = req.headers.origin || "*";
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+    );
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Max-Age", "3600");
+
     // Manejar preflight requests (OPTIONS) - responder inmediatamente
-    if (req.method === 'OPTIONS') {
+    if (req.method === "OPTIONS") {
       res.status(200).end();
       return;
     }
-    
+
     next();
   });
 
@@ -92,13 +94,13 @@ const createApp = () => {
 
     // Buscar usuario
     const user = users.find(
-      (u) => u.username === username && u.password === password
+      (u) => u.username === username && u.password === password,
     );
 
     if (user) {
       const { password: _password, ...userWithoutPassword } = user;
       const token = `mock-jwt-token-${user.id}`;
-      
+
       res.json({
         success: true,
         user: userWithoutPassword,
@@ -135,7 +137,7 @@ const createApp = () => {
 
     // Extraer el token sin "Bearer "
     const token = authHeader.replace("Bearer ", "");
-    
+
     // Validar que el token tenga el formato esperado
     if (!token.startsWith("mock-jwt-token-")) {
       return res.status(401).json({
