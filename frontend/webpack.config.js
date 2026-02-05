@@ -1,5 +1,13 @@
 const path = require("path");
+const webpack = require("webpack");
+const dotenv = require("dotenv");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+const env = dotenv.config().parsed || {};
+const envKeys = Object.keys(env).reduce((acc, key) => {
+  acc[`process.env.${key}`] = JSON.stringify(env[key]);
+  return acc;
+}, {});
 
 module.exports = {
   entry: "./src/index.js",
@@ -18,7 +26,10 @@ module.exports = {
       { test: /\.css$/, use: ["style-loader", "css-loader"] },
     ],
   },
-  plugins: [new HtmlWebpackPlugin({ template: "./public/index.html" })],
+  plugins: [
+    new HtmlWebpackPlugin({ template: "./public/index.html" }),
+    new webpack.DefinePlugin(envKeys),
+  ],
   devServer: {
     static: "./dist",
     port: 3000,
