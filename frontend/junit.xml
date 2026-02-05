@@ -1,83 +1,83 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="37" failures="0" errors="0" time="27.106">
-  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:11:58" time="13.196" tests="16">
-    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.032">
+<testsuites name="jest tests" tests="37" failures="0" errors="0" time="23.035">
+  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:35:55" time="9.646" tests="16">
+    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.027">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.034">
+    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.038">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.088">
+    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.11">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.031">
+    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.017">
     </testcase>
     <testcase classname="Dashboard Tests Rendering should render user account button" name="Dashboard Tests Rendering should render user account button" time="0.015">
     </testcase>
     <testcase classname="Dashboard Tests Rendering should render charts when data is available" name="Dashboard Tests Rendering should render charts when data is available" time="0.03">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.142">
+    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.125">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should call logout when logout button is clicked" name="Dashboard Tests User Interactions should call logout when logout button is clicked" time="0.174">
+    <testcase classname="Dashboard Tests User Interactions should call logout when logout button is clicked" name="Dashboard Tests User Interactions should call logout when logout button is clicked" time="0.205">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.097">
+    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.064">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.109">
+    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.107">
     </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.188">
+    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.156">
     </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.019">
+    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.031">
     </testcase>
-    <testcase classname="Dashboard Tests Service Calls should call dashboardService.getData on mount" name="Dashboard Tests Service Calls should call dashboardService.getData on mount" time="0.016">
+    <testcase classname="Dashboard Tests Service Calls should call dashboardService.getData on mount" name="Dashboard Tests Service Calls should call dashboardService.getData on mount" time="0.018">
     </testcase>
-    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.17">
+    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.184">
     </testcase>
-    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.032">
+    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.009">
     </testcase>
-    <testcase classname="Dashboard Tests Data Display should render different sections based on navigation" name="Dashboard Tests Data Display should render different sections based on navigation" time="0.025">
+    <testcase classname="Dashboard Tests Data Display should render different sections based on navigation" name="Dashboard Tests Data Display should render different sections based on navigation" time="0.021">
     </testcase>
   </testsuite>
-  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:12:12" time="1.093" tests="15">
-    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.011">
+  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:36:05" time="0.926" tests="15">
+    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.01">
     </testcase>
-    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.007">
+    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.005">
     </testcase>
     <testcase classname="App Tests Authentication Flow should handle successful login" name="App Tests Authentication Flow should handle successful login" time="0.062">
     </testcase>
-    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.093">
+    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.094">
     </testcase>
     <testcase classname="App Tests Error Handling should handle corrupted localStorage data" name="App Tests Error Handling should handle corrupted localStorage data" time="0.016">
     </testcase>
     <testcase classname="App Tests Error Handling should handle missing user data with token present" name="App Tests Error Handling should handle missing user data with token present" time="0.015">
     </testcase>
-    <testcase classname="App Tests Error Handling should handle missing token with user present" name="App Tests Error Handling should handle missing token with user present" time="0.015">
+    <testcase classname="App Tests Error Handling should handle missing token with user present" name="App Tests Error Handling should handle missing token with user present" time="0.016">
     </testcase>
     <testcase classname="App Tests Error Handling should handle invalid user object" name="App Tests Error Handling should handle invalid user object" time="0.014">
     </testcase>
-    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.094">
+    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.093">
     </testcase>
-    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.094">
+    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.095">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.094">
+    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.093">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should remove user data from localStorage on logout" name="App Tests localStorage Integration should remove user data from localStorage on logout" time="0.08">
+    <testcase classname="App Tests localStorage Integration should remove user data from localStorage on logout" name="App Tests localStorage Integration should remove user data from localStorage on logout" time="0.092">
     </testcase>
     <testcase classname="App Tests localStorage Integration should handle localStorage.getItem throwing error" name="App Tests localStorage Integration should handle localStorage.getItem throwing error" time="0.016">
     </testcase>
-    <testcase classname="App Tests Component Interactions should pass correct props to Login component" name="App Tests Component Interactions should pass correct props to Login component" time="0.016">
+    <testcase classname="App Tests Component Interactions should pass correct props to Login component" name="App Tests Component Interactions should pass correct props to Login component" time="0.015">
     </testcase>
     <testcase classname="App Tests Component Interactions should pass correct props to Dashboard component" name="App Tests Component Interactions should pass correct props to Dashboard component" time="0.015">
     </testcase>
   </testsuite>
-  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:12:13" time="0.801" tests="6">
-    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.039">
+  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T14:36:06" time="0.642" tests="6">
+    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.026">
     </testcase>
-    <testcase classname="Login Tests Rendering should render password visibility toggle" name="Login Tests Rendering should render password visibility toggle" time="0.005">
+    <testcase classname="Login Tests Rendering should render password visibility toggle" name="Login Tests Rendering should render password visibility toggle" time="0.002">
     </testcase>
-    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.164">
+    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.176">
     </testcase>
-    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.063">
+    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.065">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.093">
+    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.078">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.064">
+    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.063">
     </testcase>
   </testsuite>
 </testsuites>
