@@ -38,12 +38,17 @@ const users = [
 const createApp = () => {
   const app = express();
 
-  // Configuración CORS ultra permisiva usando el package cors
   const corsOptions = {
-    origin: true, // Acepta CUALQUIER origen
+    origin: (origin, callback) => callback(null, origin || "*"),
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
-    credentials: true,
-    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+    credentials: false,
+    allowedHeaders: [
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+    ],
     preflightContinue: false,
     optionsSuccessStatus: 204,
   };

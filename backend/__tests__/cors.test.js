@@ -172,7 +172,9 @@ describe("CORS Configuration Tests", () => {
         .set("Origin", "http://localhost:3000")
         .expect(200);
 
-      expect(response.headers["access-control-allow-credentials"]).toBe("true");
+      // Credentials are not required - frontend sends credentials: omit
+      // So we don't set Access-Control-Allow-Credentials header
+      expect(response.headers["access-control-allow-origin"]).toBe("http://localhost:3000");
     });
   });
 
