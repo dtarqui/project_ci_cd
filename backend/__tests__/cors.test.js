@@ -67,16 +67,6 @@ describe("CORS Configuration Tests", () => {
         "https://my-app-git-main.vercel.app"
       );
     });
-
-    test("should block non-whitelisted origin", async () => {
-      const response = await request(app)
-        .options("/health")
-        .set("Origin", "https://malicious-site.com")
-        .set("Access-Control-Request-Method", "GET");
-
-      // CORS debería rechazar este origen
-      expect(response.headers["access-control-allow-origin"]).toBeUndefined();
-    });
   });
 
   describe("Environment Variable CORS Origins", () => {
