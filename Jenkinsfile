@@ -266,7 +266,9 @@ pipeline {
                                 # Generar reportes en múltiples formatos para métricas
                                 npm test -- --ci --runInBand --watchAll=false \
                                     --coverage \
-                                    --coverageReporters=text-lcov,html,cobertura
+                                    --coverageReporters=html \
+                                    --coverageReporters=text-lcov \
+                                    --coverageReporters=cobertura
                                 
                                 echo "Tests frontend completados"
                             '''
@@ -275,7 +277,7 @@ pipeline {
                                 set CI=true
                                 set NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov,html,cobertura
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=html --coverageReporters=text-lcov --coverageReporters=cobertura
                                 
                                 echo Tests frontend completados
                             '''
@@ -320,7 +322,9 @@ pipeline {
                                 
                                 # Generar reportes en múltiples formatos
                                 npm test -- --coverage \
-                                    --coverageReporters=html,text-lcov,cobertura
+                                    --coverageReporters=html \
+                                    --coverageReporters=text-lcov \
+                                    --coverageReporters=cobertura
                                 
                                 echo "Tests backend completados"
                             '''
@@ -328,7 +332,7 @@ pipeline {
                             bat '''
                                 set NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html,text-lcov,cobertura
+                                npm test -- --coverage --coverageReporters=html --coverageReporters=text-lcov --coverageReporters=cobertura
                                 
                                 echo Tests backend completados
                             '''
