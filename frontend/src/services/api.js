@@ -1,10 +1,11 @@
 import axios from "axios";
 
-// En Vercel, usar rewrites internas (/api) evita CORS
-// En desarrollo local, apuntar al backend local
-const API_BASE_URL = process.env.NODE_ENV === "production" 
-  ? "/" // Vercel usa rewrites internas, todo es relativo
-  : (process.env.API_BASE_URL || "http://localhost:4000");
+// Configurar base URL del backend
+// 1. Si existe API_BASE_URL (inyectada por Jenkins/Vercel en producción) → usarla
+// 2. Si no existe pero estamos en desarrollo → usar localhost
+// 3. En producción sin variable → usar rewrites relativos (/)
+const API_BASE_URL = process.env.API_BASE_URL 
+  || (process.env.NODE_ENV === "production" ? "/" : "http://localhost:4000");
 
 // Configuración de axios - Compatible con rewrites de Vercel
 const api = axios.create({

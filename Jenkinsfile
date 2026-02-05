@@ -561,10 +561,15 @@ pipeline {
                                             PROJECT_ARGS="--project $VERCEL_FRONTEND_PROJECT --org $VERCEL_FRONTEND_ORG"
                                         fi
 
-                                        # Actualizar API_BASE_URL en Vercel con la URL del backend desplegado
+                                        # Inyectar URL del backend en variables de entorno de Vercel ANTES de hacer pull
+                                        # Esto asegura que el frontend tenga acceso al backend real durante el build
                                         if [ -n "$BACKEND_VERCEL_URL" ]; then
-                                            vercel env rm API_BASE_URL "$FRONTEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 1>/dev/null 2>&1 || true
-                                            printf "%s" "$BACKEND_VERCEL_URL" | vercel env add API_BASE_URL "$FRONTEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
+                                            echo "Inyectando BACKEND_VERCEL_URL=$BACKEND_VERCEL_URL en Vercel..."
+                                            # Remover si existe
+                                            vercel env rm API_BASE_URL "$FRONTEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null || true
+                                            # Agregar nueva variable
+                                            printf "%s" "$BACKEND_VERCEL_URL" | vercel env add API_BASE_URL "$FRONTEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+                                            echo "Variable API_BASE_URL inyectada correctamente"
                                         fi
 
                                         vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
@@ -583,8 +588,10 @@ pipeline {
                                     )
 
                                     if not "%BACKEND_VERCEL_URL%"=="" (
-                                        vercel env rm API_BASE_URL %FRONTEND_VERCEL_ENV% --yes --token %VERCEL_TOKEN% %PROJECT_ARGS% 1>nul 2>nul
+                                        echo Inyectando BACKEND_VERCEL_URL=%BACKEND_VERCEL_URL% en Vercel...
+                                        vercel env rm API_BASE_URL %FRONTEND_VERCEL_ENV% --yes --token %VERCEL_TOKEN% %PROJECT_ARGS% 2>nul
                                         echo %BACKEND_VERCEL_URL%| vercel env add API_BASE_URL %FRONTEND_VERCEL_ENV% --token %VERCEL_TOKEN% %PROJECT_ARGS%
+                                        echo Variable API_BASE_URL inyectada correctamente
                                     )
 
                                     vercel pull --yes --environment=production --token %VERCEL_TOKEN% %PROJECT_ARGS%
