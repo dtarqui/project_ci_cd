@@ -4,16 +4,19 @@ import userEvent from "@testing-library/user-event";
 import SalesSection from "../components/SalesSection";
 import { dashboardService } from "../services/api";
 
-jest.mock("../components/SalesForm", () => (props) => {
-  if (!props.isOpen) return null;
-  return (
-    <div data-testid="sales-form">
-      <button onClick={() => props.onSave({ customerId: 1, items: [] })}>
-        Submit
-      </button>
-      <button onClick={props.onClose}>Close</button>
-    </div>
-  );
+jest.mock("../components/SalesForm", () => {
+  const MockSalesForm = (props) => {
+    if (!props.isOpen) return null;
+    return (
+      <div data-testid="sales-form">
+        <button onClick={() => props.onSave({ customerId: 1, items: [] })}>
+          Submit
+        </button>
+        <button onClick={props.onClose}>Close</button>
+      </div>
+    );
+  };
+  return MockSalesForm;
 });
 
 jest.mock("../services/api", () => ({
@@ -110,10 +113,10 @@ describe("SalesSection Component", () => {
     render(<SalesSection />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Pendientes" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /pendientes/i })).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole("button", { name: "Pendientes" }));
+    await user.click(screen.getByRole("button", { name: /pendientes/i }));
 
     await waitFor(() => {
       const calls = dashboardService.getSales.mock.calls;
