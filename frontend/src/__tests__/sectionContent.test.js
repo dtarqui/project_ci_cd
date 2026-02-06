@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import SectionContent from "../components/SectionContent";
-import * as apiService from "../services/api";
 
 jest.mock("../services/api", () => ({
   dashboardService: {
@@ -26,7 +25,7 @@ describe("SectionContent Component", () => {
     it("deve que renderizar algo quando type='Produtos' (ProductsSection é complexo)", async () => {
       // ProductsSection requires full mocking setup, tested separately
       // This just verifies the routing logic works
-      const { container } = render(<SectionContent type="Produtos" />);
+      render(<SectionContent type="Produtos" />);
       // ProductsSection rendering depends on API calls
     });
 

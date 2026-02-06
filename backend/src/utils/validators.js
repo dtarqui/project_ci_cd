@@ -97,7 +97,7 @@ const validateLoginCredentials = (body) => {
  * @returns {Object} { isValid: boolean, error?: string, code?: string }
  */
 const validateCustomerCreate = (body) => {
-  const { name, email, phone, address, city, postalCode } = body;
+  const { name, email, phone, _address, _city, _postalCode } = body;
 
   if (!name || !email || !phone) {
     return {

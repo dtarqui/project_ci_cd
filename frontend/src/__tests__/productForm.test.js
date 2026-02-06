@@ -112,7 +112,6 @@ describe("ProductForm Component", () => {
       render(<ProductForm {...defaultProps} />);
       const nameInput = screen.getByLabelText(/nombre del producto/i);
       const categorySelect = screen.getByLabelText(/categoría/i);
-      const priceInput = screen.getByLabelText(/precio/i);
       const stockInput = screen.getByLabelText(/stock/i);
       const submitButton = screen.getByRole("button", { name: /guardar/i });
 
@@ -135,7 +134,6 @@ describe("ProductForm Component", () => {
       const nameInput = screen.getByLabelText(/nombre del producto/i);
       const categorySelect = screen.getByLabelText(/categoría/i);
       const priceInput = screen.getByLabelText(/precio/i);
-      const stockInput = screen.getByLabelText(/stock/i);
       const submitButton = screen.getByRole("button", { name: /guardar/i });
 
       await userEvent.type(nameInput, "Laptop");

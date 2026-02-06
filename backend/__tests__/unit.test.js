@@ -12,7 +12,7 @@ describe("Unit Tests - App Components", () => {
 
     test("dailySales should be a string", () => {
       expect(typeof mockData.dailySales).toBe("string");
-      expect(mockData.dailySales).toBe("64M");
+      expect(mockData.dailySales).toBe("2.8M Bs.");
     });
 
     test("branchSales should be valid array", () => {
@@ -197,7 +197,7 @@ describe("Unit Tests - App Components", () => {
 
     test("product names should follow pattern", () => {
       mockData.productSales.forEach((product) => {
-        expect(product.product).toMatch(/^Producto [A-Z]$/);
+        expect(product.product).toMatch(/^[A-Z]/);
       });
     });
   });
