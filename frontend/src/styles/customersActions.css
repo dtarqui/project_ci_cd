@@ -299,12 +299,12 @@
 }
 
 .customer-form-modal {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   width: 90%;
-  max-width: 500px;
-  padding: 28px;
+  max-width: 520px;
+  padding: 0;
   animation: slideUp 0.3s ease-out;
   max-height: 90vh;
   overflow-y: auto;
@@ -331,51 +331,60 @@
 }
 
 .customer-form-modal h3 {
-  margin: 0 0 24px 0;
+  margin: 0;
+  padding: 24px;
   font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-weight: 600;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--color-row) 0%, var(--color-bg) 100%);
 }
 
 .customer-form-modal form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px;
 }
 
-.form-group {
+.customer-form-modal .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
+  margin-bottom: 0;
 }
 
-.form-group label {
+.customer-form-modal .form-group label {
   font-weight: 600;
-  color: #1a1a1a;
-  font-size: 13px;
-  text-transform: uppercase;
+  color: var(--color-text);
+  font-size: 14px;
+  margin-bottom: 8px;
   letter-spacing: 0.3px;
 }
 
-.form-group input {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+.customer-form-modal .form-group input {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--color-row-alt);
 }
 
-.form-group input:focus {
+.customer-form-modal .form-group input:focus {
   outline: none;
-  border-color: #0066cc;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  background-color: var(--color-surface);
 }
 
 .form-actions {
   display: flex;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 24px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 20px;
 }
 
 /* Buttons */
@@ -383,12 +392,13 @@
 .btn {
   padding: 12px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   flex: 1;
+  letter-spacing: 0.3px;
 }
 
 .btn:disabled {
@@ -397,25 +407,25 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-surface);
+  box-shadow: 0 4px 12px var(--color-primary-soft);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.35);
+  box-shadow: 0 6px 16px var(--color-primary-soft);
 }
 
 .btn-secondary {
-  background-color: #f3f5f8;
-  color: #1a1a1a;
-  border: 1px solid #ddd;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #e8eef5;
-  border-color: #0066cc;
+  background-color: var(--color-row);
+  border-color: var(--color-primary);
 }
 
 /* Delete Confirmation Modal */

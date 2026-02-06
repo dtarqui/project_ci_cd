@@ -9,6 +9,7 @@ import {
   MdRefresh,
 } from "react-icons/md";
 import { dashboardService, handleApiError } from "../services/api";
+import SalesForm from "./SalesForm";
 import "../styles/sales.css";
 
 const SalesSection = () => {
@@ -18,6 +19,11 @@ const SalesSection = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSaleId, setSelectedSaleId] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
 
   const loadSales = useCallback(async () => {
     try {
@@ -39,6 +45,23 @@ const SalesSection = () => {
   useEffect(() => {
     loadSales();
   }, [loadSales]);
+
+  const loadFormOptions = useCallback(async () => {
+    try {
+      setFormLoading(true);
+      const [customersResponse, productsResponse] = await Promise.all([
+        dashboardService.getCustomers(),
+        dashboardService.getProducts(),
+      ]);
+      setCustomers(customersResponse.data || []);
+      setProducts(productsResponse.data || []);
+      setFormError("");
+    } catch (err) {
+      setFormError(handleApiError(err));
+    } finally {
+      setFormLoading(false);
+    }
+  }, []);
 
   const filteredSales = useMemo(() => {
     if (!searchTerm) return sales;
@@ -104,6 +127,29 @@ const SalesSection = () => {
     }
   };
 
+  const handleOpenForm = () => {
+    setFormOpen(true);
+    loadFormOptions();
+  };
+
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setFormError("");
+  };
+
+  const handleCreateSale = async (saleData) => {
+    try {
+      await dashboardService.createSale(saleData);
+      await loadSales();
+      setFormOpen(false);
+      setFormError("");
+    } catch (err) {
+      const message = handleApiError(err);
+      setFormError(message);
+      throw err;
+    }
+  };
+
   return (
     <div className="sales-section">
       <div className="sales-hero">
@@ -117,7 +163,7 @@ const SalesSection = () => {
           <button className="sales-btn sales-btn-ghost" onClick={loadSales}>
             <MdRefresh /> Actualizar
           </button>
-          <button className="sales-btn sales-btn-primary">
+          <button className="sales-btn sales-btn-primary" onClick={handleOpenForm}>
             <MdReceiptLong /> Nueva Venta
           </button>
         </div>
@@ -324,6 +370,16 @@ const SalesSection = () => {
           )}
         </aside>
       </div>
+
+      <SalesForm
+        isOpen={formOpen}
+        onClose={handleCloseForm}
+        onSave={handleCreateSale}
+        customers={customers}
+        products={products}
+        loading={formLoading}
+        error={formError}
+      />
     </div>
   );
 };
