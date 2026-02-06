@@ -118,13 +118,15 @@ describe("ProductForm Component", () => {
 
       await userEvent.type(nameInput, "Laptop");
       await userEvent.selectOptions(categorySelect, "Electrónica");
-      await userEvent.type(priceInput, "-100");
+      // Leave price empty to trigger validation
       await userEvent.type(stockInput, "10");
       await userEvent.click(submitButton);
 
-      expect(
-        screen.getByText(/el precio debe ser un número positivo/i)
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText(/el precio debe ser un número positivo/i)
+        ).toBeInTheDocument();
+      });
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
@@ -139,12 +141,14 @@ describe("ProductForm Component", () => {
       await userEvent.type(nameInput, "Laptop");
       await userEvent.selectOptions(categorySelect, "Electrónica");
       await userEvent.type(priceInput, "999");
-      await userEvent.type(stockInput, "-5");
+      // Leave stock empty to trigger validation
       await userEvent.click(submitButton);
 
-      expect(
-        screen.getByText(/el stock debe ser un número no negativo/i)
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText(/el stock debe ser un número no negativo/i)
+        ).toBeInTheDocument();
+      });
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 

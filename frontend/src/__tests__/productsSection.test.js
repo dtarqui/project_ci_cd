@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import ProductsSection from "../components/ProductsSection";
 import * as apiService from "../services/api";
 
@@ -190,5 +191,190 @@ describe("ProductsSection Component - CRUD Operations", () => {
       });
     });
   });
-});
 
+  describe("Operaciones CRUD", () => {
+    it("deve abrir o formulario de criar cuando clica no botão criar", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /nuevo producto/i })
+        ).toBeInTheDocument();
+      });
+
+      const createButton = screen.getAllByRole("button", {
+        name: /nuevo producto/i,
+      })[0];
+      await userEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/crear nuevo producto/i)).toBeInTheDocument();
+      });
+    });
+
+    it("deve abrir o formulario para editar quando clica editar", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByRole("button", { name: /editar/i });
+      await userEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText(/editar producto/i)).toBeInTheDocument();
+      });
+    });
+
+    it("deve chamar createProduct quando salva novo produto", async () => {
+      apiService.dashboardService.createProduct.mockResolvedValue({
+        data: {
+          id: 3,
+          name: "Novo Produto",
+          category: "Categoria",
+          price: 100,
+          stock: 10,
+          status: "Em Stock",
+          lastSale: "2026-02-06",
+          sales: 0,
+        },
+      });
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /nuevo producto/i })
+        ).toBeInTheDocument();
+      });
+
+      const createButton = screen.getAllByRole("button", {
+        name: /nuevo producto/i,
+      })[0];
+      await userEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/crear nuevo producto/i)).toBeInTheDocument();
+      });
+
+      expect(apiService.dashboardService.createProduct).toBeDefined();
+    });
+
+    it("deve chamar updateProduct quando edita produto existente", async () => {
+      apiService.dashboardService.updateProduct.mockResolvedValue({
+        data: mockProducts[0],
+      });
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByRole("button", { name: /editar/i });
+      await userEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText(/editar producto/i)).toBeInTheDocument();
+      });
+
+      expect(apiService.dashboardService.updateProduct).toBeDefined();
+    });
+
+    it("deve mostrar confirmação de eliminação", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/¿Estás seguro de que deseas eliminar/i)
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("deve chamar deleteProduct quando confirma eliminação", async () => {
+      apiService.dashboardService.deleteProduct.mockResolvedValue({});
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/¿Estás seguro de que deseas eliminar/i)
+        ).toBeInTheDocument();
+      });
+
+      // Find all delete buttons - the last one should be in the modal
+      const allDeleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      // Click the last one (from the confirmation modal)
+      await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
+
+      expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
+    });
+
+    it("deve fechar modal de confirmação ao cancelar", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/¿Estás seguro de que deseas eliminar/i)
+        ).toBeInTheDocument();
+      });
+
+      const cancelButtons = screen.getAllByRole("button", { name: /cancelar/i });
+      await userEvent.click(cancelButtons[cancelButtons.length - 1]);
+
+      await waitFor(() => {
+        expect(
+          screen.queryByText(/¿Estás seguro de que deseas eliminar/i)
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it("deve mostrar erro quando delete falha", async () => {
+      apiService.dashboardService.deleteProduct.mockRejectedValue(
+        new Error("Delete failed")
+      );
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const deleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(deleteButtons[0]);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/¿Estás seguro de que deseas eliminar/i)
+        ).toBeInTheDocument();
+      });
+
+      const allDeleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
+
+      expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
+    });
+  });
+});
