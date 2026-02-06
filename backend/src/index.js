@@ -8,6 +8,7 @@ const { corsOptions } = require("./config/cors");
 const { notFoundHandler, errorHandler } = require("./middleware/auth");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 
 /**
@@ -46,6 +47,9 @@ const createApp = () => {
 
   // Rutas de productos
   app.use("/api/products", productRoutes);
+
+  // Rutas de clientes
+  app.use("/api/customers", customerRoutes);
 
   // Rutas del dashboard
   app.use("/api/dashboard", dashboardRoutes);

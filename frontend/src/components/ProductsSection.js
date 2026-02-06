@@ -112,7 +112,7 @@ const ProductsSection = () => {
 
   if (error) {
     return (
-      <div className="section-content">
+      <div className="products-section">
         <h2>Gestión de Productos</h2>
         <div className="error-message">{error}</div>
       </div>
@@ -120,7 +120,7 @@ const ProductsSection = () => {
   }
 
   return (
-    <div className="section-content products-section">
+    <div className="products-section">
       <div className="products-header">
         <div>
           <h2>Gestión de Productos</h2>

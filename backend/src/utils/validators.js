@@ -91,8 +91,70 @@ const validateLoginCredentials = (body) => {
   return { isValid: true };
 };
 
+/**
+ * Valida datos de cliente para crear
+ * @param {Object} body - Body del request
+ * @returns {Object} { isValid: boolean, error?: string, code?: string }
+ */
+const validateCustomerCreate = (body) => {
+  const { name, email, phone, address, city, postalCode } = body;
+
+  if (!name || !email || !phone) {
+    return {
+      isValid: false,
+      error: "Campos requeridos: name, email, phone",
+      code: "MISSING_FIELDS",
+    };
+  }
+
+  if (!email.includes("@")) {
+    return {
+      isValid: false,
+      error: "El email debe ser válido",
+      code: "INVALID_EMAIL",
+    };
+  }
+
+  if (phone.length < 10) {
+    return {
+      isValid: false,
+      error: "El teléfono debe tener al menos 10 caracteres",
+      code: "INVALID_PHONE",
+    };
+  }
+
+  return { isValid: true };
+};
+
+/**
+ * Valida datos de cliente para actualizar
+ * @param {Object} body - Body del request
+ * @returns {Object} { isValid: boolean, error?: string, code?: string }
+ */
+const validateCustomerUpdate = (body) => {
+  if (body.email && !body.email.includes("@")) {
+    return {
+      isValid: false,
+      error: "El email debe ser válido",
+      code: "INVALID_EMAIL",
+    };
+  }
+
+  if (body.phone && body.phone.length < 10) {
+    return {
+      isValid: false,
+      error: "El teléfono debe tener al menos 10 caracteres",
+      code: "INVALID_PHONE",
+    };
+  }
+
+  return { isValid: true };
+};
+
 module.exports = {
   validateProductCreate,
   validateProductUpdate,
   validateLoginCredentials,
+  validateCustomerCreate,
+  validateCustomerUpdate,
 };

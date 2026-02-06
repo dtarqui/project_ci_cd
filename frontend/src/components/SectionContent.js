@@ -2,11 +2,17 @@ import React from "react";
 import PropTypes from "prop-types";
 import { MdPeople, MdSettings } from "react-icons/md";
 import ProductsSection from "./ProductsSection";
+import CustomersSection from "./CustomersSection";
 
 const SectionContent = ({ type }) => {
   // Si es Productos, mostrar el componente ProductsSection
   if (type === "Productos") {
     return <ProductsSection />;
+  }
+
+  // Si es Clientes, mostrar el componente CustomersSection
+  if (type === "Clientes") {
+    return <CustomersSection />;
   }
 
   const sections = {
