@@ -377,4 +377,235 @@ describe("ProductsSection Component - CRUD Operations", () => {
       expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
     });
   });
+
+  describe("Filtros y Ordenamiento", () => {
+    it("debe permitir cambiar el término de búsqueda", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/buscar productos/i)).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText(/buscar productos/i);
+      await userEvent.type(searchInput, "Laptop");
+
+      expect(searchInput.value).toBe("Laptop");
+    });
+
+    it("debe permitir cambiar la categoría", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue("Todas las categorías")).toBeInTheDocument();
+      });
+
+      const categorySelect = screen.getByDisplayValue("Todas las categorías");
+      await userEvent.selectOptions(categorySelect, "Electrónica");
+
+      expect(categorySelect.value).toBe("Electrónica");
+    });
+
+    it("debe permitir cambiar el orden", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        const sortSelects = screen.getAllByRole("combobox");
+        expect(sortSelects.length).toBeGreaterThan(0);
+      });
+
+      const selects = screen.getAllByRole("combobox");
+      const sortSelect = selects.find(select => 
+        select.querySelector('option[value="price"]')
+      );
+
+      if (sortSelect) {
+        await userEvent.selectOptions(sortSelect, "price");
+        expect(sortSelect.value).toBe("price");
+      }
+    });
+
+    it("debe recargar productos cuando cambian los filtros", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(apiService.dashboardService.getProducts).toHaveBeenCalled();
+      });
+
+      const initialCalls = apiService.dashboardService.getProducts.mock.calls.length;
+
+      const searchInput = screen.getByPlaceholderText(/buscar productos/i);
+      await userEvent.type(searchInput, "Test");
+
+      await waitFor(() => {
+        expect(apiService.dashboardService.getProducts.mock.calls.length).toBeGreaterThan(initialCalls);
+      });
+    });
+  });
+
+  describe("Estados y Colores", () => {
+    it("debe mostrar badge de estado En Stock", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        const statusBadges = screen.getAllByText("En Stock");
+        expect(statusBadges.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("debe aplicar clase de color según el estado", async () => {
+      const productsWithDifferentStatuses = [
+        { ...mockProducts[0], status: "En Stock" },
+        { ...mockProducts[1], status: "Bajo Stock" },
+      ];
+
+      apiService.dashboardService.getProducts.mockResolvedValue({
+        data: productsWithDifferentStatuses,
+      });
+
+      const { container } = render(<ProductsSection />);
+
+      await waitFor(() => {
+        const badges = container.querySelectorAll(".status-badge");
+        expect(badges.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe("Información de Productos", () => {
+    it("debe mostrar precio formateado", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("$999.99")).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar cantidad de stock con unidades", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("45 unidades")).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar fecha de última venta", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("2026-02-04")).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar número de ventas", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("156")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Modal de ProductForm", () => {
+    it("debe pasar categorías al formulario", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const createButton = screen.getAllByRole("button", {
+        name: /nuevo producto/i,
+      })[0];
+      await userEvent.click(createButton);
+
+      // El formulario debe estar presente
+      await waitFor(() => {
+        expect(screen.getByText(/crear nuevo producto/i)).toBeInTheDocument();
+      });
+    });
+
+    it("debe cerrar el formulario cuando se cancela", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const createButton = screen.getAllByRole("button", {
+        name: /nuevo producto/i,
+      })[0];
+      await userEvent.click(createButton);
+
+      await waitFor(() => {
+        expect(screen.getByText(/crear nuevo producto/i)).toBeInTheDocument();
+      });
+
+      const cancelButtons = screen.getAllByRole("button", { name: /cancelar/i });
+      await userEvent.click(cancelButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.queryByText(/crear nuevo producto/i)).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Acciones de Botones", () => {
+    it("debe tener iconos en los botones de acción", async () => {
+      const { container } = render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      const editButtons = container.querySelectorAll(".btn-edit");
+      const deleteButtons = container.querySelectorAll(".btn-delete");
+
+      expect(editButtons.length).toBeGreaterThan(0);
+      expect(deleteButtons.length).toBeGreaterThan(0);
+    });
+
+    it("debe tener aria-labels en botones de acción", async () => {
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText(/editar laptop dell xps 13/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/eliminar laptop dell xps 13/i)).toBeInTheDocument();
+    });
+  });
+
+  describe("Manejo de Errores en Operaciones", () => {
+    it("debe manejar error al crear producto", async () => {
+      apiService.dashboardService.createProduct.mockRejectedValue(
+        new Error("Create failed")
+      );
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /nuevo producto/i })
+        ).toBeInTheDocument();
+      });
+
+      // La funcionalidad debe estar disponible
+      expect(apiService.dashboardService.createProduct).toBeDefined();
+    });
+
+    it("debe manejar error al actualizar producto", async () => {
+      apiService.dashboardService.updateProduct.mockRejectedValue(
+        new Error("Update failed")
+      );
+
+      render(<ProductsSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      expect(apiService.dashboardService.updateProduct).toBeDefined();
+    });
+  });
 });

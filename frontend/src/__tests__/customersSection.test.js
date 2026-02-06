@@ -417,4 +417,175 @@ describe("CustomersSection Component - CRUD Operations", () => {
       });
     });
   });
+
+  describe("Cerrar Formulario", () => {
+    it("debe cerrar formulario al hacer click en cancelar durante creación", async () => {
+      render(<CustomersSection />);
+
+      const addButton = await screen.findByRole("button", {
+        name: /Nuevo Cliente/i,
+      });
+      await userEvent.click(addButton);
+
+      await waitFor(() => {
+        const heading = screen.queryAllByText("Nuevo Cliente");
+        expect(heading.length).toBeGreaterThan(0);
+      });
+
+      const cancelButton = screen.getByRole("button", { name: /Cancelar/i });
+      await userEvent.click(cancelButton);
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText(/Email \*/i)).not.toBeInTheDocument();
+      });
+    });
+
+    it("debe cerrar formulario al hacer click en cancelar durante edición", async () => {
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Juan García")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByTitle("Editar");
+      await userEvent.click(editButtons[0]);
+
+      await waitFor(() => {
+        const heading = screen.queryAllByText("Editar Cliente");
+        expect(heading.length).toBeGreaterThan(0);
+      });
+
+      const cancelButton = screen.getByRole("button", { name: /Cancelar/i });
+      await userEvent.click(cancelButton);
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText(/Email \*/i)).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Información de Compras", () => {
+    it("debe mostrar información de clientes", async () => {
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Juan García")).toBeInTheDocument();
+        expect(screen.getByText("María López")).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar emails de clientes", async () => {
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/juan.garcia@email.com/i)).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar la tabla de clientes", async () => {
+      const { container } = render(<CustomersSection />);
+
+      await waitFor(() => {
+        const table = container.querySelector("table");
+        expect(table).toBeInTheDocument();
+      });
+    });
+
+    it("debe mostrar información de estado", async () => {
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        const statusBadges = screen.getAllByText("Activo");
+        expect(statusBadges.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe("Manejo de Errores en Operaciones", () => {
+    it("debe manejar error al crear cliente", async () => {
+      apiService.dashboardService.createCustomer.mockRejectedValue(
+        new Error("Create failed")
+      );
+
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+      render(<CustomersSection />);
+
+      const addButton = await screen.findByRole("button", {
+        name: /Nuevo Cliente/i,
+      });
+      await userEvent.click(addButton);
+
+      const nameInputs = screen.getAllByPlaceholderText("Juan García");
+      const nameInput = nameInputs[0];
+      const emailInput = screen.getByPlaceholderText("juan@example.com");
+      const phoneInput = screen.getByPlaceholderText("1234567890");
+
+      await userEvent.clear(nameInput);
+      await userEvent.type(nameInput, "Test");
+      await userEvent.clear(emailInput);
+      await userEvent.type(emailInput, "test@test.com");
+      await userEvent.clear(phoneInput);
+      await userEvent.type(phoneInput, "123");
+
+      const submitButton = screen.getByRole("button", { name: /Crear/i });
+      await userEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(apiService.dashboardService.createCustomer).toHaveBeenCalled();
+      });
+
+      alertSpy.mockRestore();
+    });
+
+    it("debe manejar error al actualizar cliente", async () => {
+      apiService.dashboardService.updateCustomer.mockRejectedValue(
+        new Error("Update failed")
+      );
+
+      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Juan García")).toBeInTheDocument();
+      });
+
+      const editButtons = screen.getAllByTitle("Editar");
+      await userEvent.click(editButtons[0]);
+
+      const nameInput = await screen.findByDisplayValue("Juan García");
+      await userEvent.clear(nameInput);
+      await userEvent.type(nameInput, "Updated");
+
+      const updateButton = screen.getByRole("button", { name: /Actualizar/i });
+      await userEvent.click(updateButton);
+
+      await waitFor(() => {
+        expect(apiService.dashboardService.updateCustomer).toHaveBeenCalled();
+      });
+
+      alertSpy.mockRestore();
+    });
+  });
+
+  describe("Estados y Badges", () => {
+    it("debe mostrar badge de estado Activo", async () => {
+      render(<CustomersSection />);
+
+      await waitFor(() => {
+        const statusBadges = screen.getAllByText("Activo");
+        expect(statusBadges.length).toBeGreaterThan(0);
+      });
+    });
+
+    it("debe aplicar clase correcta al badge de estado", async () => {
+      const { container } = render(<CustomersSection />);
+
+      await waitFor(() => {
+        const badges = container.querySelectorAll(".status-badge");
+        expect(badges.length).toBeGreaterThan(0);
+      });
+    });
+  });
 });

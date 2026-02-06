@@ -15,6 +15,18 @@ jest.mock("../components/CustomersSection", () => {
   };
 });
 
+jest.mock("../components/ProductsSection", () => {
+  return function MockProductsSection() {
+    return <div data-testid="products-section">Products Section Mock</div>;
+  };
+});
+
+jest.mock("../components/SalesSection", () => {
+  return function MockSalesSection() {
+    return <div data-testid="sales-section">Sales Section Mock</div>;
+  };
+});
+
 describe("SectionContent Component", () => {
   describe("Rendering Routes", () => {
     it("should render CustomersSection when type is 'Clientes'", () => {
@@ -28,6 +40,16 @@ describe("SectionContent Component", () => {
       expect(
         screen.getByText(/Administra tu perfil, preferencias y configuración de seguridad/)
       ).toBeInTheDocument();
+    });
+
+    it("should render ProductsSection when type is 'Productos'", () => {
+      render(<SectionContent type="Productos" />);
+      expect(screen.getByTestId("products-section")).toBeInTheDocument();
+    });
+
+    it("should render SalesSection when type is 'Ventas'", () => {
+      render(<SectionContent type="Ventas" />);
+      expect(screen.getByTestId("sales-section")).toBeInTheDocument();
     });
 
     it("should return null when type is unknown", () => {
