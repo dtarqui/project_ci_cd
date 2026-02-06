@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd } from "react-icons/md";
 import { dashboardService } from "../services/api";
 import ProductForm from "./ProductForm";
@@ -15,11 +15,7 @@ const ProductsSection = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  useEffect(() => {
-    loadProducts();
-  }, [searchTerm, selectedCategory, sortBy]);
-
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -36,7 +32,11 @@ const ProductsSection = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, selectedCategory, sortBy]);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   /**
    * Abrir formulario para crear nuevo producto

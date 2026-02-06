@@ -5,11 +5,7 @@
 const express = require("express");
 const cors = require("cors");
 const { corsOptions } = require("./config/cors");
-const {
-  authenticateToken,
-  notFoundHandler,
-  errorHandler,
-} = require("./middleware/auth");
+const { notFoundHandler, errorHandler } = require("./middleware/auth");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
