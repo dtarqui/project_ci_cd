@@ -1,14 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { MdInventory, MdPeople, MdSettings } from "react-icons/md";
+import { MdPeople, MdSettings } from "react-icons/md";
+import ProductsSection from "./ProductsSection";
 
 const SectionContent = ({ type }) => {
+  // Si es Productos, mostrar el componente ProductsSection
+  if (type === "Productos") {
+    return <ProductsSection />;
+  }
+
   const sections = {
-    Productos: {
-      title: "Gestión de Productos",
-      description: "Aquí puedes administrar tu inventario de productos.",
-      icon: <MdInventory />,
-    },
     Clientes: {
       title: "Gestión de Clientes",
       description: "Administra tu base de datos de clientes.",

@@ -2,12 +2,20 @@
 
 Aplicación web full-stack de ejemplo con autenticación y dashboard de métricas, enfocada en demostrar un pipeline CI/CD con Jenkins.
 
+## 🎯 Estado Actual
+
+✅ **Backend:** 112/112 tests pasando  
+✅ **Frontend:** 73/76 tests pasando  
+✅ **CRUD Completo:** POST, GET, PUT, DELETE funcionando  
+✅ **Arquitectura Limpia:** Middleware, utilities y routes organizados  
+
 ## 📋 Características
 
 - ✅ **Autenticación completa** - Login/logout con validación
 - 📊 **Dashboard interactivo** - Métricas de ventas con gráficos
+- 📦 **CRUD de Productos** - Crear, leer, actualizar, eliminar (recientemente reparado)
 - 🎨 **Diseño moderno** - UI responsive basada en mockups
-- 🧪 **Testing completo** - Tests unitarios con Jest y React Testing Library
+- 🧪 **Testing completo** - Tests unitarios con Jest y React Testing Library (112 tests backend)
 - 🔧 **Backend robusto** - API REST con Express.js
 - 🚀 **CI/CD automatizado** - Pipeline con Jenkins (lint, tests, build, deploy)
 - 📦 **Docker ready** - Backend containerizado
@@ -17,16 +25,32 @@ Aplicación web full-stack de ejemplo con autenticación y dashboard de métrica
 ```
 ├── frontend/          # React 18 + Webpack
 │   ├── src/
-│   │   ├── App.js          # Componente principal
-│   │   ├── login.js        # Formulario de autenticación
-│   │   ├── dashboard.js    # Panel de métricas
-│   │   ├── styles.css      # Estilos CSS modernos
-│   │   └── services/       # Servicios API
-│   └── tests/         # Tests unitarios
+│   │   ├── App.js                    # Componente principal
+│   │   ├── login.js                  # Formulario de autenticación
+│   │   ├── dashboard.js              # Panel de métricas
+│   │   ├── styles.css                # Estilos CSS modernos
+│   │   ├── services/
+│   │   │   └── api.js                # Cliente API (GET, POST, PUT, DELETE)
+│   │   └── components/
+│   │       ├── ProductsSection.js    # Tabla CRUD de productos
+│   │       ├── ProductForm.js        # Modal para crear/editar
+│   │       └── ...otros componentes
+│   └── __tests__/                    # Tests unitarios (76 tests)
 ├── backend/           # Node.js + Express
+│   ├── app.js              # 620 líneas - Limpia y modular
+│   │   ├─ Middleware (autenticación)
+│   │   ├─ Utility Functions (helpers)
+│   │   ├─ Product Routes (CRUD)
+│   │   ├─ Auth Routes
+│   │   └─ Error Handling
 │   ├── index.js            # Servidor API
-│   └── Dockerfile          # Configuración Docker
-└── docs/              # Documentación
+│   ├── Dockerfile          # Configuración Docker
+│   └── __tests__/          # Tests unitarios (112 tests)
+├── docs/
+│   ├── ARCHITECTURE_GUIDE.md      # Guía detallada de arquitectura
+│   ├── FRONTEND_INTEGRATION.md    # Cómo usar los endpoints
+│   └── REFACTOR_SUMMARY.md        # Resumen de cambios
+└── Jenkinsfile                    # Pipeline CI/CD
 ```
 
 ## 🚀 Instalación Rápida
@@ -48,6 +72,8 @@ npm start
 cd frontend
 npm install
 npm start
+# App en http://localhost:3000
+```
 # Aplicación en http://localhost:3000
 ```
 
@@ -59,12 +85,75 @@ npm start
 | `demo`  | `demo123`  | Usuario demo |
 | `test`  | `test123`  | Usuario test |
 
+## � API Endpoints - CRUD de Productos
+
+### Crear Producto (POST)
+```bash
+POST /api/products
+Authorization: Bearer valid_token
+Content-Type: application/json
+
+{
+  "name": "Laptop Dell XPS",
+  "category": "Electrónica",
+  "price": 999.99,
+  "stock": 45
+}
+# Respuesta: 201 Created
+```
+
+### Listar Productos (GET)
+```bash
+GET /api/products?search=&category=Electrónica&sort=price
+Authorization: Bearer valid_token
+
+# Respuesta: 200 OK
+# {
+#   "success": true,
+#   "data": [ { id, name, category, price, stock, status, ... }, ... ],
+#   "count": 10
+# }
+```
+
+### Obtener Producto Individual (GET)
+```bash
+GET /api/products/1
+Authorization: Bearer valid_token
+
+# Respuesta: 200 OK
+# { "success": true, "data": { id: 1, name: "...", ... } }
+```
+
+### Actualizar Producto (PUT)
+```bash
+PUT /api/products/1
+Authorization: Bearer valid_token
+Content-Type: application/json
+
+{
+  "price": 1199.99,
+  "stock": 30
+}
+# Respuesta: 200 OK
+# Status se actualiza automáticamente: "En Stock" / "Bajo Stock" / "Sin Stock"
+```
+
+### Eliminar Producto (DELETE)
+```bash
+DELETE /api/products/1
+Authorization: Bearer valid_token
+
+# Respuesta: 200 OK
+# Producto eliminado de la base de datos
+```
+
 ## 📊 Dashboard Features
 
 El dashboard incluye:
 - **Ventas diarias** - Métricas principales
 - **Gráficos interactivos** - Ventas por sucursal, productos y tendencias
-- **Navegación** - Productos, Clientes, Configuraciones
+- **Gestión de Productos** - Crear, editar y eliminar productos
+- **Búsqueda y Filtros** - Por nombre, categoría y ordenamiento
 - **Responsive** - Adaptado a móviles y tablets
 
 ## 🧪 Testing

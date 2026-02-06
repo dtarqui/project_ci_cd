@@ -1,89 +1,845 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="40" failures="0" errors="0" time="5.389">
-  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T22:35:00" time="2.233" tests="16">
-    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.033">
+<testsuites name="jest tests" tests="76" failures="3" errors="0" time="13.642">
+  <testsuite name="ProductForm Component" errors="0" failures="2" skipped="0" timestamp="2026-02-05T23:16:25" time="7.931" tests="20">
+    <testcase classname="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" name="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" time="0.054">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.035">
+    <testcase classname="ProductForm Component Rendering no debe renderizar cuando isOpen es false" name="ProductForm Component Rendering no debe renderizar cuando isOpen es false" time="0.002">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.068">
+    <testcase classname="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" name="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" time="0.008">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.028">
+    <testcase classname="ProductForm Component Rendering debe renderizar todos los campos del formulario" name="ProductForm Component Rendering debe renderizar todos los campos del formulario" time="0.012">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render user account button" name="Dashboard Tests Rendering should render user account button" time="0.033">
+    <testcase classname="ProductForm Component Rendering debe renderizar todas las categorías en el select" name="ProductForm Component Rendering debe renderizar todas las categorías en el select" time="0.007">
     </testcase>
-    <testcase classname="Dashboard Tests Rendering should render charts when data is available" name="Dashboard Tests Rendering should render charts when data is available" time="0.014">
+    <testcase classname="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" name="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" time="0.053">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.142">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" name="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" time="0.592">
+    </testcase>
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" name="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" time="0.045">
+    </testcase>
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" name="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" time="0.219">
+    </testcase>
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" name="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" time="1.512">
+      <failure>Error: Unable to find an element with the text: /el precio debe ser un número positivo/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;product-form-overlay&quot;
+    &gt;
+      &lt;div
+        class=&quot;product-form-modal&quot;
+      &gt;
+        &lt;div
+          class=&quot;product-form-header&quot;
+        &gt;
+          &lt;h2&gt;
+            Crear Nuevo Producto
+          &lt;/h2&gt;
+          &lt;button
+            aria-label=&quot;Cerrar formulario&quot;
+            class=&quot;product-form-close&quot;
+            type=&quot;button&quot;
+          &gt;
+            ×
+          &lt;/button&gt;
+        &lt;/div&gt;
+        &lt;form
+          class=&quot;product-form&quot;
+        &gt;
+          &lt;div
+            class=&quot;form-group&quot;
+          &gt;
+            &lt;label
+              for=&quot;name&quot;
+            &gt;
+              Nombre del Producto *
+            &lt;/label&gt;
+            &lt;input
+              id=&quot;name&quot;
+              name=&quot;name&quot;
+              placeholder=&quot;Ej: Laptop Dell XPS 13&quot;
+              type=&quot;text&quot;
+              value=&quot;Laptop&quot;
+            /&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-group&quot;
+          &gt;
+            &lt;label
+              for=&quot;category&quot;
+            &gt;
+              Categoría *
+            &lt;/label&gt;
+            &lt;select
+              id=&quot;category&quot;
+              name=&quot;category&quot;
+            &gt;
+              &lt;option
+                value=&quot;&quot;
+              &gt;
+                -- Selecciona una categoría --
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Electrónica&quot;
+              &gt;
+                Electrónica
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Ropa&quot;
+              &gt;
+                Ropa
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Alimentos&quot;
+              &gt;
+                Alimentos
+              &lt;/option&gt;
+            &lt;/select&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-row&quot;
+          &gt;
+            &lt;div
+              class=&quot;form-group&quot;
+            &gt;
+              &lt;label
+                for=&quot;price&quot;
+              &gt;
+                Precio (USD) *
+              &lt;/label&gt;
+              &lt;input
+                id=&quot;price&quot;
+                min=&quot;0&quot;
+                name=&quot;price&quot;
+                placeholder=&quot;0.00&quot;
+                step=&quot;0.01&quot;
+                type=&quot;number&quot;
+                value=&quot;-100&quot;
+              /&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;form-group&quot;
+            &gt;
+              &lt;label
+                for=&quot;stock&quot;
+              &gt;
+                Stock *
+              &lt;/label&gt;
+              &lt;input
+                id=&quot;stock&quot;
+                min=&quot;0&quot;
+                name=&quot;stock&quot;
+                placeholder=&quot;0&quot;
+                type=&quot;number&quot;
+                value=&quot;10&quot;
+              /&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-actions&quot;
+          &gt;
+            &lt;button
+              class=&quot;btn btn-secondary&quot;
+              type=&quot;button&quot;
+            &gt;
+              Cancelar
+            &lt;/button&gt;
+            &lt;button
+              class=&quot;btn btn-primary&quot;
+              type=&quot;submit&quot;
+            &gt;
+              Guardar Producto
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/form&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+    at waitForWrapper (C:\Repos\project_ci_cd\frontend\node_modules\@testing-library\dom\dist\wait-for.js:163:27)
+    at C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:125:20
+    at Generator.call (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at Generator._invoke [as next] (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)</failure>
+    </testcase>
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" name="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" time="1.499">
+      <failure>Error: Unable to find an element with the text: /el stock debe ser un número no negativo/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;product-form-overlay&quot;
+    &gt;
+      &lt;div
+        class=&quot;product-form-modal&quot;
+      &gt;
+        &lt;div
+          class=&quot;product-form-header&quot;
+        &gt;
+          &lt;h2&gt;
+            Crear Nuevo Producto
+          &lt;/h2&gt;
+          &lt;button
+            aria-label=&quot;Cerrar formulario&quot;
+            class=&quot;product-form-close&quot;
+            type=&quot;button&quot;
+          &gt;
+            ×
+          &lt;/button&gt;
+        &lt;/div&gt;
+        &lt;form
+          class=&quot;product-form&quot;
+        &gt;
+          &lt;div
+            class=&quot;form-group&quot;
+          &gt;
+            &lt;label
+              for=&quot;name&quot;
+            &gt;
+              Nombre del Producto *
+            &lt;/label&gt;
+            &lt;input
+              id=&quot;name&quot;
+              name=&quot;name&quot;
+              placeholder=&quot;Ej: Laptop Dell XPS 13&quot;
+              type=&quot;text&quot;
+              value=&quot;Laptop&quot;
+            /&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-group&quot;
+          &gt;
+            &lt;label
+              for=&quot;category&quot;
+            &gt;
+              Categoría *
+            &lt;/label&gt;
+            &lt;select
+              id=&quot;category&quot;
+              name=&quot;category&quot;
+            &gt;
+              &lt;option
+                value=&quot;&quot;
+              &gt;
+                -- Selecciona una categoría --
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Electrónica&quot;
+              &gt;
+                Electrónica
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Ropa&quot;
+              &gt;
+                Ropa
+              &lt;/option&gt;
+              &lt;option
+                value=&quot;Alimentos&quot;
+              &gt;
+                Alimentos
+              &lt;/option&gt;
+            &lt;/select&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-row&quot;
+          &gt;
+            &lt;div
+              class=&quot;form-group&quot;
+            &gt;
+              &lt;label
+                for=&quot;price&quot;
+              &gt;
+                Precio (USD) *
+              &lt;/label&gt;
+              &lt;input
+                id=&quot;price&quot;
+                min=&quot;0&quot;
+                name=&quot;price&quot;
+                placeholder=&quot;0.00&quot;
+                step=&quot;0.01&quot;
+                type=&quot;number&quot;
+                value=&quot;999&quot;
+              /&gt;
+            &lt;/div&gt;
+            &lt;div
+              class=&quot;form-group&quot;
+            &gt;
+              &lt;label
+                for=&quot;stock&quot;
+              &gt;
+                Stock *
+              &lt;/label&gt;
+              &lt;input
+                id=&quot;stock&quot;
+                min=&quot;0&quot;
+                name=&quot;stock&quot;
+                placeholder=&quot;0&quot;
+                type=&quot;number&quot;
+                value=&quot;-5&quot;
+              /&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div
+            class=&quot;form-actions&quot;
+          &gt;
+            &lt;button
+              class=&quot;btn btn-secondary&quot;
+              type=&quot;button&quot;
+            &gt;
+              Cancelar
+            &lt;/button&gt;
+            &lt;button
+              class=&quot;btn btn-primary&quot;
+              type=&quot;submit&quot;
+            &gt;
+              Guardar Producto
+            &lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/form&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+    at waitForWrapper (C:\Repos\project_ci_cd\frontend\node_modules\@testing-library\dom\dist\wait-for.js:163:27)
+    at C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:147:20
+    at Generator.call (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at Generator._invoke [as next] (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productForm.test.js:2:1)</failure>
+    </testcase>
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" name="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" time="0.616">
+    </testcase>
+    <testcase classname="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" name="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" time="0.005">
+    </testcase>
+    <testcase classname="ProductForm Component Editar Producto debe permitir actualizar los datos" name="ProductForm Component Editar Producto debe permitir actualizar los datos" time="0.447">
+    </testcase>
+    <testcase classname="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" name="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" time="0.062">
+    </testcase>
+    <testcase classname="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" name="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" time="0.497">
+    </testcase>
+    <testcase classname="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" name="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" time="0.497">
+    </testcase>
+    <testcase classname="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" name="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" time="0.048">
+    </testcase>
+    <testcase classname="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" name="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" time="0.232">
+    </testcase>
+    <testcase classname="ProductForm Component Validación de Errores debe manejar errores del servidor" name="ProductForm Component Validación de Errores debe manejar errores del servidor" time="0.496">
+    </testcase>
+  </testsuite>
+  <testsuite name="ProductsSection Component - CRUD Operations" errors="0" failures="1" skipped="0" timestamp="2026-02-05T23:16:33" time="1.571" tests="16">
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" time="0.049">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" time="0.015">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" time="0.031">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" time="0.029">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado de carga" name="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado de carga" time="0.005">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" name="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" time="0.027">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar datos de ejemplo en caso de error" name="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar datos de ejemplo en caso de error" time="0.046">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método createProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método createProduct disponible" time="0.001">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método updateProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método updateProduct disponible" time="0">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" time="0">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" time="0">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" time="0.017">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" time="0.015">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" time="0.01">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" time="0.032">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" time="1.016">
+      <failure>Error: Found multiple elements with the text: En Stock
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+&lt;span
+  class=&quot;status-badge status-green&quot;
+&gt;
+  En Stock
+&lt;/span&gt;
+
+Ignored nodes: comments, script, style
+&lt;span
+  class=&quot;status-badge status-green&quot;
+&gt;
+  En Stock
+&lt;/span&gt;
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;section-content products-section&quot;
+    &gt;
+      &lt;div
+        class=&quot;products-header&quot;
+      &gt;
+        &lt;div&gt;
+          &lt;h2&gt;
+            Gestión de Productos
+          &lt;/h2&gt;
+          &lt;p&gt;
+            Administra tu catálogo de productos (
+            2
+             artículos)
+          &lt;/p&gt;
+        &lt;/div&gt;
+        &lt;button
+          class=&quot;btn-create-product&quot;
+          title=&quot;Crear nuevo producto&quot;
+        &gt;
+          &lt;svg
+            fill=&quot;currentColor&quot;
+            height=&quot;20&quot;
+            stroke=&quot;currentColor&quot;
+            stroke-width=&quot;0&quot;
+            viewBox=&quot;0 0 24 24&quot;
+            width=&quot;20&quot;
+            xmlns=&quot;http://www.w3.org/2000/svg&quot;
+          &gt;
+            &lt;path
+              d=&quot;M0 0h24v24H0z&quot;
+              fill=&quot;none&quot;
+            /&gt;
+            &lt;path
+              d=&quot;M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z&quot;
+            /&gt;
+          &lt;/svg&gt;
+          Nuevo Producto
+        &lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div
+        class=&quot;products-filters&quot;
+      &gt;
+        &lt;div
+          class=&quot;search-box&quot;
+        &gt;
+          &lt;svg
+            class=&quot;search-icon&quot;
+            fill=&quot;currentColor&quot;
+            height=&quot;1em&quot;
+            stroke=&quot;currentColor&quot;
+            stroke-width=&quot;0&quot;
+            viewBox=&quot;0 0 24 24&quot;
+            width=&quot;1em&quot;
+            xmlns=&quot;http://www.w3.org/2000/svg&quot;
+          &gt;
+            &lt;path
+              d=&quot;M0 0h24v24H0z&quot;
+              fill=&quot;none&quot;
+            /&gt;
+            &lt;path
+              d=&quot;M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z&quot;
+            /&gt;
+          &lt;/svg&gt;
+          &lt;input
+            class=&quot;search-input&quot;
+            placeholder=&quot;Buscar productos...&quot;
+            type=&quot;text&quot;
+            value=&quot;&quot;
+          /&gt;
+        &lt;/div&gt;
+        &lt;select
+          class=&quot;filter-select&quot;
+        &gt;
+          &lt;option
+            value=&quot;&quot;
+          &gt;
+            Todas las categorías
+          &lt;/option&gt;
+          &lt;option
+            value=&quot;Electrónica&quot;
+          &gt;
+            Electrónica
+          &lt;/option&gt;
+        &lt;/select&gt;
+        &lt;div
+          class=&quot;sort-box&quot;
+        &gt;
+          &lt;svg
+            class=&quot;sort-icon&quot;
+            fill=&quot;currentColor&quot;
+            height=&quot;1em&quot;
+            stroke=&quot;currentColor&quot;
+            stroke-width=&quot;0&quot;
+            viewBox=&quot;0 0 24 24&quot;
+            width=&quot;1em&quot;
+            xmlns=&quot;http://www.w3.org/2000/svg&quot;
+          &gt;
+            &lt;path
+              d=&quot;M0 0h24v24H0z&quot;
+              fill=&quot;none&quot;
+            /&gt;
+            &lt;path
+              d=&quot;M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z&quot;
+            /&gt;
+          &lt;/svg&gt;
+          &lt;select
+            class=&quot;filter-select&quot;
+          &gt;
+            &lt;option
+              value=&quot;name&quot;
+            &gt;
+              Nombre (A-Z)
+            &lt;/option&gt;
+            &lt;option
+              value=&quot;price&quot;
+            &gt;
+              Precio (Menor a Mayor)
+            &lt;/option&gt;
+            &lt;option
+              value=&quot;stock&quot;
+            &gt;
+              Stock (Mayor a Menor)
+            &lt;/option&gt;
+            &lt;option
+              value=&quot;sales&quot;
+            &gt;
+              Ventas (Mayor a Menor)
+            &lt;/option&gt;
+          &lt;/select&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div
+        class=&quot;products-table-container&quot;
+      &gt;
+        &lt;table
+          class=&quot;products-table&quot;
+        &gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;
+                Producto
+              &lt;/th&gt;
+              &lt;th&gt;
+                Categoría
+              &lt;/th&gt;
+              &lt;th&gt;
+                Precio
+              &lt;/th&gt;
+              &lt;th&gt;
+                Stock
+              &lt;/th&gt;
+              &lt;th&gt;
+                Estado
+              &lt;/th&gt;
+              &lt;th&gt;
+                Ventas
+              &lt;/th&gt;
+              &lt;th&gt;
+                Última Venta
+              &lt;/th&gt;
+              &lt;th&gt;
+                Acciones
+              &lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td
+                class=&quot;product-name&quot;
+              &gt;
+                Laptop Dell XPS 13
+              &lt;/td&gt;
+              &lt;td&gt;
+                Electrónica
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-price&quot;
+              &gt;
+                $
+                999.99
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-stock&quot;
+              &gt;
+                45
+                 unidades
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;span
+                  class=&quot;status-badge status-green&quot;
+                &gt;
+                  En Stock
+                &lt;/span&gt;
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-sales&quot;
+              &gt;
+                156
+              &lt;/td&gt;
+              &lt;td&gt;
+                2026-02-04
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-actions&quot;
+              &gt;
+                &lt;button
+                  aria-label=&quot;Editar Laptop Dell XPS 13&quot;
+                  class=&quot;btn-action btn-edit&quot;
+                  title=&quot;Editar producto&quot;
+                &gt;
+                  &lt;svg
+                    fill=&quot;currentColor&quot;
+                    height=&quot;18&quot;
+                    stroke=&quot;currentColor&quot;
+                    stroke-width=&quot;0&quot;
+                    viewBox=&quot;0 0 24 24&quot;
+                    width=&quot;18&quot;
+                    xmlns=&quot;http://www.w3.org/2000/svg&quot;
+                  &gt;
+                    &lt;path
+                      d=&quot;M0 0h24v24H0z&quot;
+                      fill=&quot;none&quot;
+                    /&gt;
+                    &lt;path
+                      d=&quot;M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z&quot;
+                    /&gt;
+                  &lt;/svg&gt;
+                &lt;/button&gt;
+                &lt;button
+                  aria-label=&quot;Eliminar Laptop Dell XPS 13&quot;
+                  class=&quot;btn-action btn-delete&quot;
+                  title=&quot;Eliminar producto&quot;
+                &gt;
+                  &lt;svg
+                    fill=&quot;currentColor&quot;
+                    height=&quot;18&quot;
+                    stroke=&quot;currentColor&quot;
+                    stroke-width=&quot;0&quot;
+                    viewBox=&quot;0 0 24 24&quot;
+                    width=&quot;18&quot;
+                    xmlns=&quot;http://www.w3.org/2000/svg&quot;
+                  &gt;
+                    &lt;path
+                      d=&quot;M0 0h24v24H0z&quot;
+                      fill=&quot;none&quot;
+                    /&gt;
+                    &lt;path
+                      d=&quot;M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z&quot;
+                    /&gt;
+                  &lt;/svg&gt;
+                &lt;/button&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td
+                class=&quot;product-name&quot;
+              &gt;
+                iPhone 13 Pro
+              &lt;/td&gt;
+              &lt;td&gt;
+                Electrónica
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-price&quot;
+              &gt;
+                $
+                899.99
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-stock&quot;
+              &gt;
+                32
+                 unidades
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;span
+                  class=&quot;status-badge status-green&quot;
+                &gt;
+                  En Stock
+                &lt;/span&gt;
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-sales&quot;
+              &gt;
+                289
+              &lt;/td&gt;
+              &lt;td&gt;
+                2026-02-05
+              &lt;/td&gt;
+              &lt;td
+                class=&quot;product-actions&quot;
+              &gt;
+                &lt;button
+                  aria-label=&quot;Editar iPhone 13 Pro&quot;
+                  class=&quot;btn-action btn-edit&quot;
+                  title=&quot;Editar producto&quot;
+                &gt;
+                  &lt;svg
+                    fill=&quot;currentColor&quot;
+                    height=&quot;18&quot;
+                    stroke=&quot;currentColor&quot;
+                    stroke-width=&quot;0&quot;
+                    viewBox=&quot;0 0 24 24&quot;
+                    width=&quot;18&quot;
+                    xmlns=&quot;http://www.w3.org/2000/svg&quot;
+                  &gt;
+                    &lt;path
+                      d=&quot;M0 0h24v24H0z&quot;
+                      fill=&quot;none&quot;
+                    /&gt;
+                    &lt;path
+                      d=&quot;M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z&quot;
+                    /&gt;
+                  &lt;/svg&gt;
+                &lt;/button&gt;
+                &lt;button
+                  aria-label=&quot;Eliminar iPhone 13 Pro&quot;
+                  class=&quot;btn-action btn-delete&quot;
+                  title=&quot;Eliminar producto&quot;
+                &gt;
+                  &lt;svg
+                    fill=&quot;currentColor&quot;
+                    height=&quot;18&quot;
+                    stroke=&quot;currentColor&quot;
+                    stroke-width=&quot;0&quot;
+                    viewBox=&quot;0 0 24 24&quot;
+                    width=&quot;18&quot;
+                    xmlns=&quot;http://www.w3.org/2000/svg&quot;
+                  &gt;
+                    &lt;path
+                      d=&quot;M0 0h24v24H0z&quot;
+                      fill=&quot;none&quot;
+                    /&gt;
+                    &lt;path
+                      d=&quot;M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z&quot;
+                    /&gt;
+                  &lt;/svg&gt;
+                &lt;/button&gt;
+              &lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+    at waitForWrapper (C:\Repos\project_ci_cd\frontend\node_modules\@testing-library\dom\dist\wait-for.js:163:27)
+    at C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:188:20
+    at Generator.call (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at Generator._invoke [as next] (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at asyncGeneratorStep (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at _next (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at new Promise (&lt;anonymous&gt;)
+    at Object.&lt;anonymous&gt; (C:\Repos\project_ci_cd\frontend\src\__tests__\productsSection.test.js:2:1)
+    at Promise.then.completed (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:316:40)
+    at _runTest (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Repos\project_ci_cd\frontend\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Repos\project_ci_cd\frontend\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Repos\project_ci_cd\frontend\node_modules\jest-runner\build\runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T23:16:35" time="1.388" tests="9">
+    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.019">
+    </testcase>
+    <testcase classname="Login Tests Rendering should render password visibility toggle" name="Login Tests Rendering should render password visibility toggle" time="0.003">
+    </testcase>
+    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.154">
+    </testcase>
+    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.031">
+    </testcase>
+    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.077">
+    </testcase>
+    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.046">
+    </testcase>
+    <testcase classname="Login Tests Form Submission should handle login error without server response" name="Login Tests Form Submission should handle login error without server response" time="0.445">
+    </testcase>
+    <testcase classname="Login Tests Form Submission should clear error when user starts typing" name="Login Tests Form Submission should clear error when user starts typing" time="0.139">
+    </testcase>
+    <testcase classname="Login Tests Form Submission should handle whitespace-only credentials" name="Login Tests Form Submission should handle whitespace-only credentials" time="0.277">
+    </testcase>
+  </testsuite>
+  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T23:16:36" time="1.287" tests="16">
+    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.005">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.024">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.047">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.031">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render user account button" name="Dashboard Tests Rendering should render user account button" time="0.021">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render charts when data is available" name="Dashboard Tests Rendering should render charts when data is available" time="0.025">
+    </testcase>
+    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.109">
     </testcase>
     <testcase classname="Dashboard Tests User Interactions should call logout when logout button is clicked" name="Dashboard Tests User Interactions should call logout when logout button is clicked" time="0.169">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.079">
+    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.095">
     </testcase>
-    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.082">
+    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.108">
     </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.176">
+    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.172">
     </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.03">
+    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.031">
     </testcase>
     <testcase classname="Dashboard Tests Service Calls should call dashboardService.getData on mount" name="Dashboard Tests Service Calls should call dashboardService.getData on mount" time="0.019">
     </testcase>
-    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.137">
+    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.169">
     </testcase>
-    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.029">
+    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.03">
     </testcase>
     <testcase classname="Dashboard Tests Data Display should render different sections based on navigation" name="Dashboard Tests Data Display should render different sections based on navigation" time="0.031">
     </testcase>
   </testsuite>
-  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T22:35:03" time="1.549" tests="9">
-    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.043">
+  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T23:16:38" time="0.778" tests="15">
+    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.01">
     </testcase>
-    <testcase classname="Login Tests Rendering should render password visibility toggle" name="Login Tests Rendering should render password visibility toggle" time="0.004">
+    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.006">
     </testcase>
-    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.167">
+    <testcase classname="App Tests Authentication Flow should handle successful login" name="App Tests Authentication Flow should handle successful login" time="0.029">
     </testcase>
-    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.063">
+    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.065">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.076">
+    <testcase classname="App Tests Error Handling should handle corrupted localStorage data" name="App Tests Error Handling should handle corrupted localStorage data" time="0.016">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.063">
-    </testcase>
-    <testcase classname="Login Tests Form Submission should handle login error without server response" name="Login Tests Form Submission should handle login error without server response" time="0.481">
-    </testcase>
-    <testcase classname="Login Tests Form Submission should clear error when user starts typing" name="Login Tests Form Submission should clear error when user starts typing" time="0.125">
-    </testcase>
-    <testcase classname="Login Tests Form Submission should handle whitespace-only credentials" name="Login Tests Form Submission should handle whitespace-only credentials" time="0.294">
-    </testcase>
-  </testsuite>
-  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-05T22:35:04" time="0.824" tests="15">
-    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.013">
-    </testcase>
-    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.015">
-    </testcase>
-    <testcase classname="App Tests Authentication Flow should handle successful login" name="App Tests Authentication Flow should handle successful login" time="0.093">
-    </testcase>
-    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.092">
-    </testcase>
-    <testcase classname="App Tests Error Handling should handle corrupted localStorage data" name="App Tests Error Handling should handle corrupted localStorage data" time="0.004">
-    </testcase>
-    <testcase classname="App Tests Error Handling should handle missing user data with token present" name="App Tests Error Handling should handle missing user data with token present" time="0.011">
+    <testcase classname="App Tests Error Handling should handle missing user data with token present" name="App Tests Error Handling should handle missing user data with token present" time="0.015">
     </testcase>
     <testcase classname="App Tests Error Handling should handle missing token with user present" name="App Tests Error Handling should handle missing token with user present" time="0.016">
     </testcase>
-    <testcase classname="App Tests Error Handling should handle invalid user object" name="App Tests Error Handling should handle invalid user object" time="0.004">
+    <testcase classname="App Tests Error Handling should handle invalid user object" name="App Tests Error Handling should handle invalid user object" time="0.016">
     </testcase>
-    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.089">
+    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.093">
     </testcase>
-    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.077">
+    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.094">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.078">
+    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.093">
     </testcase>
     <testcase classname="App Tests localStorage Integration should remove user data from localStorage on logout" name="App Tests localStorage Integration should remove user data from localStorage on logout" time="0.091">
     </testcase>
     <testcase classname="App Tests localStorage Integration should handle localStorage.getItem throwing error" name="App Tests localStorage Integration should handle localStorage.getItem throwing error" time="0.015">
     </testcase>
-    <testcase classname="App Tests Component Interactions should pass correct props to Login component" name="App Tests Component Interactions should pass correct props to Login component" time="0.015">
+    <testcase classname="App Tests Component Interactions should pass correct props to Login component" name="App Tests Component Interactions should pass correct props to Login component" time="0.005">
     </testcase>
-    <testcase classname="App Tests Component Interactions should pass correct props to Dashboard component" name="App Tests Component Interactions should pass correct props to Dashboard component" time="0.004">
+    <testcase classname="App Tests Component Interactions should pass correct props to Dashboard component" name="App Tests Component Interactions should pass correct props to Dashboard component" time="0.01">
     </testcase>
   </testsuite>
 </testsuites>

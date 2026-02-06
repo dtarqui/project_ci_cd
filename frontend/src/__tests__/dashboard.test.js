@@ -4,6 +4,13 @@ import userEvent from "@testing-library/user-event";
 import Dashboard from "../dashboard";
 import { dashboardService, authService } from "../services/api";
 
+// Mock del componente ProductsSection
+jest.mock("../components/ProductsSection", () => {
+  return function DummyProductsSection() {
+    return <div data-testid="products-section">Products Section</div>;
+  };
+});
+
 // Mock completo del módulo api
 jest.mock("../services/api", () => {
   const dashboardService = { getData: jest.fn() };

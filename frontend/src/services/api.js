@@ -39,9 +39,11 @@ api.interceptors.response.use(
   (error) => {    
     if (error.response?.status === 401) {
       // Token expirado o inválido
+      // Solo limpiar localStorage, dejar que el componente maneje el error
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.reload();
+      // Crear evento personalizado para que App.js se entere
+      window.dispatchEvent(new Event("unauthorized"));
     }
     return Promise.reject(error);
   }
@@ -64,6 +66,33 @@ export const authService = {
 export const dashboardService = {
   getData: async () => {
     const response = await api.get("/api/dashboard/data");
+    return response.data;
+  },
+
+  getProducts: async (params = "") => {
+    const response = await api.get(`/api/products${params ? "?" + params : ""}`);
+    // El backend retorna { success, data: [], count, timestamp }
+    // Retornamos la respuesta completa para que el componente pueda acceder a .data
+    return response.data;
+  },
+
+  getProduct: async (id) => {
+    const response = await api.get(`/api/products/${id}`);
+    return response.data;
+  },
+
+  createProduct: async (productData) => {
+    const response = await api.post("/api/products", productData);
+    return response.data;
+  },
+
+  updateProduct: async (id, productData) => {
+    const response = await api.put(`/api/products/${id}`, productData);
+    return response.data;
+  },
+
+  deleteProduct: async (id) => {
+    const response = await api.delete(`/api/products/${id}`);
     return response.data;
   },
 };

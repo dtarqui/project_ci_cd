@@ -29,6 +29,14 @@ export default function App() {
     }
 
     setLoading(false);
+
+    // Escuchar evento de no autorizado (401)
+    const handleUnauthorized = () => {
+      setUser(null);
+    };
+
+    window.addEventListener("unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("unauthorized", handleUnauthorized);
   }, []);
 
   const handleLogin = (userData, token) => {
