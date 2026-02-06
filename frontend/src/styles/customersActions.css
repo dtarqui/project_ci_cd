@@ -21,13 +21,13 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .customers-header p {
   margin: 4px 0 0 0;
   font-size: 14px;
-  color: #666;
+  color: var(--color-muted);
 }
 
 .btn-create-customer {
@@ -35,10 +35,14 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -80,7 +84,7 @@
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-muted);
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -95,8 +99,8 @@
 .filter-select {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-family: inherit;
   transition: border-color 0.2s ease;
@@ -105,7 +109,7 @@
 .filter-input:focus,
 .filter-select:focus {
   outline: none;
-  border-color: #0066cc;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
 }
 
@@ -117,8 +121,8 @@
 
 .customers-table-wrapper {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   margin-bottom: 16px;
   flex: 1;
   overflow: auto;
@@ -128,12 +132,16 @@
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .customers-table thead {
-  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   color: white;
   position: sticky;
   top: 0;
@@ -156,11 +164,11 @@
 }
 
 .customers-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-row);
 }
 
 .customers-table tbody tr:nth-child(even) {
-  background-color: #fafbfc;
+  background-color: var(--color-row-alt);
 }
 
 .customers-table tbody td {
@@ -183,18 +191,18 @@
 }
 
 .status-activo {
-  background-color: #d4f4dd;
-  color: #0b6623;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .status-inactivo {
-  background-color: #ffe0e6;
-  color: #c41e3a;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
 }
 
 .status-pendiente {
-  background-color: #fff4e0;
-  color: #cc7000;
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 /* Customer Actions */

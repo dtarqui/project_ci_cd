@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const salesRoutes = require("./routes/salesRoutes");
 
 /**
  * Crea una aplicación Express configurada con todas las rutas y middleware
@@ -53,6 +54,9 @@ const createApp = () => {
 
   // Rutas del dashboard
   app.use("/api/dashboard", dashboardRoutes);
+
+  // Rutas de ventas
+  app.use("/api/sales", salesRoutes);
 
   // ==================== ERROR HANDLING ====================
 

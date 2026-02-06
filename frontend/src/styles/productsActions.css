@@ -21,13 +21,13 @@
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .products-header p {
   margin: 4px 0 0 0;
   font-size: 14px;
-  color: #666;
+  color: var(--color-muted);
 }
 
 .btn-create-product {
@@ -35,10 +35,14 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -73,8 +77,8 @@
   flex: 1;
   min-width: 200px;
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   background-color: white;
 }
 
@@ -106,15 +110,15 @@
 }
 
 .sort-icon {
-  color: #666;
+  color: var(--color-muted);
   flex-shrink: 0;
 }
 
 .filter-select {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-family: inherit;
   transition: border-color 0.2s ease;
@@ -124,7 +128,7 @@
 
 .filter-select:focus {
   outline: none;
-  border-color: #0066cc;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
 }
 
@@ -132,8 +136,8 @@
 
 .products-table-container {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   margin-bottom: 16px;
   flex: 1;
   overflow: auto;
@@ -143,12 +147,16 @@
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .products-table thead {
-  background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
   color: white;
   position: sticky;
   top: 0;
@@ -171,11 +179,11 @@
 }
 
 .products-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-row);
 }
 
 .products-table tbody tr:nth-child(even) {
-  background-color: #fafbfc;
+  background-color: var(--color-row-alt);
 }
 
 .products-table tbody td {

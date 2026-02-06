@@ -1,9 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { MdDashboard, MdPeople, MdInventory, MdSettings } from "react-icons/md";
+import {
+  MdDashboard,
+  MdPeople,
+  MdInventory,
+  MdSettings,
+  MdReceiptLong,
+} from "react-icons/md";
 
 const MENU_ITEMS = [
   { id: "Dashboard", label: "Dashboard", icon: <MdDashboard /> },
+  { id: "Ventas", label: "Ventas", icon: <MdReceiptLong /> },
   { id: "Productos", label: "Productos", icon: <MdInventory /> },
   { id: "Clientes", label: "Clientes", icon: <MdPeople /> },
   { id: "Configuraciones", label: "Configuraciones", icon: <MdSettings /> },

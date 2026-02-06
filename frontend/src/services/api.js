@@ -121,6 +121,32 @@ export const dashboardService = {
     const response = await api.delete(`/api/customers/${id}`);
     return response.data;
   },
+
+  // Métodos para ventas
+  getSales: async (params = "") => {
+    const response = await api.get(`/api/sales${params ? "?" + params : ""}`);
+    return response.data;
+  },
+
+  getSale: async (id) => {
+    const response = await api.get(`/api/sales/${id}`);
+    return response.data;
+  },
+
+  createSale: async (saleData) => {
+    const response = await api.post("/api/sales", saleData);
+    return response.data;
+  },
+
+  updateSale: async (id, saleData) => {
+    const response = await api.put(`/api/sales/${id}`, saleData);
+    return response.data;
+  },
+
+  cancelSale: async (id) => {
+    const response = await api.put(`/api/sales/${id}/cancel`);
+    return response.data;
+  },
 };
 
 // Función de utilidad para manejar errores de API

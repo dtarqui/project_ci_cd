@@ -60,7 +60,10 @@ const Settings = () => {
   };
 
   const handleSaveProfile = () => {
-    setSaveStatus({ type: "success", message: "Perfil guardado correctamente" });
+    setSaveStatus({
+      type: "success",
+      message: "Perfil guardado correctamente",
+    });
     setIsEditing(false);
     setTimeout(() => setSaveStatus(null), 3000);
   };
@@ -97,7 +100,11 @@ const Settings = () => {
 
   const handleChangePassword = () => {
     // Validations
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
       setPasswordError("Todos los campos son requeridos");
       return;
     }
@@ -113,7 +120,10 @@ const Settings = () => {
     }
 
     // Simulate password change
-    setSaveStatus({ type: "success", message: "Contraseña actualizada correctamente" });
+    setSaveStatus({
+      type: "success",
+      message: "Contraseña actualizada correctamente",
+    });
     setPasswordData({
       currentPassword: "",
       newPassword: "",
@@ -282,7 +292,8 @@ const Settings = () => {
         <div className="password-change">
           <h4>Cambiar Contraseña</h4>
           <p className="section-description">
-            Actualiza tu contraseña de forma regular para mantener tu cuenta segura
+            Actualiza tu contraseña de forma regular para mantener tu cuenta
+            segura
           </p>
 
           {passwordError && (
@@ -296,7 +307,9 @@ const Settings = () => {
             <input
               type="password"
               value={passwordData.currentPassword}
-              onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
+              onChange={(e) =>
+                handlePasswordChange("currentPassword", e.target.value)
+              }
               className="input-field"
               placeholder="Ingresa tu contraseña actual"
             />
@@ -307,7 +320,9 @@ const Settings = () => {
             <input
               type="password"
               value={passwordData.newPassword}
-              onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
+              onChange={(e) =>
+                handlePasswordChange("newPassword", e.target.value)
+              }
               className="input-field"
               placeholder="Ingresa tu nueva contraseña"
             />
@@ -319,7 +334,9 @@ const Settings = () => {
             <input
               type="password"
               value={passwordData.confirmPassword}
-              onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
+              onChange={(e) =>
+                handlePasswordChange("confirmPassword", e.target.value)
+              }
               className="input-field"
               placeholder="Confirma tu nueva contraseña"
             />
@@ -406,7 +423,9 @@ const Settings = () => {
           <select
             id="dateFormat"
             value={preferences.dateFormat}
-            onChange={(e) => handlePreferenceChange("dateFormat", e.target.value)}
+            onChange={(e) =>
+              handlePreferenceChange("dateFormat", e.target.value)
+            }
             className="select-field"
           >
             <option value="DD/MM/YYYY">DD/MM/YYYY</option>
@@ -469,7 +488,7 @@ const Settings = () => {
   return (
     <div className="settings-container">
       <div className="settings-header">
-        <h1>⚙️ Configuraciones</h1>
+        <h1>Configuraciones</h1>
         <p>Administra tu perfil, preferencias y configuración de seguridad</p>
       </div>
 
@@ -541,7 +560,8 @@ function getLabelForNotification(key) {
 
 function getDescriptionForNotification(key) {
   const descriptions = {
-    emailNotifications: "Recibe notificaciones importantes por correo electrónico",
+    emailNotifications:
+      "Recibe notificaciones importantes por correo electrónico",
     pushNotifications: "Notificaciones en tiempo real en tu dispositivo",
     orderUpdates: "Mantente informado sobre el estado de tus pedidos",
     promotions: "Descubre ofertas especiales y promociones",
