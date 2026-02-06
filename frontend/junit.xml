@@ -1,221 +1,247 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="103" failures="0" errors="0" time="27.897">
-  <testsuite name="ProductForm Component" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:08" time="10.216" tests="20">
-    <testcase classname="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" name="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" time="0.245">
+<testsuites name="jest tests" tests="114" failures="0" errors="0" time="34.98">
+  <testsuite name="ProductForm Component" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:30:41" time="13.281" tests="20">
+    <testcase classname="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" name="ProductForm Component Rendering debe renderizar el componente cuando isOpen es true" time="0.388">
     </testcase>
-    <testcase classname="ProductForm Component Rendering no debe renderizar cuando isOpen es false" name="ProductForm Component Rendering no debe renderizar cuando isOpen es false" time="0.016">
+    <testcase classname="ProductForm Component Rendering no debe renderizar cuando isOpen es false" name="ProductForm Component Rendering no debe renderizar cuando isOpen es false" time="0.014">
     </testcase>
-    <testcase classname="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" name="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" time="0.031">
+    <testcase classname="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" name="ProductForm Component Rendering debe mostrar título &apos;Editar Producto&apos; cuando product existe" time="0.073">
     </testcase>
-    <testcase classname="ProductForm Component Rendering debe renderizar todos los campos del formulario" name="ProductForm Component Rendering debe renderizar todos los campos del formulario" time="0.052">
+    <testcase classname="ProductForm Component Rendering debe renderizar todos los campos del formulario" name="ProductForm Component Rendering debe renderizar todos los campos del formulario" time="0.123">
     </testcase>
-    <testcase classname="ProductForm Component Rendering debe renderizar todas las categorías en el select" name="ProductForm Component Rendering debe renderizar todas las categorías en el select" time="0.033">
+    <testcase classname="ProductForm Component Rendering debe renderizar todas las categorías en el select" name="ProductForm Component Rendering debe renderizar todas las categorías en el select" time="0.065">
     </testcase>
-    <testcase classname="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" name="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" time="0.231">
+    <testcase classname="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" name="ProductForm Component Rendering debe renderizar botones Cancelar y Guardar" time="0.387">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" name="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" time="0.781">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" name="ProductForm Component Crear Nuevo Producto debe permitir llenar el formulario con datos válidos" time="1.475">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" name="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" time="0.142">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" name="ProductForm Component Crear Nuevo Producto debe validar que el nombre sea requerido" time="0.232">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" name="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" time="0.282">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" name="ProductForm Component Crear Nuevo Producto debe validar que la categoría sea requerida" time="0.365">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" name="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" time="0.5">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" name="ProductForm Component Crear Nuevo Producto debe validar que el precio sea positivo" time="0.76">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" name="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" time="0.466">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" name="ProductForm Component Crear Nuevo Producto debe validar que el stock sea no negativo" time="0.642">
     </testcase>
-    <testcase classname="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" name="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" time="0.695">
+    <testcase classname="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" name="ProductForm Component Crear Nuevo Producto debe enviar datos válidos al onSubmit" time="0.921">
     </testcase>
-    <testcase classname="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" name="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" time="0.019">
+    <testcase classname="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" name="ProductForm Component Editar Producto debe prellenar el formulario con datos del producto" time="0.021">
     </testcase>
-    <testcase classname="ProductForm Component Editar Producto debe permitir actualizar los datos" name="ProductForm Component Editar Producto debe permitir actualizar los datos" time="0.498">
+    <testcase classname="ProductForm Component Editar Producto debe permitir actualizar los datos" name="ProductForm Component Editar Producto debe permitir actualizar los datos" time="0.512">
     </testcase>
-    <testcase classname="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" name="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" time="0.107">
+    <testcase classname="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" name="ProductForm Component Interacciones debe llamar onClose cuando se hace clic en Cancelar" time="0.095">
     </testcase>
-    <testcase classname="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" name="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" time="0.595">
+    <testcase classname="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" name="ProductForm Component Interacciones debe llamar onClose después de guardar correctamente" time="0.616">
     </testcase>
-    <testcase classname="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" name="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" time="0.53">
+    <testcase classname="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" name="ProductForm Component Interacciones debe mostrar estado de carga durante el envío" time="0.644">
     </testcase>
-    <testcase classname="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" name="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" time="0.062">
+    <testcase classname="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" name="ProductForm Component Interacciones debe permitir cerrar el modal con el botón X" time="0.061">
     </testcase>
-    <testcase classname="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" name="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" time="0.251">
+    <testcase classname="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" name="ProductForm Component Validación de Errores debe limpiar errores cuando el usuario empieza a escribir" time="0.282">
     </testcase>
-    <testcase classname="ProductForm Component Validación de Errores debe manejar errores del servidor" name="ProductForm Component Validación de Errores debe manejar errores del servidor" time="0.688">
-    </testcase>
-  </testsuite>
-  <testsuite name="CustomersSection Component - CRUD Operations" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:19" time="5.445" tests="19">
-    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar el header con título" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar el header con título" time="0.09">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe mostrar cantidad de clientes" name="CustomersSection Component - CRUD Operations Renderizado debe mostrar cantidad de clientes" time="0.077">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar tabla con clientes" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar tabla con clientes" time="0.076">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe mostrar botón de nuevo cliente" name="CustomersSection Component - CRUD Operations Renderizado debe mostrar botón de nuevo cliente" time="0.157">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar controles de búsqueda y filtros" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar controles de búsqueda y filtros" time="0.044">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe buscar clientes por nombre" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe buscar clientes por nombre" time="0.284">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe filtrar clientes por estado" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe filtrar clientes por estado" time="0.04">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe ordenar clientes por nombre" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe ordenar clientes por nombre" time="0.051">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe abrir formulario al hacer click en &apos;Nuevo Cliente&apos;" name="CustomersSection Component - CRUD Operations Crear Cliente debe abrir formulario al hacer click en &apos;Nuevo Cliente&apos;" time="0.159">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe mostrar todos los campos del formulario" name="CustomersSection Component - CRUD Operations Crear Cliente debe mostrar todos los campos del formulario" time="0.179">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe crear un nuevo cliente" name="CustomersSection Component - CRUD Operations Crear Cliente debe crear un nuevo cliente" time="1.291">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe abrir formulario de edición al hacer click en editar" name="CustomersSection Component - CRUD Operations Editar Cliente debe abrir formulario de edición al hacer click en editar" time="0.169">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe cargar datos del cliente en el formulario" name="CustomersSection Component - CRUD Operations Editar Cliente debe cargar datos del cliente en el formulario" time="0.155">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe actualizar un cliente" name="CustomersSection Component - CRUD Operations Editar Cliente debe actualizar un cliente" time="0.609">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe mostrar modal de confirmación al hacer click en eliminar" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe mostrar modal de confirmación al hacer click en eliminar" time="0.152">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe cancelar eliminación" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe cancelar eliminación" time="0.396">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe eliminar un cliente" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe eliminar un cliente" time="0.403">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Estados de Carga debe mostrar mensaje cuando no hay clientes" name="CustomersSection Component - CRUD Operations Estados de Carga debe mostrar mensaje cuando no hay clientes" time="0.045">
-    </testcase>
-    <testcase classname="CustomersSection Component - CRUD Operations Estados de Carga debe manejar errores en la recuperación de datos" name="CustomersSection Component - CRUD Operations Estados de Carga debe manejar errores en la recuperación de datos" time="0.098">
+    <testcase classname="ProductForm Component Validación de Errores debe manejar errores del servidor" name="ProductForm Component Validación de Errores debe manejar errores del servidor" time="0.575">
     </testcase>
   </testsuite>
-  <testsuite name="ProductsSection Component - CRUD Operations" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:24" time="3.376" tests="24">
-    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" time="0.178">
+  <testsuite name="CustomersSection Component - CRUD Operations" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:30:55" time="5.766" tests="19">
+    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar el header con título" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar el header con título" time="0.097">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" time="0.043">
+    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe mostrar cantidad de clientes" name="CustomersSection Component - CRUD Operations Renderizado debe mostrar cantidad de clientes" time="0.094">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" time="0.048">
+    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar tabla con clientes" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar tabla con clientes" time="0.09">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" time="0.072">
+    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe mostrar botón de nuevo cliente" name="CustomersSection Component - CRUD Operations Renderizado debe mostrar botón de nuevo cliente" time="0.145">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Renderizado debe renderizar controles de búsqueda y filtros" name="CustomersSection Component - CRUD Operations Renderizado debe renderizar controles de búsqueda y filtros" time="0.057">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe buscar clientes por nombre" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe buscar clientes por nombre" time="0.255">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe filtrar clientes por estado" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe filtrar clientes por estado" time="0.044">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe ordenar clientes por nombre" name="CustomersSection Component - CRUD Operations Búsqueda y Filtros debe ordenar clientes por nombre" time="0.06">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe abrir formulario al hacer click en &apos;Nuevo Cliente&apos;" name="CustomersSection Component - CRUD Operations Crear Cliente debe abrir formulario al hacer click en &apos;Nuevo Cliente&apos;" time="0.192">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe mostrar todos los campos del formulario" name="CustomersSection Component - CRUD Operations Crear Cliente debe mostrar todos los campos del formulario" time="0.209">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Crear Cliente debe crear un nuevo cliente" name="CustomersSection Component - CRUD Operations Crear Cliente debe crear un nuevo cliente" time="1.306">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe abrir formulario de edición al hacer click en editar" name="CustomersSection Component - CRUD Operations Editar Cliente debe abrir formulario de edición al hacer click en editar" time="0.139">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe cargar datos del cliente en el formulario" name="CustomersSection Component - CRUD Operations Editar Cliente debe cargar datos del cliente en el formulario" time="0.14">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Editar Cliente debe actualizar un cliente" name="CustomersSection Component - CRUD Operations Editar Cliente debe actualizar un cliente" time="0.692">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe mostrar modal de confirmación al hacer click en eliminar" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe mostrar modal de confirmación al hacer click en eliminar" time="0.158">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe cancelar eliminación" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe cancelar eliminación" time="0.424">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Eliminar Cliente debe eliminar un cliente" name="CustomersSection Component - CRUD Operations Eliminar Cliente debe eliminar un cliente" time="0.457">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Estados de Carga debe mostrar mensaje cuando no hay clientes" name="CustomersSection Component - CRUD Operations Estados de Carga debe mostrar mensaje cuando no hay clientes" time="0.047">
+    </testcase>
+    <testcase classname="CustomersSection Component - CRUD Operations Estados de Carga debe manejar errores en la recuperación de datos" name="CustomersSection Component - CRUD Operations Estados de Carga debe manejar errores en la recuperación de datos" time="0.097">
+    </testcase>
+  </testsuite>
+  <testsuite name="ProductsSection Component - CRUD Operations" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:01" time="3.453" tests="24">
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar el header con título" time="0.181">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar cantidad de productos" time="0.052">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" name="ProductsSection Component - CRUD Operations Renderizado debe renderizar tabla con productos" time="0.041">
+    </testcase>
+    <testcase classname="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" name="ProductsSection Component - CRUD Operations Renderizado debe mostrar botón de crear nuevo producto" time="0.087">
     </testcase>
     <testcase classname="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado de carga" name="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado de carga" time="0.013">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" name="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" time="0.031">
+    <testcase classname="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" name="ProductsSection Component - CRUD Operations Crear Producto debe mostrar estado vacío cuando no hay productos" time="0.04">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar mensaje de error cuando falla la API" name="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar mensaje de error cuando falla la API" time="0.04">
+    <testcase classname="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar mensaje de error cuando falla la API" name="ProductsSection Component - CRUD Operations Datos de Ejemplo debe mostrar mensaje de error cuando falla la API" time="0.046">
     </testcase>
     <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método createProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método createProduct disponible" time="0.001">
     </testcase>
     <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método updateProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método updateProduct disponible" time="0.001">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" time="0.001">
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método deleteProduct disponible" time="0.002">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" time="0.001">
+    <testcase classname="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" name="ProductsSection Component - CRUD Operations Métodos CRUD debe tener método getProduct disponible" time="0.003">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" time="0.033">
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe llamar getProducts cuando se carga" time="0.024">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" time="0.031">
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener input de búsqueda" time="0.039">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" time="0.029">
+    <testcase classname="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" name="ProductsSection Component - CRUD Operations Filtrado y Búsqueda debe tener selector de categorías" time="0.046">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" time="0.081">
+    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar columnas correctas" time="0.068">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" time="0.042">
+    <testcase classname="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" name="ProductsSection Component - CRUD Operations Estructura de Tabla debe mostrar estado de producto" time="0.038">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario de criar cuando clica no botão criar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario de criar cuando clica no botão criar" time="0.207">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario de criar cuando clica no botão criar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario de criar cuando clica no botão criar" time="0.188">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario para editar quando clica editar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario para editar quando clica editar" time="0.251">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario para editar quando clica editar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve abrir o formulario para editar quando clica editar" time="0.189">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar createProduct quando salva novo produto" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar createProduct quando salva novo produto" time="0.148">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar createProduct quando salva novo produto" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar createProduct quando salva novo produto" time="0.172">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar updateProduct quando edita produto existente" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar updateProduct quando edita produto existente" time="0.198">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar updateProduct quando edita produto existente" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar updateProduct quando edita produto existente" time="0.189">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar confirmação de eliminação" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar confirmação de eliminação" time="0.171">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar confirmação de eliminação" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar confirmação de eliminação" time="0.184">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar deleteProduct quando confirma eliminação" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar deleteProduct quando confirma eliminação" time="0.346">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar deleteProduct quando confirma eliminação" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve chamar deleteProduct quando confirma eliminação" time="0.368">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve fechar modal de confirmação ao cancelar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve fechar modal de confirmação ao cancelar" time="0.287">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve fechar modal de confirmação ao cancelar" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve fechar modal de confirmação ao cancelar" time="0.345">
     </testcase>
-    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar erro quando delete falha" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar erro quando delete falha" time="0.323">
-    </testcase>
-  </testsuite>
-  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:28" time="2.314" tests="16">
-    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.031">
-    </testcase>
-    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.071">
-    </testcase>
-    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.122">
-    </testcase>
-    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.064">
-    </testcase>
-    <testcase classname="Dashboard Tests Rendering should render user account button" name="Dashboard Tests Rendering should render user account button" time="0.029">
-    </testcase>
-    <testcase classname="Dashboard Tests Rendering should render charts when data is available" name="Dashboard Tests Rendering should render charts when data is available" time="0.031">
-    </testcase>
-    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.125">
-    </testcase>
-    <testcase classname="Dashboard Tests User Interactions should call logout when logout button is clicked" name="Dashboard Tests User Interactions should call logout when logout button is clicked" time="0.235">
-    </testcase>
-    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.115">
-    </testcase>
-    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.121">
-    </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.218">
-    </testcase>
-    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.021">
-    </testcase>
-    <testcase classname="Dashboard Tests Service Calls should call dashboardService.getData on mount" name="Dashboard Tests Service Calls should call dashboardService.getData on mount" time="0.034">
-    </testcase>
-    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.205">
-    </testcase>
-    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.03">
-    </testcase>
-    <testcase classname="Dashboard Tests Data Display should render different sections based on navigation" name="Dashboard Tests Data Display should render different sections based on navigation" time="0.049">
+    <testcase classname="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar erro quando delete falha" name="ProductsSection Component - CRUD Operations Operaciones CRUD deve mostrar erro quando delete falha" time="0.347">
     </testcase>
   </testsuite>
-  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:30" time="2.387" tests="9">
-    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.063">
+  <testsuite name="Login Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:04" time="2.267" tests="9">
+    <testcase classname="Login Tests Rendering should render login form" name="Login Tests Rendering should render login form" time="0.058">
     </testcase>
     <testcase classname="Login Tests Rendering should render password visibility toggle" name="Login Tests Rendering should render password visibility toggle" time="0.008">
     </testcase>
-    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.191">
+    <testcase classname="Login Tests User Interactions should update username input" name="Login Tests User Interactions should update username input" time="0.114">
     </testcase>
-    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.082">
+    <testcase classname="Login Tests User Interactions should toggle password visibility" name="Login Tests User Interactions should toggle password visibility" time="0.065">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.103">
+    <testcase classname="Login Tests Form Submission should handle form validation for empty fields" name="Login Tests Form Submission should handle form validation for empty fields" time="0.072">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.08">
+    <testcase classname="Login Tests Form Submission should handle demo button functionality" name="Login Tests Form Submission should handle demo button functionality" time="0.082">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle login error without server response" name="Login Tests Form Submission should handle login error without server response" time="0.559">
+    <testcase classname="Login Tests Form Submission should handle login error without server response" name="Login Tests Form Submission should handle login error without server response" time="0.63">
     </testcase>
-    <testcase classname="Login Tests Form Submission should clear error when user starts typing" name="Login Tests Form Submission should clear error when user starts typing" time="0.206">
+    <testcase classname="Login Tests Form Submission should clear error when user starts typing" name="Login Tests Form Submission should clear error when user starts typing" time="0.173">
     </testcase>
-    <testcase classname="Login Tests Form Submission should handle whitespace-only credentials" name="Login Tests Form Submission should handle whitespace-only credentials" time="0.406">
+    <testcase classname="Login Tests Form Submission should handle whitespace-only credentials" name="Login Tests Form Submission should handle whitespace-only credentials" time="0.374">
     </testcase>
   </testsuite>
-  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:13:33" time="1.335" tests="15">
-    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.028">
+  <testsuite name="Settings Component" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:06" time="2.767" tests="7">
+    <testcase classname="Settings Component renders header and default profile tab" name="Settings Component renders header and default profile tab" time="0.056">
     </testcase>
-    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.015">
+    <testcase classname="Settings Component enters edit mode and saves profile" name="Settings Component enters edit mode and saves profile" time="0.323">
     </testcase>
-    <testcase classname="App Tests Authentication Flow should handle successful login" name="App Tests Authentication Flow should handle successful login" time="0.094">
+    <testcase classname="Settings Component cancels profile edit and restores original values" name="Settings Component cancels profile edit and restores original values" time="0.3">
     </testcase>
-    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.094">
+    <testcase classname="Settings Component opens notifications tab and toggles email notifications" name="Settings Component opens notifications tab and toggles email notifications" time="0.237">
     </testcase>
-    <testcase classname="App Tests Error Handling should handle corrupted localStorage data" name="App Tests Error Handling should handle corrupted localStorage data" time="0.013">
+    <testcase classname="Settings Component shows validation errors and success on password change" name="Settings Component shows validation errors and success on password change" time="0.736">
     </testcase>
-    <testcase classname="App Tests Error Handling should handle missing user data with token present" name="App Tests Error Handling should handle missing user data with token present" time="0.014">
+    <testcase classname="Settings Component updates preferences and shows info tab" name="Settings Component updates preferences and shows info tab" time="0.266">
     </testcase>
-    <testcase classname="App Tests Error Handling should handle missing token with user present" name="App Tests Error Handling should handle missing token with user present" time="0.015">
+    <testcase classname="Settings Component shows support links in info tab" name="Settings Component shows support links in info tab" time="0.109">
+    </testcase>
+  </testsuite>
+  <testsuite name="Dashboard Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:09" time="2.454" tests="16">
+    <testcase classname="Dashboard Tests Rendering should show loading state initially" name="Dashboard Tests Rendering should show loading state initially" time="0.015">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render dashboard with data successfully" name="Dashboard Tests Rendering should render dashboard with data successfully" time="0.076">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should show error state when data loading fails" name="Dashboard Tests Rendering should show error state when data loading fails" time="0.138">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render navigation menu items" name="Dashboard Tests Rendering should render navigation menu items" time="0.043">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render user account button" name="Dashboard Tests Rendering should render user account button" time="0.033">
+    </testcase>
+    <testcase classname="Dashboard Tests Rendering should render charts when data is available" name="Dashboard Tests Rendering should render charts when data is available" time="0.032">
+    </testcase>
+    <testcase classname="Dashboard Tests User Interactions should toggle user menu when account button is clicked" name="Dashboard Tests User Interactions should toggle user menu when account button is clicked" time="0.126">
+    </testcase>
+    <testcase classname="Dashboard Tests User Interactions should call logout when logout button is clicked" name="Dashboard Tests User Interactions should call logout when logout button is clicked" time="0.2">
+    </testcase>
+    <testcase classname="Dashboard Tests User Interactions should change active section when nav items are clicked" name="Dashboard Tests User Interactions should change active section when nav items are clicked" time="0.129">
+    </testcase>
+    <testcase classname="Dashboard Tests User Interactions should retry data loading when retry button is clicked" name="Dashboard Tests User Interactions should retry data loading when retry button is clicked" time="0.141">
+    </testcase>
+    <testcase classname="Dashboard Tests Error Handling should handle logout error gracefully" name="Dashboard Tests Error Handling should handle logout error gracefully" time="0.249">
+    </testcase>
+    <testcase classname="Dashboard Tests Error Handling should handle data loading error and show error message" name="Dashboard Tests Error Handling should handle data loading error and show error message" time="0.029">
+    </testcase>
+    <testcase classname="Dashboard Tests Service Calls should call dashboardService.getData on mount" name="Dashboard Tests Service Calls should call dashboardService.getData on mount" time="0.028">
+    </testcase>
+    <testcase classname="Dashboard Tests Service Calls should call authService.logout when logging out" name="Dashboard Tests Service Calls should call authService.logout when logging out" time="0.224">
+    </testcase>
+    <testcase classname="Dashboard Tests Data Display should display sales data correctly" name="Dashboard Tests Data Display should display sales data correctly" time="0.042">
+    </testcase>
+    <testcase classname="Dashboard Tests Data Display should render different sections based on navigation" name="Dashboard Tests Data Display should render different sections based on navigation" time="0.053">
+    </testcase>
+  </testsuite>
+  <testsuite name="App Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:12" time="1.459" tests="15">
+    <testcase classname="App Tests Initial Rendering should render login when no user is stored" name="App Tests Initial Rendering should render login when no user is stored" time="0.024">
+    </testcase>
+    <testcase classname="App Tests Initial Rendering should render dashboard when valid user is stored" name="App Tests Initial Rendering should render dashboard when valid user is stored" time="0.013">
+    </testcase>
+    <testcase classname="App Tests Authentication Flow should handle successful login" name="App Tests Authentication Flow should handle successful login" time="0.107">
+    </testcase>
+    <testcase classname="App Tests Authentication Flow should handle logout" name="App Tests Authentication Flow should handle logout" time="0.092">
+    </testcase>
+    <testcase classname="App Tests Error Handling should handle corrupted localStorage data" name="App Tests Error Handling should handle corrupted localStorage data" time="0.015">
+    </testcase>
+    <testcase classname="App Tests Error Handling should handle missing user data with token present" name="App Tests Error Handling should handle missing user data with token present" time="0.012">
+    </testcase>
+    <testcase classname="App Tests Error Handling should handle missing token with user present" name="App Tests Error Handling should handle missing token with user present" time="0.014">
     </testcase>
     <testcase classname="App Tests Error Handling should handle invalid user object" name="App Tests Error Handling should handle invalid user object" time="0.013">
     </testcase>
-    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.092">
+    <testcase classname="App Tests State Management should update user state after login" name="App Tests State Management should update user state after login" time="0.107">
     </testcase>
-    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.093">
+    <testcase classname="App Tests State Management should clear user state after logout" name="App Tests State Management should clear user state after logout" time="0.11">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.087">
+    <testcase classname="App Tests localStorage Integration should save user data to localStorage on login" name="App Tests localStorage Integration should save user data to localStorage on login" time="0.075">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should remove user data from localStorage on logout" name="App Tests localStorage Integration should remove user data from localStorage on logout" time="0.087">
+    <testcase classname="App Tests localStorage Integration should remove user data from localStorage on logout" name="App Tests localStorage Integration should remove user data from localStorage on logout" time="0.079">
     </testcase>
-    <testcase classname="App Tests localStorage Integration should handle localStorage.getItem throwing error" name="App Tests localStorage Integration should handle localStorage.getItem throwing error" time="0.014">
+    <testcase classname="App Tests localStorage Integration should handle localStorage.getItem throwing error" name="App Tests localStorage Integration should handle localStorage.getItem throwing error" time="0.013">
     </testcase>
     <testcase classname="App Tests Component Interactions should pass correct props to Login component" name="App Tests Component Interactions should pass correct props to Login component" time="0.016">
     </testcase>
     <testcase classname="App Tests Component Interactions should pass correct props to Dashboard component" name="App Tests Component Interactions should pass correct props to Dashboard component" time="0.015">
+    </testcase>
+  </testsuite>
+  <testsuite name="SectionContent Component" errors="0" failures="0" skipped="0" timestamp="2026-02-06T04:31:13" time="0.651" tests="4">
+    <testcase classname="SectionContent Component Rendering Routes should render CustomersSection when type is &apos;Clientes&apos;" name="SectionContent Component Rendering Routes should render CustomersSection when type is &apos;Clientes&apos;" time="0.009">
+    </testcase>
+    <testcase classname="SectionContent Component Rendering Routes should render Settings when type is &apos;Configuraciones&apos;" name="SectionContent Component Rendering Routes should render Settings when type is &apos;Configuraciones&apos;" time="0.019">
+    </testcase>
+    <testcase classname="SectionContent Component Rendering Routes should return null when type is unknown" name="SectionContent Component Rendering Routes should return null when type is unknown" time="0.003">
+    </testcase>
+    <testcase classname="SectionContent Component PropTypes Validation should have propTypes.type defined" name="SectionContent Component PropTypes Validation should have propTypes.type defined" time="0.001">
     </testcase>
   </testsuite>
 </testsuites>
