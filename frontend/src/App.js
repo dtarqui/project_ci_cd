@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./login";
 import Dashboard from "./dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./styles.css";
 
 export default function App() {
@@ -61,12 +63,36 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      {user ? (
-        <Dashboard user={user} onLogout={handleLogout} />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Login Route */}
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+
+        {/* Dashboard Route - Protected */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute isAuthenticated={!!user}>
+              <Dashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Root - Redirect to dashboard or login */}
+        <Route
+          path="/"
+          element={
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* Catch-all - Redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

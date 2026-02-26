@@ -4,62 +4,102 @@ Aplicación web full-stack de ejemplo con autenticación y dashboard de métrica
 
 ## 🎯 Estado Actual
 
-✅ **Backend:** 112/112 tests pasando  
-✅ **Frontend:** 73/76 tests pasando  
+✅ **Backend:** 10 test files (api, auth, cors, coverage, crud, customer, index, sales, unit)  
+✅ **Frontend:** 15 test files (app, charts, customers, dashboard, products, sales, settings, etc.)  
 ✅ **CRUD Completo:** POST, GET, PUT, DELETE funcionando  
-✅ **Arquitectura Limpia:** Middleware, utilities y routes organizados  
+✅ **Arquitectura Modular:** 5 Controllers + 5 Routes + 13 Componentes React  
 
 ## 📋 Características
 
-- ✅ **Autenticación completa** - Login/logout con validación
-- 📊 **Dashboard interactivo** - Métricas de ventas con gráficos
-- 📦 **CRUD de Productos** - Crear, leer, actualizar, eliminar (recientemente reparado)
-- 🎨 **Diseño moderno** - UI responsive basada en mockups
-- 🧪 **Testing completo** - Tests unitarios con Jest y React Testing Library (112 tests backend)
-- 🔧 **Backend robusto** - API REST con Express.js
-- 🚀 **CI/CD automatizado** - Pipeline con Jenkins (lint, tests, build, deploy)
-- 📦 **Docker ready** - Backend containerizado
+- ✅ **Autenticación JWT** - Login/logout con validación de credenciales
+- 📊 **Dashboard completo** - Métricas, gráficos interactivos con Recharts
+- 📦 **CRUD Operations** - Gestión de Productos, Clientes y Ventas
+- 🎨 **UI Responsive** - Diseño moderno con CSS, adaptable a dispositivos
+- 🧪 **Testing exhaustivo** - 25 test files con Jest y React Testing Library
+- 🔧 **API REST robusto** - 5 Controllers + 5 Routes en Express.js
+- 🚀 **CI/CD completo** - Pipeline Jenkins: lint → test → build → deploy
+- 📦 **Containerización** - Backend con Docker listo para producción
+- 🔐 **Manejo de errores** - Middleware centralizado con validaciones
 
 ## 🏗️ Arquitectura
 
 ```
-├── frontend/          # React 18 + Webpack
+project_ci_cd/
+├── frontend/                     # React 18 + Webpack (puerto 3000)
 │   ├── src/
-│   │   ├── App.js                    # Componente principal
-│   │   ├── login.js                  # Formulario de autenticación
-│   │   ├── dashboard.js              # Panel de métricas
-│   │   ├── styles.css                # Estilos CSS modernos
+│   │   ├── App.js               # Componente principal
+│   │   ├── login.js             # Formulario de autenticación
+│   │   ├── dashboard.js         # Panel de control principal
+│   │   ├── index.js             # Entry point
+│   │   ├── styles.css           # Estilos globales
 │   │   ├── services/
-│   │   │   └── api.js                # Cliente API (GET, POST, PUT, DELETE)
+│   │   │   └── api.js           # Cliente Axios (GET, POST, PUT, DELETE)
 │   │   └── components/
-│   │       ├── ProductsSection.js    # Tabla CRUD de productos
-│   │       ├── ProductForm.js        # Modal para crear/editar
-│   │       └── ...otros componentes
-│   └── __tests__/                    # Tests unitarios (76 tests)
-├── backend/           # Node.js + Express
-│   ├── app.js              # 620 líneas - Limpia y modular
-│   │   ├─ Middleware (autenticación)
-│   │   ├─ Utility Functions (helpers)
-│   │   ├─ Product Routes (CRUD)
-│   │   ├─ Auth Routes
-│   │   └─ Error Handling
-│   ├── index.js            # Servidor API
-│   ├── Dockerfile          # Configuración Docker
-│   └── __tests__/          # Tests unitarios (112 tests)
-├── docs/
-│   ├── ARCHITECTURE_GUIDE.md      # Guía detallada de arquitectura
-│   ├── FRONTEND_INTEGRATION.md    # Cómo usar los endpoints
-│   └── REFACTOR_SUMMARY.md        # Resumen de cambios
-└── Jenkinsfile                    # Pipeline CI/CD
+│   │       ├── Charts.js                    # Gráficos interactivos
+│   │       ├── DashboardHeader.js           # Encabezado del dashboard
+│   │       ├── DashboardSidebar.js          # Menú de navegación
+│   │       ├── DashboardOverview.js         # Resumen general
+│   │       ├── ProductsSection.js           # Gestión de productos
+│   │       ├── ProductForm.js               # Formulario producto
+│   │       ├── CustomersSection.js          # Gestión de clientes
+│   │       ├── SalesSection.js              # Gestión de ventas
+│   │       ├── SalesForm.js                 # Formulario ventas
+│   │       ├── SalesSummary.js              # Resumen ventas
+│   │       ├── SectionContent.js            # Contenedor genérico
+│   │       └── Settings.js                  # Configuración
+│   ├── __tests__/                           # 15 test files
+│   ├── public/
+│   ├── jest.config.js
+│   └── webpack.config.js
+│
+├── backend/                      # Node.js + Express (puerto 4000)
+│   ├── app.js                   # Punto de entrada principal
+│   ├── index.js                 # Servidor Express
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── cors.js          # Configuración CORS
+│   │   ├── middleware/
+│   │   │   └── auth.js          # Auth middleware y error handlers
+│   │   ├── controllers/          # Lógica de negocio
+│   │   │   ├── authController.js
+│   │   │   ├── customerController.js
+│   │   │   ├── dashboardController.js
+│   │   │   ├── productController.js
+│   │   │   └── salesController.js
+│   │   ├── routes/               # Definición de rutas
+│   │   │   ├── authRoutes.js
+│   │   │   ├── customerRoutes.js
+│   │   │   ├── dashboardRoutes.js
+│   │   │   ├── productRoutes.js
+│   │   │   └── salesRoutes.js
+│   │   ├── db/
+│   │   │   └── mockData.js      # Datos mock y usuarios de prueba
+│   │   ├── utils/
+│   │   │   ├── helpers.js       # Funciones auxiliares
+│   │   │   └── validators.js    # Validadores
+│   │   └── index.js             # Factory de app Express
+│   ├── __tests__/                # 10 test files
+│   ├── coverage/                 # Reporte de cobertura
+│   ├── Dockerfile
+│   ├── jest.config.js
+│   └── jest.setup.js
+│
+└── Jenkinsfile                   # Pipeline CI/CD (Jenkins)
 ```
 
 ## 🚀 Instalación Rápida
 
 ### Prerrequisitos
 - Node.js 18+
-- npm o yarn
+- npm
 
-### 1. Backend
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/dtarqui/project_ci_cd.git
+cd project_ci_cd
+```
+
+### 2. Backend
 ```bash
 cd backend
 npm install
@@ -67,30 +107,63 @@ npm start
 # Servidor en http://localhost:4000
 ```
 
-### 2. Frontend
+### 3. Frontend (nueva terminal)
 ```bash
 cd frontend
 npm install
 npm start
-# App en http://localhost:3000
-```
-# Aplicación en http://localhost:3000
+# App en http://localhost:3000 (se abre automáticamente)
 ```
 
-## 👤 Usuarios de Prueba
+## � API Endpoints
 
-| Usuario | Contraseña | Descripción |
-|---------|------------|-------------|
-| `admin` | `admin123` | Administrador |
-| `demo`  | `demo123`  | Usuario demo |
-| `test`  | `test123`  | Usuario test |
+### Authentication
+```
+POST /api/auth/login          # Iniciar sesión
+POST /api/auth/logout         # Cerrar sesión
+```
 
-## � API Endpoints - CRUD de Productos
+### Products
+```
+GET    /api/products          # Listar productos (con búsqueda/filtros)
+POST   /api/products          # Crear producto
+GET    /api/products/:id      # Obtener producto específico
+PUT    /api/products/:id      # Actualizar producto
+DELETE /api/products/:id      # Eliminar producto
+```
 
-### Crear Producto (POST)
+### Customers
+```
+GET    /api/customers         # Listar clientes
+POST   /api/customers         # Crear cliente
+GET    /api/customers/:id     # Obtener cliente específico
+PUT    /api/customers/:id     # Actualizar cliente
+DELETE /api/customers/:id     # Eliminar cliente
+```
+
+### Sales
+```
+GET    /api/sales             # Listar ventas
+POST   /api/sales             # Crear venta
+GET    /api/sales/:id         # Obtener venta específica
+PUT    /api/sales/:id         # Actualizar venta
+DELETE /api/sales/:id         # Eliminar venta
+```
+
+### Dashboard
+```
+GET    /api/dashboard/data    # Obtener métricas del dashboard
+```
+
+### Health Check
+```
+GET    /health                # Estado del servidor
+```
+
+### Ejemplo: Crear Producto
 ```bash
 POST /api/products
-Authorization: Bearer valid_token
+Authorization: Bearer {token}
 Content-Type: application/json
 
 {
@@ -99,154 +172,202 @@ Content-Type: application/json
   "price": 999.99,
   "stock": 45
 }
+
 # Respuesta: 201 Created
-```
-
-### Listar Productos (GET)
-```bash
-GET /api/products?search=&category=Electrónica&sort=price
-Authorization: Bearer valid_token
-
-# Respuesta: 200 OK
-# {
-#   "success": true,
-#   "data": [ { id, name, category, price, stock, status, ... }, ... ],
-#   "count": 10
-# }
-```
-
-### Obtener Producto Individual (GET)
-```bash
-GET /api/products/1
-Authorization: Bearer valid_token
-
-# Respuesta: 200 OK
-# { "success": true, "data": { id: 1, name: "...", ... } }
-```
-
-### Actualizar Producto (PUT)
-```bash
-PUT /api/products/1
-Authorization: Bearer valid_token
-Content-Type: application/json
-
 {
-  "price": 1199.99,
-  "stock": 30
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "Laptop Dell XPS",
+    "category": "Electrónica",
+    "price": 999.99,
+    "stock": 45,
+    "status": "En Stock",
+    "createdAt": "2026-02-14T..."
+  }
 }
-# Respuesta: 200 OK
-# Status se actualiza automáticamente: "En Stock" / "Bajo Stock" / "Sin Stock"
-```
-
-### Eliminar Producto (DELETE)
-```bash
-DELETE /api/products/1
-Authorization: Bearer valid_token
-
-# Respuesta: 200 OK
-# Producto eliminado de la base de datos
 ```
 
 ## 📊 Dashboard Features
 
 El dashboard incluye:
-- **Ventas diarias** - Métricas principales
-- **Gráficos interactivos** - Ventas por sucursal, productos y tendencias
-- **Gestión de Productos** - Crear, editar y eliminar productos
-- **Búsqueda y Filtros** - Por nombre, categoría y ordenamiento
-- **Responsive** - Adaptado a móviles y tablets
+- **Gestión de Productos** - CRUD completo (Crear, leer, actualizar, eliminar)
+- **Gestión de Clientes** - Administración de base de clientes
+- **Gestión de Ventas** - Registro y seguimiento de ventas
+- **Gráficos interactivos** - Visualización de datos con Recharts
+- **Búsqueda y Filtros** - Por nombre, categoría, estado y ordenamiento
+- **Responsive Design** - Adaptado a escritorio, tablet y móvil
+- **Métricas en tiempo real** - KPIs y resúmenes actualizados
 
 ## 🧪 Testing
 
+### Backend Tests
 ```bash
-# Frontend tests
-cd frontend
-npm test
-
-# Backend health check
 cd backend
-npm test
+npm test                    # Ejecutar todos los tests
+npm run test:watch         # Modo watch
+npm run test:coverage      # Con reporte de cobertura
+npm run test:ci            # Para CI/CD
 ```
 
-### Cobertura de Tests
-- ✅ Componente Login - Autenticación, validación, estados
-- ✅ Componente Dashboard - Navegación, datos, logout
-- ✅ Servicios API - Mocking y manejo de errores
-- ✅ Estados de carga - Loading states y error handling
+**Test Files (10):**
+- api.test.js
+- auth.middleware.test.js
+- cors.test.js
+- coverage.test.js
+- crud.test.js
+- customer.crud.test.js
+- index.test.js
+- sales.crud.test.js
+- unit.extended.test.js
+- unit.test.js
 
-## 🔧 API Endpoints
-
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `POST /api/auth/logout` - Cerrar sesión
-
-### Dashboard
-- `GET /api/dashboard/data` - Datos de métricas
-
-### Salud
-- `GET /health` - Status del servidor
-
-## 🎨 Diseño
-
-La aplicación está basada en los mockups proporcionados:
-- **Login page** - Formulario centrado con validación
-- **Dashboard** - Layout con sidebar y gráficos
-- **Responsive design** - Mobile-first approach
-- **Paleta de colores** - Azul (#4F5BD8) como color principal
-
-## 🚀 Deployment
-
-### Docker
+### Frontend Tests
 ```bash
-# Backend
-cd backend
-docker build -t mi-tienda-backend .
-docker run -p 4000:4000 mi-tienda-backend
-
-# Frontend
 cd frontend
-npm run build
-# Servir build/ con tu servidor web favorito
+npm test                    # Ejecutar todos los tests
+npm run test:watch         # Modo watch
+npm run test:debug         # Modo debug
+npm run test:ci            # Para CI/CD
 ```
 
-### Jenkins
-El pipeline principal está en [Jenkinsfile](Jenkinsfile) e incluye:
-- ✅ Lint y tests (frontend/backend)
-- ✅ Build frontend
-- ✅ Validación de backend (health check)
-- ✅ Deploy frontend a Vercel
-- ✅ Docker build/push del backend (si el daemon está disponible)
-- ✅ Reportes JUnit/HTML y métricas
+**Test Files (15):**
+- app.test.js
+- charts.test.js
+- customersSection.test.js
+- dashboard.test.js
+- dashboardHeader.test.js
+- dashboardOverview.test.js
+- dashboardSidebar.test.js
+- login.test.js
+- productForm.test.js
+- productsSection.test.js
+- salesForm.test.js
+- salesSection.test.js
+- salesSummary.test.js
+- sectionContent.test.js
+- settings.test.js
 
-## 📁 Scripts Disponibles
+**Coverage Reports:**
+- HTML reports en `backend/coverage/` y `frontend/coverage/`
+- JUnit XML reports para Jenkins
+- LCOV reports para análisis detallado
 
-### Frontend
-- `npm start` - Desarrollo con hot reload
-- `npm run build` - Build para producción
-- `npm test` - Ejecutar tests
-- `npm run lint` - Linting con ESLint
+## 🔧 Project Structure & Commands
 
-### Backend
-- `npm start` - Iniciar servidor
-- `npm run dev` - Desarrollo con nodemon
-- `npm test` - Health check test
+### Frontend Scripts
+```bash
+npm start                   # Desarrollo (puerto 3000)
+npm run build              # Build para producción (genera dist/)
+npm test                   # Ejecutar tests
+npm run test:watch        # Watch mode para tests
+npm run lint              # ESLint check
+npm run lint:fix          # Auto-fix lint issues
+```
 
-## 🔧 Configuración
+### Backend Scripts
+```bash
+npm start                   # Producción (puerto 4000)
+npm run dev                # Desarrollo con nodemon
+npm test                   # Ejecutar tests
+npm run test:watch        # Watch mode para tests
+npm run test:coverage     # Con reporte de cobertura
+npm run lint              # ESLint check
+npm run lint:fix          # Auto-fix lint issues
+```
 
-### Variables de Entorno
+## ⚙️ Configuration
 
-#### Frontend
-Usa [frontend/.env](frontend/.env) y [frontend/sample.env](frontend/sample.env):
+### Frontend Environment Variables
+Crea `frontend/.env` (basado en `frontend/sample.env`):
 ```env
 API_BASE_URL=http://localhost:4000
 ```
 
-#### Backend
-Usa [backend/.env](backend/.env) y [backend/sample.env](backend/sample.env):
+### Backend Environment Variables
+Crea `backend/.env` (basado en `backend/sample.env`):
 ```env
 PORT=4000
 NODE_ENV=development
 ```
+
+## 🐳 Docker & Deployment
+
+### Docker (Backend)
+```bash
+cd backend
+docker build -t mi-tienda-backend:latest .
+docker run -p 4000:4000 \
+  -e PORT=4000 \
+  -e NODE_ENV=production \
+  mi-tienda-backend:latest
+```
+
+El Dockerfile está optimizado con:
+- Multi-stage build
+- Node.js 18+
+- Exposición de puerto 4000
+
+### Frontend Production Build
+```bash
+cd frontend
+npm run build
+# Genera carpeta dist/ lista para deployment
+```
+
+## 🚀 CI/CD Pipeline (Jenkins)
+
+El [Jenkinsfile](Jenkinsfile) define un pipeline automático con las siguientes etapas:
+
+### Pipeline Stages
+
+1. **GitHub Checkout** - Clona el repo, captura commit info
+2. **Environment Setup** - Valida Node.js 18+, limpia caché npm
+3. **Frontend** - Instala deps → Lint → Tests → Build
+4. **Backend** - Instala deps → Lint → Tests → Health check
+5. **Build & Push** - Docker build, push a registry (opcional)
+6. **Deploy** - Vercel deploy (opcional), reportes
+
+### Features del Pipeline
+- ✅ Poll SCM cada 5 minutos
+- ✅ Reintentos automáticos (retry 2)
+- ✅ Timeout de 20 minutos
+- ✅ Reportes JUnit/HTML
+- ✅ Coverage reports (LCOV)
+- ✅ Notificaciones por email
+- ✅ Build artifacts retention
+
+### Triggers
+```groovy
+triggers {
+    pollSCM('H/5 * * * *')  // Cada 5 minutos
+}
+```
+
+## 🛠️ Tech Stack
+
+**Frontend:**
+- React 18.2 - UI Library
+- Webpack 5 - Module bundler
+- Babel 7 - JavaScript compiler
+- Jest + React Testing Library - Testing
+- Axios - HTTP client
+- Recharts - Data visualization
+- ESLint - Code linting
+
+**Backend:**
+- Node.js 18+ - Runtime
+- Express 4.18 - Web framework
+- Jest - Testing framework
+- Supertest - HTTP assertions
+- CORS - Cross-origin support
+- dotenv - Environment config
+
+**DevOps:**
+- Docker - Containerization
+- Jenkins - CI/CD automation
+- JUnit/HTML Reports - Test reporting
+- Vercel - Deploy platform (optional)
 
 ## 🤝 Contribuir
 
@@ -256,25 +377,47 @@ NODE_ENV=development
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-## 📝 Roadmap (opcional)
+## 📝 Roadmap
 
-- [ ] Sistema de roles y permisos
-- [ ] Base de datos real (PostgreSQL/MongoDB)
-- [ ] Despliegue backend en un host remoto
+- [ ] Authentication token refresh mechanism
+- [ ] Real database (PostgreSQL/MongoDB)
+- [ ] Role-based access control (RBAC)
+- [ ] Advanced analytics & reports
+- [ ] Internationalization (i18n)
+- [ ] Mobile app (React Native)
+- [ ] Email notifications
+- [ ] API rate limiting
+- [ ] Kubernetes deployment
+- [ ] Monitoring & alerting (Prometheus/Grafana)
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para detalles.
 
-## 🙏 Reconocimientos
+## 🙏 Acknowledgments
 
-- Diseño basado en mockups proporcionados
-- Icons: [Unicode emojis](https://unicode.org/emoji/)
-- Charts: [Recharts](https://recharts.org/)
-- Testing: [React Testing Library](https://testing-library.com/)
+- **Framework**: React, Express.js, Node.js
+- **Testing**: Jest, React Testing Library, Supertest
+- **Data Visualization**: Recharts
+- **Icons**: React Icons
+- **Package Manager**: npm
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For issues or questions:
+- Open an issue in GitHub
+- Contact: dmtarqui@gmail.com
 
 ---
 
-⭐ **¡Dale una estrella al proyecto si te ha sido útil!**
+⭐ **If this project helped you, please give it a star!**
 
-📧 **Contacto**: Tu email aquí
+Made with ❤️ by DTarqui
