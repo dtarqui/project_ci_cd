@@ -1,10 +1,10 @@
-# 🛒 Mi Tienda - Demo CI/CD
+# 🛒 Mi Tienda Online
 
 Aplicación web full-stack de ejemplo con autenticación y dashboard de métricas, enfocada en demostrar un pipeline CI/CD con Jenkins.
 
 ## 📝 Descripción del Proyecto
 
-**Mi Tienda** es una aplicación web full-stack orientada a la gestión comercial de una tienda.
+**Mi Tienda Online** es una aplicación web full-stack orientada a la gestión comercial de una tienda.
 Incluye autenticación de usuarios, dashboard con métricas y módulos CRUD para productos, clientes y ventas.
 El proyecto está diseñado como una base práctica para aprender arquitectura modular, pruebas automatizadas y despliegue continuo con Jenkins.
 
