@@ -16,13 +16,7 @@ El proyecto está diseñado como una base práctica para aprender arquitectura m
 - Visualizar indicadores clave del negocio mediante un dashboard interactivo.
 - Garantizar calidad mediante pruebas automáticas y cobertura de código.
 - Demostrar un flujo CI/CD reproducible para entornos de desarrollo y despliegue.
-
-## 🎯 Estado Actual
-
-✅ **Backend:** 10 test files (api, auth, cors, coverage, crud, customer, index, sales, unit)  
-✅ **Frontend:** 15 test files (app, charts, customers, dashboard, products, sales, settings, etc.)  
-✅ **CRUD Completo:** POST, GET, PUT, DELETE funcionando  
-✅ **Arquitectura Modular:** 5 Controllers + 5 Routes + 13 Componentes React  
+ 
 
 ## 📋 Características
 
@@ -129,90 +123,6 @@ npm install
 npm start
 # App en http://localhost:3000 (se abre automáticamente)
 ```
-
-## � API Endpoints
-
-### Authentication
-```
-POST /api/auth/login          # Iniciar sesión
-POST /api/auth/logout         # Cerrar sesión
-```
-
-### Products
-```
-GET    /api/products          # Listar productos (con búsqueda/filtros)
-POST   /api/products          # Crear producto
-GET    /api/products/:id      # Obtener producto específico
-PUT    /api/products/:id      # Actualizar producto
-DELETE /api/products/:id      # Eliminar producto
-```
-
-### Customers
-```
-GET    /api/customers         # Listar clientes
-POST   /api/customers         # Crear cliente
-GET    /api/customers/:id     # Obtener cliente específico
-PUT    /api/customers/:id     # Actualizar cliente
-DELETE /api/customers/:id     # Eliminar cliente
-```
-
-### Sales
-```
-GET    /api/sales             # Listar ventas
-POST   /api/sales             # Crear venta
-GET    /api/sales/:id         # Obtener venta específica
-PUT    /api/sales/:id         # Actualizar venta
-DELETE /api/sales/:id         # Eliminar venta
-```
-
-### Dashboard
-```
-GET    /api/dashboard/data    # Obtener métricas del dashboard
-```
-
-### Health Check
-```
-GET    /health                # Estado del servidor
-```
-
-### Ejemplo: Crear Producto
-```bash
-POST /api/products
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "name": "Laptop Dell XPS",
-  "category": "Electrónica",
-  "price": 999.99,
-  "stock": 45
-}
-
-# Respuesta: 201 Created
-{
-  "success": true,
-  "data": {
-    "id": 1,
-    "name": "Laptop Dell XPS",
-    "category": "Electrónica",
-    "price": 999.99,
-    "stock": 45,
-    "status": "En Stock",
-    "createdAt": "2026-02-14T..."
-  }
-}
-```
-
-## 📊 Dashboard Features
-
-El dashboard incluye:
-- **Gestión de Productos** - CRUD completo (Crear, leer, actualizar, eliminar)
-- **Gestión de Clientes** - Administración de base de clientes
-- **Gestión de Ventas** - Registro y seguimiento de ventas
-- **Gráficos interactivos** - Visualización de datos con Recharts
-- **Búsqueda y Filtros** - Por nombre, categoría, estado y ordenamiento
-- **Responsive Design** - Adaptado a escritorio, tablet y móvil
-- **Métricas en tiempo real** - KPIs y resúmenes actualizados
 
 ## 🧪 Testing
 
@@ -384,55 +294,7 @@ triggers {
 - JUnit/HTML Reports - Test reporting
 - Vercel - Deploy platform (optional)
 
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una rama feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📝 Roadmap
-
-- [ ] Authentication token refresh mechanism
-- [ ] Real database (PostgreSQL/MongoDB)
-- [ ] Role-based access control (RBAC)
-- [ ] Advanced analytics & reports
-- [ ] Internationalization (i18n)
-- [ ] Mobile app (React Native)
-- [ ] Email notifications
-- [ ] API rate limiting
-- [ ] Kubernetes deployment
-- [ ] Monitoring & alerting (Prometheus/Grafana)
 
 ## 📄 License
 
 Este proyecto está bajo la licencia MIT. Ver [LICENSE](LICENSE) para detalles.
-
-## 🙏 Acknowledgments
-
-- **Framework**: React, Express.js, Node.js
-- **Testing**: Jest, React Testing Library, Supertest
-- **Data Visualization**: Recharts
-- **Icons**: React Icons
-- **Package Manager**: npm
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 Support
-
-For issues or questions:
-- Open an issue in GitHub
-- Contact: dmtarqui@gmail.com
-
----
-
-⭐ **If this project helped you, please give it a star!**
-
-Made with ❤️ by DTarqui

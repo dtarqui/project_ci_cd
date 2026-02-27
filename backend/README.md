@@ -2,7 +2,7 @@
 
 Backend REST construido con Node.js + Express para autenticación, dashboard y operaciones CRUD de productos, clientes y ventas.
 
-## 1. Estructura básica de un backend (ejemplo real de este proyecto)
+## 1. Estructura básica del backend
 
 ```text
 backend/
@@ -93,13 +93,6 @@ Documentación completa separada en:
 
 Incluye ejemplos prácticos de **todos los endpoints**:
 
-- Autenticación (`/api/auth/*`)
-- Productos (`/api/products/*`)
-- Clientes (`/api/customers/*`)
-- Ventas (`/api/sales/*`)
-- Dashboard (`/api/dashboard/data`)
-- Health check (`/health`)
-
 ## 5. Ejecución rápida
 
 ```bash
@@ -119,9 +112,6 @@ PORT=4000
 NODE_ENV=development
 USER_REPOSITORY=memory
 ```
-
-- `USER_REPOSITORY=memory`: usa usuarios en memoria.
-- `USER_REPOSITORY=database`: reservado para futura implementación de BD.
 
 ## 7. Testing
 

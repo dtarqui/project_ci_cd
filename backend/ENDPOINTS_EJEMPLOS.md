@@ -1,4 +1,4 @@
-# Ejemplos de Endpoints (Backend)
+# Endpoints del Backend
 
 Este documento centraliza ejemplos prácticos de **todos** los endpoints del backend.
 
@@ -92,6 +92,7 @@ Explicación: valida token y retorna el usuario autenticado.
 **GET** `/api/products`
 
 Query opcional:
+
 - `search` (por nombre)
 - `category` (categoría)
 - `sort` (`name`, `price`, `stock`, `sales`)
@@ -203,6 +204,7 @@ Resultado esperado: confirma eliminación y retorna el objeto eliminado.
 **GET** `/api/customers`
 
 Query opcional:
+
 - `search` (nombre, email o teléfono)
 - `status` (`Activo`, `Inactivo`)
 - `sort` (`name`, `email`, `spending`, `purchases`, `registered`)
@@ -317,6 +319,7 @@ Resultado esperado: confirma eliminación y retorna cliente eliminado.
 **GET** `/api/sales`
 
 Query opcional:
+
 - `status` (`Completada`, `Pendiente`, `Anulada`)
 - `customerId` (número)
 
@@ -460,10 +463,3 @@ Resultado esperado:
 Explicación: confirma que el backend está activo.
 
 ---
-
-## Nota sobre autenticación en pruebas locales
-
-Para endpoints protegidos puedes usar tokens mock válidos como:
-- `mock-jwt-token-1`
-- `mock-jwt-token-2`
-- `mock-jwt-token-3`

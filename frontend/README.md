@@ -2,7 +2,7 @@
 
 Frontend SPA construido con React + Webpack para autenticación, dashboard de métricas y gestión de productos, clientes y ventas.
 
-## 1. Estructura básica de un frontend (ejemplo real de este proyecto)
+## 1. Estructura básica del frontend
 
 ```text
 frontend/
@@ -62,7 +62,6 @@ Flujo resumido:
 
 - `/login` → login de usuario.
 - `/` → redirección a dashboard o login según sesión.
-- `/dashboard/*` → contenedor principal protegido.
 
 ### 3.2 Rutas de secciones del dashboard (protegidas)
 
