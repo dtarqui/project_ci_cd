@@ -1,6 +1,21 @@
-# 🛒 Mi Tienda - Demo CI/CD (Jenkins)
+# 🛒 Mi Tienda - Demo CI/CD
 
 Aplicación web full-stack de ejemplo con autenticación y dashboard de métricas, enfocada en demostrar un pipeline CI/CD con Jenkins.
+
+## 📝 Descripción del Proyecto
+
+**Mi Tienda** es una aplicación web full-stack orientada a la gestión comercial de una tienda.
+Incluye autenticación de usuarios, dashboard con métricas y módulos CRUD para productos, clientes y ventas.
+El proyecto está diseñado como una base práctica para aprender arquitectura modular, pruebas automatizadas y despliegue continuo con Jenkins.
+
+## 🎯 Objetivos del Sistema
+
+- Implementar una solución full-stack funcional con frontend en React y backend en Express.
+- Proveer autenticación y autorización básica para proteger rutas de negocio.
+- Gestionar operaciones CRUD completas de productos, clientes y ventas.
+- Visualizar indicadores clave del negocio mediante un dashboard interactivo.
+- Garantizar calidad mediante pruebas automáticas y cobertura de código.
+- Demostrar un flujo CI/CD reproducible para entornos de desarrollo y despliegue.
 
 ## 🎯 Estado Actual
 
@@ -21,7 +36,7 @@ Aplicación web full-stack de ejemplo con autenticación y dashboard de métrica
 - 📦 **Containerización** - Backend con Docker listo para producción
 - 🔐 **Manejo de errores** - Middleware centralizado con validaciones
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura General
 
 ```
 project_ci_cd/
@@ -87,7 +102,7 @@ project_ci_cd/
 └── Jenkinsfile                   # Pipeline CI/CD (Jenkins)
 ```
 
-## 🚀 Instalación Rápida
+## 🚀 Instrucciones para Ejecutar el Proyecto
 
 ### Prerrequisitos
 - Node.js 18+
@@ -344,7 +359,7 @@ triggers {
 }
 ```
 
-## 🛠️ Tech Stack
+## 🛠️ Stack Tecnológico Utilizado
 
 **Frontend:**
 - React 18.2 - UI Library
