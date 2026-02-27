@@ -2,15 +2,17 @@
  * Auth Controller - Lógica de autenticación
  */
 
-const { users } = require("../db/mockData");
 const { createMockToken } = require("../utils/helpers");
 const { validateLoginCredentials } = require("../utils/validators");
 const { extractToken } = require("../utils/helpers");
+const { createUserRepository } = require("../repositories/userRepository");
+
+const userRepository = createUserRepository();
 
 /**
  * Maneja el login de usuarios
  */
-const login = (req, res) => {
+const login = async (req, res) => {
   const validation = validateLoginCredentials(req.body);
 
   if (!validation.isValid) {
@@ -21,9 +23,7 @@ const login = (req, res) => {
   }
 
   const { username, password } = req.body;
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
+  const user = await userRepository.findByCredentials(username, password);
 
   if (!user) {
     return res.status(401).json({
@@ -57,7 +57,7 @@ const logout = (req, res) => {
 /**
  * Obtiene información del usuario autenticado
  */
-const getMe = (req, res) => {
+const getMe = async (req, res) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -84,7 +84,7 @@ const getMe = (req, res) => {
   }
 
   const userId = parseInt(token.replace("mock-jwt-token-", ""));
-  const user = users.find((u) => u.id === userId);
+  const user = await userRepository.findById(userId);
 
   if (!user) {
     return res.status(401).json({
