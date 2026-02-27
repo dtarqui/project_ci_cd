@@ -78,6 +78,15 @@ export default function App() {
           }
         />
 
+        <Route
+          path="/:section"
+          element={
+            <ProtectedRoute isAuthenticated={!!user}>
+              <Dashboard user={user} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Root - Redirect to dashboard or login */}
         <Route
           path="/"

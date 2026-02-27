@@ -11,14 +11,18 @@ import SectionContent from "./components/SectionContent";
 
 const sectionToSlug = {
   Dashboard: "",
-  Ventas: "ventas",
-  Productos: "productos",
-  Clientes: "clientes",
-  Configuraciones: "configuraciones",
+  Ventas: "sales",
+  Productos: "products",
+  Clientes: "customers",
+  Configuraciones: "settings",
 };
 
 const slugToSection = {
   "": "Dashboard",
+  sales: "Ventas",
+  products: "Productos",
+  customers: "Clientes",
+  settings: "Configuraciones",
   ventas: "Ventas",
   productos: "Productos",
   clientes: "Clientes",
@@ -37,11 +41,16 @@ export default function Dashboard({ user, onLogout }) {
   }, []);
 
   useEffect(() => {
-    const basePath = "/dashboard";
-    const currentPath = location.pathname.startsWith(basePath)
-      ? location.pathname.slice(basePath.length)
-      : "";
-    const slug = currentPath.replace(/^\//, "").split("/")[0] || "";
+    const segments = location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")
+      .filter(Boolean);
+
+    let slug = "";
+    if (segments.length > 0) {
+      slug = segments[0] === "dashboard" ? segments[1] || "" : segments[0];
+    }
+
     const resolvedSection = slugToSection[slug] || "Dashboard";
     setActiveSection(resolvedSection);
   }, [location.pathname]);
@@ -70,7 +79,7 @@ export default function Dashboard({ user, onLogout }) {
   const handleSectionChange = (section) => {
     const slug = sectionToSlug[section];
     setActiveSection(section);
-    navigate(slug ? `/dashboard/${slug}` : "/dashboard");
+    navigate(slug ? `/${slug}` : "/dashboard");
   };
 
   if (loading) {
