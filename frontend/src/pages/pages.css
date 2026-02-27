@@ -1,0 +1,18 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.page h1 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  color: #1f2937;
+}
+
+.page p {
+  color: #6b7280;
+  margin: 0;
+}

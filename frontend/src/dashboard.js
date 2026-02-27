@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MdError, MdRefresh } from "react-icons/md";
 import { dashboardService, authService } from "./services/api";
 import DashboardHeader from "./components/DashboardHeader";
@@ -8,14 +9,51 @@ import SalesSummary from "./components/SalesSummary";
 import DashboardOverview from "./components/DashboardOverview";
 import SectionContent from "./components/SectionContent";
 
+const sectionToSlug = {
+  Dashboard: "",
+  Ventas: "sales",
+  Productos: "products",
+  Clientes: "customers",
+  Configuraciones: "settings",
+};
+
+const slugToSection = {
+  "": "Dashboard",
+  sales: "Ventas",
+  products: "Productos",
+  customers: "Clientes",
+  settings: "Configuraciones",
+  ventas: "Ventas",
+  productos: "Productos",
+  clientes: "Clientes",
+  configuraciones: "Configuraciones",
+};
+
 export default function Dashboard({ user, onLogout }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("Dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    const segments = location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")
+      .filter(Boolean);
+
+    let slug = "";
+    if (segments.length > 0) {
+      slug = segments[0] === "dashboard" ? segments[1] || "" : segments[0];
+    }
+
+    const resolvedSection = slugToSection[slug] || "Dashboard";
+    setActiveSection(resolvedSection);
+  }, [location.pathname]);
 
   const loadDashboardData = async () => {
     try {
@@ -36,6 +74,12 @@ export default function Dashboard({ user, onLogout }) {
     } finally {
       onLogout();
     }
+  };
+
+  const handleSectionChange = (section) => {
+    const slug = sectionToSlug[section];
+    setActiveSection(section);
+    navigate(slug ? `/${slug}` : "/dashboard");
   };
 
   if (loading) {
@@ -69,7 +113,7 @@ export default function Dashboard({ user, onLogout }) {
       <div className="dashboard-content">
         <DashboardSidebar
           activeSection={activeSection}
-          onSectionChange={setActiveSection}
+          onSectionChange={handleSectionChange}
         />
 
         <main className="dashboard-main">
