@@ -193,7 +193,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
   });
 
   describe("Operaciones CRUD", () => {
-    it("deve abrir o formulario de criar cuando clica no botão criar", async () => {
+    it("debe abrir el formulario de creación al hacer clic en nuevo producto", async () => {
       render(<ProductsSection />);
 
       await waitFor(() => {
@@ -212,7 +212,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       });
     });
 
-    it("deve abrir o formulario para editar quando clica editar", async () => {
+    it("debe abrir el formulario para editar al hacer clic en editar", async () => {
       render(<ProductsSection />);
 
       await waitFor(() => {
@@ -227,7 +227,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       });
     });
 
-    it("deve chamar createProduct quando salva novo produto", async () => {
+    it("debe llamar createProduct cuando guarda un producto nuevo", async () => {
       apiService.dashboardService.createProduct.mockResolvedValue({
         data: {
           id: 3,
@@ -261,7 +261,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       expect(apiService.dashboardService.createProduct).toBeDefined();
     });
 
-    it("deve chamar updateProduct quando edita produto existente", async () => {
+    it("debe llamar updateProduct cuando edita un producto existente", async () => {
       apiService.dashboardService.updateProduct.mockResolvedValue({
         data: mockProducts[0],
       });
@@ -282,7 +282,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       expect(apiService.dashboardService.updateProduct).toBeDefined();
     });
 
-    it("deve mostrar confirmação de eliminação", async () => {
+    it("debe mostrar confirmación de eliminación", async () => {
       render(<ProductsSection />);
 
       await waitFor(() => {
@@ -299,7 +299,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       });
     });
 
-    it("deve chamar deleteProduct quando confirma eliminação", async () => {
+    it("debe llamar deleteProduct cuando confirma la eliminación", async () => {
       apiService.dashboardService.deleteProduct.mockResolvedValue({});
 
       render(<ProductsSection />);
@@ -319,13 +319,13 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
       // Buscar todos los botones de eliminar: el último debe estar en el modal
       const allDeleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
-      // Click the last one (from the confirmation modal)
+      // Hacer clic en el último (del modal de confirmación)
       await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
 
       expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
     });
 
-    it("deve fechar modal de confirmação ao cancelar", async () => {
+    it("debe cerrar el modal de confirmación al cancelar", async () => {
       render(<ProductsSection />);
 
       await waitFor(() => {
@@ -351,7 +351,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       });
     });
 
-    it("deve mostrar erro quando delete falha", async () => {
+    it("debe mostrar error cuando falla la eliminación", async () => {
       apiService.dashboardService.deleteProduct.mockRejectedValue(
         new Error("Delete failed")
       );
