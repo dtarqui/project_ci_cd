@@ -59,7 +59,7 @@ jest.mock("../services/api", () => ({
   authService: { login: jest.fn(), logout: jest.fn() }
 }));
 
-describe("Dashboard Tests", () => {
+describe("Pruebas de Dashboard", () => {
   const mockUser = { id: 1, name: "Test User", username: "test" };
   const mockOnLogout = jest.fn();
   const mockDashboardData = {
@@ -81,7 +81,7 @@ describe("Dashboard Tests", () => {
       </MemoryRouter>
     );
 
-  describe("Rendering", () => {
+  describe("Renderizado", () => {
     it("debe mostrar spinner de carga", () => {
       dashboardService.getData.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve(mockDashboardData), 100))

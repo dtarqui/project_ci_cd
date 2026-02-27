@@ -14,8 +14,8 @@ import {
   NotFoundPage,
 } from "../pages";
 
-describe("Pages and Routes Configuration", () => {
-  test("should expose expected route constants", () => {
+describe("Configuración de páginas y rutas", () => {
+  test("debe exponer las constantes de rutas esperadas", () => {
     expect(ROUTES.LOGIN).toBe("/login");
     expect(ROUTES.DASHBOARD).toBe("/dashboard");
     expect(ROUTES.PRODUCTS).toContain("products");
@@ -25,7 +25,7 @@ describe("Pages and Routes Configuration", () => {
     expect(ROUTES.UNAUTHORIZED).toBe("/401");
   });
 
-  test("should expose navigation items mapped to routes", () => {
+  test("debe exponer los ítems de navegación mapeados a rutas", () => {
     expect(Array.isArray(NAVIGATION_ITEMS)).toBe(true);
     expect(NAVIGATION_ITEMS).toHaveLength(4);
 
@@ -41,27 +41,27 @@ describe("Pages and Routes Configuration", () => {
     });
   });
 
-  test("should render DashboardPage", () => {
+  test("debe renderizar DashboardPage", () => {
     render(<DashboardPage />);
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
   });
 
-  test("should render ProductsPage", () => {
+  test("debe renderizar ProductsPage", () => {
     render(<ProductsPage />);
     expect(screen.getByText("Products")).toBeInTheDocument();
   });
 
-  test("should render CustomersPage", () => {
+  test("debe renderizar CustomersPage", () => {
     render(<CustomersPage />);
     expect(screen.getByText("Customers")).toBeInTheDocument();
   });
 
-  test("should render SalesPage", () => {
+  test("debe renderizar SalesPage", () => {
     render(<SalesPage />);
     expect(screen.getByText("Sales")).toBeInTheDocument();
   });
 
-  test("should render NotFoundPage and navigate on button click", async () => {
+  test("debe renderizar NotFoundPage y navegar al hacer clic en el botón", async () => {
     const user = userEvent.setup();
 
     render(

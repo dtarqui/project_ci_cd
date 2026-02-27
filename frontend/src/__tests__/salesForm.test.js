@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SalesForm from "../components/SalesForm";
 
-describe("SalesForm Component", () => {
+describe("Componente SalesForm", () => {
   const mockOnClose = jest.fn();
   const mockOnSave = jest.fn();
 
@@ -31,7 +31,7 @@ describe("SalesForm Component", () => {
     jest.clearAllMocks();
   });
 
-  describe("Rendering", () => {
+  describe("Renderizado", () => {
     it("debe renderizar el formulario cuando isOpen es true", () => {
       render(<SalesForm {...defaultProps} />);
       expect(screen.getByText("Nueva Venta")).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Error Display", () => {
+  describe("Visualización de errores", () => {
     it("debe mostrar error cuando existe", () => {
       render(<SalesForm {...defaultProps} error="Error de prueba" />);
       expect(screen.getByText("Error de prueba")).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Props Handling", () => {
+  describe("Manejo de props", () => {
     it("debe manejar props vacíos correctamente", () => {
       render(
         <SalesForm
@@ -116,7 +116,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Form Structure", () => {
+  describe("Estructura del formulario", () => {
     it("debe tener estructura correcta del modal", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       expect(container.querySelector(".sales-form-overlay")).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Row Structure", () => {
+  describe("Estructura de filas", () => {
     it("debe renderizar filas del formulario", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       const rows = container.querySelectorAll(".sales-form-row");
@@ -152,7 +152,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Form Interactions", () => {
+  describe("Interacciones del formulario", () => {
     it("debe llamar onClose cuando se hace clic en cerrar", async () => {
       const user = userEvent.setup();
       render(<SalesForm {...defaultProps} />);
@@ -236,7 +236,7 @@ describe("SalesForm Component", () => {
     });
   });
 
-  describe("Form Validation", () => {
+  describe("Validación del formulario", () => {
     it("debe mostrar error si no se selecciona cliente", async () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       const form = container.querySelector("form");

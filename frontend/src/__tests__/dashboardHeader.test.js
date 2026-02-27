@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DashboardHeader from "../components/DashboardHeader";
 
-describe("DashboardHeader Component", () => {
+describe("Componente DashboardHeader", () => {
   const mockUser = { id: 1, name: "Juan Pérez", username: "jperez" };
   const mockOnLogout = jest.fn();
 
@@ -33,7 +33,7 @@ describe("DashboardHeader Component", () => {
     expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it("debe toggle el menú de usuario al hacer click", async () => {
+  it("debe alternar el menú de usuario al hacer click", async () => {
     const user = userEvent.setup();
     render(<DashboardHeader user={mockUser} onLogout={mockOnLogout} />);
     

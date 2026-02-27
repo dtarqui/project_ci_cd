@@ -12,7 +12,7 @@ jest.mock("../components/Charts", () => ({
   TopProductsChart: ({ data }) => <div>TopProductsChart: {data?.length || 0} items</div>,
 }));
 
-describe("DashboardOverview Component", () => {
+describe("Componente DashboardOverview", () => {
   const mockData = {
     salesTrend: [
       { day: "Lunes", sales: 1200 },

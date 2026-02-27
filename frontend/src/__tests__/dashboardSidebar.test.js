@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import DashboardSidebar from "../components/DashboardSidebar";
 
-describe("DashboardSidebar Component", () => {
+describe("Componente DashboardSidebar", () => {
   const mockOnSectionChange = jest.fn();
 
   beforeEach(() => {

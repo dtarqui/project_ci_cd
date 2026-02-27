@@ -7,7 +7,7 @@ import * as apiService from "../services/api";
 // Mock de los servicios
 jest.mock("../services/api");
 
-describe("ProductsSection Component - CRUD Operations", () => {
+describe("Componente ProductsSection - Operaciones CRUD", () => {
   const mockProducts = [
     {
       id: 1,
@@ -317,7 +317,7 @@ describe("ProductsSection Component - CRUD Operations", () => {
         ).toBeInTheDocument();
       });
 
-      // Find all delete buttons - the last one should be in the modal
+      // Buscar todos los botones de eliminar: el último debe estar en el modal
       const allDeleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
       // Click the last one (from the confirmation modal)
       await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);

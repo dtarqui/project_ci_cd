@@ -18,7 +18,7 @@ jest.mock("../services/api", () => ({
   authService: mockAuthService
 }));
 
-describe("Login Tests", () => {
+describe("Pruebas de Login", () => {
   const mockOnLogin = jest.fn();
 
   beforeEach(() => {
@@ -26,8 +26,8 @@ describe("Login Tests", () => {
     mockOnLogin.mockClear();
   });
 
-  describe("Rendering", () => {
-    test("should render login form", () => {
+  describe("Renderizado", () => {
+    test("debe renderizar el formulario de login", () => {
       render(<Login onLogin={mockOnLogin} />);
       
       expect(screen.getByText("Inicio de sesión")).toBeInTheDocument();
@@ -36,15 +36,15 @@ describe("Login Tests", () => {
       expect(screen.getByRole("button", { name: /ingresar/i })).toBeInTheDocument();
     });
 
-    test("should render password visibility toggle", () => {
+    test("debe renderizar el botón para mostrar/ocultar contraseña", () => {
       render(<Login onLogin={mockOnLogin} />);
       
       expect(screen.getByTestId("icon-visibility-off")).toBeInTheDocument();
     });
   });
 
-  describe("User Interactions", () => {
-    test("should update username input", async () => {
+  describe("Interacciones de usuario", () => {
+    test("debe actualizar el input de usuario", async () => {
       const user = userEvent.setup();
       render(<Login onLogin={mockOnLogin} />);
       
@@ -57,7 +57,7 @@ describe("Login Tests", () => {
       expect(usernameInput.value).toBe("testuser");
     });
 
-    test("should toggle password visibility", async () => {
+    test("debe alternar la visibilidad de la contraseña", async () => {
       const user = userEvent.setup();
       render(<Login onLogin={mockOnLogin} />);
       
@@ -78,8 +78,8 @@ describe("Login Tests", () => {
     });
   });
 
-  describe("Form Submission", () => {
-    test("should handle form validation for empty fields", async () => {
+  describe("Envío del formulario", () => {
+    test("debe validar campos vacíos en el formulario", async () => {
       const user = userEvent.setup();
       
       render(<Login onLogin={mockOnLogin} />);
@@ -96,7 +96,7 @@ describe("Login Tests", () => {
       });
     });
 
-    test("should handle demo button functionality", async () => {
+    test("debe manejar la funcionalidad del botón demo", async () => {
       const user = userEvent.setup();
       
       render(<Login onLogin={mockOnLogin} />);
@@ -113,7 +113,7 @@ describe("Login Tests", () => {
       expect(passwordInput.value).toBe("demo123");
     });
 
-    test("should handle login error without server response", async () => {
+    test("debe manejar error de login sin respuesta del servidor", async () => {
       const user = userEvent.setup();
       
       mockAuthService.login.mockRejectedValue(new Error("Network error"));
@@ -136,7 +136,7 @@ describe("Login Tests", () => {
       });
     });
 
-    test("should clear error when user starts typing", async () => {
+    test("debe limpiar el error cuando el usuario empieza a escribir", async () => {
       const user = userEvent.setup();
       
       render(<Login onLogin={mockOnLogin} />);
@@ -160,7 +160,7 @@ describe("Login Tests", () => {
       expect(screen.queryByText("Por favor ingresa usuario y contraseña")).not.toBeInTheDocument();
     });
 
-    test("should handle whitespace-only credentials", async () => {
+    test("debe manejar credenciales con solo espacios en blanco", async () => {
       const user = userEvent.setup();
       
       render(<Login onLogin={mockOnLogin} />);
