@@ -21,7 +21,7 @@ describe("DashboardHeader Component", () => {
     const user = userEvent.setup();
     render(<DashboardHeader user={mockUser} onLogout={mockOnLogout} />);
     
-    const accountButton = screen.getByRole("button", { name: "" });
+    const accountButton = screen.getByRole("button", { name: /abrir menú de cuenta/i });
     await user.click(accountButton);
     
     expect(screen.getByText("Juan Pérez")).toBeInTheDocument();
@@ -37,22 +37,22 @@ describe("DashboardHeader Component", () => {
     const user = userEvent.setup();
     render(<DashboardHeader user={mockUser} onLogout={mockOnLogout} />);
     
-    const accountButton = screen.getByRole("button", { name: "" });
+    const accountButton = screen.getByRole("button", { name: /abrir menú de cuenta/i });
     
     // Click para abrir
     await user.click(accountButton);
-    expect(screen.getByText("Cuenta")).toBeInTheDocument();
+    expect(screen.getByText("Salir")).toBeInTheDocument();
     
     // Click para cerrar
     await user.click(accountButton);
-    expect(screen.queryByText("Cuenta")).not.toBeInTheDocument();
+    expect(screen.queryByText("Salir")).not.toBeInTheDocument();
   });
 
   it("debe llamar onLogout al hacer click en Salir", async () => {
     const user = userEvent.setup();
     render(<DashboardHeader user={mockUser} onLogout={mockOnLogout} />);
     
-    const accountButton = screen.getByRole("button", { name: "" });
+    const accountButton = screen.getByRole("button", { name: /abrir menú de cuenta/i });
     await user.click(accountButton);
     
     const logoutButton = screen.getByText("Salir");

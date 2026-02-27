@@ -20,6 +20,7 @@ const DashboardHeader = ({ user, onLogout }) => {
           <button
             className="user-button"
             onClick={() => setShowUserMenu(!showUserMenu)}
+            aria-label="Abrir menú de cuenta"
           >
             <MdAccountCircle />
           </button>
