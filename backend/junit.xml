@@ -1,487 +1,487 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="232" failures="0" errors="0" time="3.271">
-  <testsuite name="Unit Tests - Extended Coverage" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="1.34" tests="47">
-    <testcase classname="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;En Stock&apos; para cantidad &gt; 20" name="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;En Stock&apos; para cantidad &gt; 20" time="0.012">
+<testsuites name="jest tests" tests="232" failures="0" errors="0" time="2.618">
+  <testsuite name="Pruebas unitarias - Cobertura extendida" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="0.92" tests="47">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;En Stock&apos; para cantidad &gt; 20" name="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;En Stock&apos; para cantidad &gt; 20" time="0.016">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;En Stock&apos; para cantidad = 21" name="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;En Stock&apos; para cantidad = 21" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;En Stock&apos; para cantidad = 21" name="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;En Stock&apos; para cantidad = 21" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Bajo Stock&apos; para quantidade entre 1-20" name="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Bajo Stock&apos; para quantidade entre 1-20" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Bajo Stock&apos; para quantidade entre 1-20" name="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Bajo Stock&apos; para quantidade entre 1-20" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Sin Stock&apos; para quantidade = 0" name="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Sin Stock&apos; para quantidade = 0" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Sin Stock&apos; para quantidade = 0" name="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Sin Stock&apos; para quantidade = 0" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Sin Stock&apos; para quantidade &lt; 0" name="Unit Tests - Extended Coverage Helpers - calculateProductStatus deve retornar &apos;Sin Stock&apos; para quantidade &lt; 0" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Sin Stock&apos; para quantidade &lt; 0" name="Pruebas unitarias - Cobertura extendida Helpers - calcular estado de producto deve retornar &apos;Sin Stock&apos; para quantidade &lt; 0" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - getNextProductId debe retornar ID siguiente" name="Unit Tests - Extended Coverage Helpers - getNextProductId debe retornar ID siguiente" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe retornar ID siguiente" name="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe retornar ID siguiente" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - getNextProductId debe retornar 1 para array vacío" name="Unit Tests - Extended Coverage Helpers - getNextProductId debe retornar 1 para array vacío" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe retornar 1 para array vacío" name="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe retornar 1 para array vacío" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - getNextProductId debe manejar IDs grandes" name="Unit Tests - Extended Coverage Helpers - getNextProductId debe manejar IDs grandes" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe manejar IDs grandes" name="Pruebas unitarias - Cobertura extendida Helpers - obtener siguiente ID de producto debe manejar IDs grandes" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve extraer token valido de header Bearer" name="Unit Tests - Extended Coverage Helpers - extractToken deve extraer token valido de header Bearer" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve extraer token valido de header Bearer" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve extraer token valido de header Bearer" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header vacio" name="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header vacio" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header vacio" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header vacio" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header indefinido" name="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header indefinido" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header indefinido" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header indefinido" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header sin Bearer" name="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header sin Bearer" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header sin Bearer" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header sin Bearer" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header malformado" name="Unit Tests - Extended Coverage Helpers - extractToken deve retornar null para header malformado" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header malformado" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve retornar null para header malformado" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - extractToken deve extraer token sin hacer trim" name="Unit Tests - Extended Coverage Helpers - extractToken deve extraer token sin hacer trim" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve extraer token sin hacer trim" name="Pruebas unitarias - Cobertura extendida Helpers - extraer token deve extraer token sin hacer trim" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - isValidToken debe validar token conocido &apos;valid_token&apos;" name="Unit Tests - Extended Coverage Helpers - isValidToken debe validar token conocido &apos;valid_token&apos;" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar token conocido &apos;valid_token&apos;" name="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar token conocido &apos;valid_token&apos;" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - isValidToken debe validar tokens mock JWT" name="Unit Tests - Extended Coverage Helpers - isValidToken debe validar tokens mock JWT" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar tokens mock JWT" name="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar tokens mock JWT" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - isValidToken debe validar tokens con prefijo user_" name="Unit Tests - Extended Coverage Helpers - isValidToken debe validar tokens con prefijo user_" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar tokens con prefijo user_" name="Pruebas unitarias - Cobertura extendida Helpers - token válido debe validar tokens con prefijo user_" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - isValidToken deve retornar false para token invalido" name="Unit Tests - Extended Coverage Helpers - isValidToken deve retornar false para token invalido" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - token válido deve retornar false para token invalido" name="Pruebas unitarias - Cobertura extendida Helpers - token válido deve retornar false para token invalido" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Helpers - isValidToken deve retornar false para token vacio" name="Unit Tests - Extended Coverage Helpers - isValidToken deve retornar false para token vacio" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Helpers - token válido deve retornar false para token vacio" name="Pruebas unitarias - Cobertura extendida Helpers - token válido deve retornar false para token vacio" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve validar producto valido" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve validar producto valido" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve validar producto valido" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve validar producto valido" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto sin campos requeridos" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto sin campos requeridos" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto sin campos requeridos" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto sin campos requeridos" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto con price no número" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto con price no número" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto con price no número" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto con price no número" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto con stock no número" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar producto con stock no número" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto con stock no número" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar producto con stock no número" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar precio negativo" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar precio negativo" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar precio negativo" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar precio negativo" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar stock negativo" name="Unit Tests - Extended Coverage Validators - validateProductCreate deve rejeitar stock negativo" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar stock negativo" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto deve rejeitar stock negativo" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate debe aceptar precio cero" name="Unit Tests - Extended Coverage Validators - validateProductCreate debe aceptar precio cero" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto debe aceptar precio cero" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto debe aceptar precio cero" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductCreate debe aceptar stock cero" name="Unit Tests - Extended Coverage Validators - validateProductCreate debe aceptar stock cero" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto debe aceptar stock cero" name="Pruebas unitarias - Cobertura extendida Validadores - validar creación de producto debe aceptar stock cero" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización parcial" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización parcial" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización parcial" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización parcial" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización con precio" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización con precio" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización con precio" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización con precio" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización con stock" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar actualización con stock" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización con stock" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar actualización con stock" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve rejeitar precio invalido en actualización" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve rejeitar precio invalido en actualización" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve rejeitar precio invalido en actualización" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve rejeitar precio invalido en actualización" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve rejeitar stock negativo en actualización" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve rejeitar stock negativo en actualización" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve rejeitar stock negativo en actualización" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve rejeitar stock negativo en actualización" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve aceptar objeto vacío (sin cambios)" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve aceptar objeto vacío (sin cambios)" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve aceptar objeto vacío (sin cambios)" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve aceptar objeto vacío (sin cambios)" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar múltiples campos en actualización" name="Unit Tests - Extended Coverage Validators - validateProductUpdate deve validar múltiples campos en actualización" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar múltiples campos en actualización" name="Pruebas unitarias - Cobertura extendida Validadores - validar actualización de producto deve validar múltiples campos en actualización" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe validar credenciales válidas" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe validar credenciales válidas" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe validar credenciales válidas" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe validar credenciales válidas" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar sin username" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar sin username" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar sin username" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar sin username" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar sin password" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar sin password" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar sin password" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar sin password" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar username vacio" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar username vacio" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar username vacio" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar username vacio" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar password vacio" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar password vacio" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar password vacio" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar password vacio" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si faltan ambos campos" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si faltan ambos campos" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si faltan ambos campos" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si faltan ambos campos" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe validar username y password con espacios" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe validar username y password con espacios" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe validar username y password con espacios" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe validar username y password con espacios" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si username no es string" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si username no es string" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si username no es string" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si username no es string" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si password no es string" name="Unit Tests - Extended Coverage Validators - validateLoginCredentials debe rejeitar si password no es string" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si password no es string" name="Pruebas unitarias - Cobertura extendida Validadores - validar credenciales de login debe rejeitar si password no es string" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - Edge cases debe manejar objetos con propiedades adicionales en create" name="Unit Tests - Extended Coverage Validators - Edge cases debe manejar objetos con propiedades adicionales en create" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar objetos con propiedades adicionales en create" name="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar objetos con propiedades adicionales en create" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - Edge cases debe manejar objetos con propiedades adicionales en update" name="Unit Tests - Extended Coverage Validators - Edge cases debe manejar objetos con propiedades adicionales en update" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar objetos con propiedades adicionales en update" name="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar objetos con propiedades adicionales en update" time="0">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - Edge cases debe manejar valores 0 en precio" name="Unit Tests - Extended Coverage Validators - Edge cases debe manejar valores 0 en precio" time="0">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar valores 0 en precio" name="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar valores 0 en precio" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - Extended Coverage Validators - Edge cases debe manejar valores 0 en stock" name="Unit Tests - Extended Coverage Validators - Edge cases debe manejar valores 0 en stock" time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="Auth Middleware Tests - Extended Coverage" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="1.406" tests="13">
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe llamar next() cuando token es válido" name="Auth Middleware Tests - Extended Coverage authenticateToken debe llamar next() cuando token es válido" time="0.012">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe llamar next() para tokens mock JWT válidos" name="Auth Middleware Tests - Extended Coverage authenticateToken debe llamar next() para tokens mock JWT válidos" time="0.001">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando no hay token" name="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando no hay token" time="0.003">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando token está vacío" name="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando token está vacío" time="0.002">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando token es inválido" name="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando token es inválido" time="0.002">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando header no tiene Bearer" name="Auth Middleware Tests - Extended Coverage authenticateToken debe retornar 401 cuando header no tiene Bearer" time="0.001">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe manejar header de autorización malformado" name="Auth Middleware Tests - Extended Coverage authenticateToken debe manejar header de autorización malformado" time="0.001">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe ser case-sensitive para Bearer" name="Auth Middleware Tests - Extended Coverage authenticateToken debe ser case-sensitive para Bearer" time="0.001">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage authenticateToken debe extraer token sin trim automático" name="Auth Middleware Tests - Extended Coverage authenticateToken debe extraer token sin trim automático" time="0">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage errorHandler debe manejar errores y retornar 500" name="Auth Middleware Tests - Extended Coverage errorHandler debe manejar errores y retornar 500" time="0.097">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage errorHandler debe retornar mensaje genérico en producción" name="Auth Middleware Tests - Extended Coverage errorHandler debe retornar mensaje genérico en producción" time="0.006">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage errorHandler debe retornar mensaje de error en desarrollo" name="Auth Middleware Tests - Extended Coverage errorHandler debe retornar mensaje de error en desarrollo" time="0.007">
-    </testcase>
-    <testcase classname="Auth Middleware Tests - Extended Coverage notFoundHandler debe retornar 404 para rutas no encontradas" name="Auth Middleware Tests - Extended Coverage notFoundHandler debe retornar 404 para rutas no encontradas" time="0.001">
+    <testcase classname="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar valores 0 en stock" name="Pruebas unitarias - Cobertura extendida Validadores - casos límite debe manejar valores 0 en stock" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="Unit Tests - App Components" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.312" tests="28">
-    <testcase classname="Unit Tests - App Components Mock Data Validation mockData should have correct structure" name="Unit Tests - App Components Mock Data Validation mockData should have correct structure" time="0.01">
+  <testsuite name="Pruebas de middleware de auth - Cobertura extendida" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="0.969" tests="13">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe llamar next() cuando token es válido" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe llamar next() cuando token es válido" time="0.012">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation dailySales should be a string" name="Unit Tests - App Components Mock Data Validation dailySales should be a string" time="0.001">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe llamar next() para tokens mock JWT válidos" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe llamar next() para tokens mock JWT válidos" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation branchSales should be valid array" name="Unit Tests - App Components Mock Data Validation branchSales should be valid array" time="0.004">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando no hay token" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando no hay token" time="0.003">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" name="Unit Tests - App Components Mock Data Validation salesTrend should be valid array" time="0.005">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando token está vacío" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando token está vacío" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation productSales should be valid array" name="Unit Tests - App Components Mock Data Validation productSales should be valid array" time="0.003">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando token es inválido" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando token es inválido" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation should have expected number of data points" name="Unit Tests - App Components Mock Data Validation should have expected number of data points" time="0.001">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando header no tiene Bearer" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe retornar 401 cuando header no tiene Bearer" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Mock Data Validation branch sales values should sum to 100" name="Unit Tests - App Components Mock Data Validation branch sales values should sum to 100" time="0">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe manejar header de autorización malformado" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe manejar header de autorización malformado" time="0">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation users should be valid array" name="Unit Tests - App Components Users Data Validation users should be valid array" time="0">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe ser case-sensitive para Bearer" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe ser case-sensitive para Bearer" time="0">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation each user should have required properties" name="Unit Tests - App Components Users Data Validation each user should have required properties" time="0.004">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe extraer token sin trim automático" name="Pruebas de middleware de auth - Cobertura extendida authenticateToken debe extraer token sin trim automático" time="0.001">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation user IDs should be unique" name="Unit Tests - App Components Users Data Validation user IDs should be unique" time="0.001">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida errorHandler debe manejar errores y retornar 500" name="Pruebas de middleware de auth - Cobertura extendida errorHandler debe manejar errores y retornar 500" time="0.099">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation usernames should be unique" name="Unit Tests - App Components Users Data Validation usernames should be unique" time="0">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida errorHandler debe retornar mensaje genérico en producción" name="Pruebas de middleware de auth - Cobertura extendida errorHandler debe retornar mensaje genérico en producción" time="0.014">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation should include expected test users" name="Unit Tests - App Components Users Data Validation should include expected test users" time="0.001">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida errorHandler debe retornar mensaje de error en desarrollo" name="Pruebas de middleware de auth - Cobertura extendida errorHandler debe retornar mensaje de error en desarrollo" time="0.007">
     </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation admin user should exist with correct properties" name="Unit Tests - App Components Users Data Validation admin user should exist with correct properties" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" name="Unit Tests - App Components Users Data Validation demo user should exist with correct properties" time="0.008">
-    </testcase>
-    <testcase classname="Unit Tests - App Components App Creation createApp should return Express app instance" name="Unit Tests - App Components App Creation createApp should return Express app instance" time="0.003">
-    </testcase>
-    <testcase classname="Unit Tests - App Components App Creation createApp should create independent app instances" name="Unit Tests - App Components App Creation createApp should create independent app instances" time="0.002">
-    </testcase>
-    <testcase classname="Unit Tests - App Components App Creation app should have required middleware" name="Unit Tests - App Components App Creation app should have required middleware" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations sales trend should have realistic values" name="Unit Tests - App Components Data Calculations sales trend should have realistic values" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations product quantities should be realistic" name="Unit Tests - App Components Data Calculations product quantities should be realistic" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Calculations branch sales percentages should be valid" name="Unit Tests - App Components Data Calculations branch sales percentages should be valid" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" name="Unit Tests - App Components Data Consistency should have all days of the week in sales trend" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency branch names should be descriptive" name="Unit Tests - App Components Data Consistency branch names should be descriptive" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Data Consistency product names should follow pattern" name="Unit Tests - App Components Data Consistency product names should follow pattern" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Helper Functions users finder should work correctly" name="Unit Tests - App Components Helper Functions users finder should work correctly" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Helper Functions token generation should be consistent" name="Unit Tests - App Components Helper Functions token generation should be consistent" time="0">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Helper Functions user data sanitization" name="Unit Tests - App Components Helper Functions user data sanitization" time="0.001">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" name="Unit Tests - App Components Timestamp Generation should generate valid ISO timestamps" time="0">
-    </testcase>
-    <testcase classname="Unit Tests - App Components Timestamp Generation timestamps should be recent" name="Unit Tests - App Components Timestamp Generation timestamps should be recent" time="0.001">
+    <testcase classname="Pruebas de middleware de auth - Cobertura extendida notFoundHandler debe retornar 404 para rutas no encontradas" name="Pruebas de middleware de auth - Cobertura extendida notFoundHandler debe retornar 404 para rutas no encontradas" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="Index.js Module Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.331" tests="3">
-    <testcase classname="Index.js Module Tests should require and execute index.js code" name="Index.js Module Tests should require and execute index.js code" time="0.054">
+  <testsuite name="Pruebas del módulo Index.js" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.377" tests="3">
+    <testcase classname="Pruebas del módulo Index.js debe requerir y ejecutar el código de index.js" name="Pruebas del módulo Index.js debe requerir y ejecutar el código de index.js" time="0.032">
     </testcase>
-    <testcase classname="Index.js Module Tests should handle PORT environment variable" name="Index.js Module Tests should handle PORT environment variable" time="0.001">
+    <testcase classname="Pruebas del módulo Index.js debe manejar la variable de entorno PORT" name="Pruebas del módulo Index.js debe manejar la variable de entorno PORT" time="0.001">
     </testcase>
-    <testcase classname="Index.js Module Tests should export the app instance" name="Index.js Module Tests should export the app instance" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="Sales CRUD Endpoints" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.498" tests="9">
-    <testcase classname="Sales CRUD Endpoints GET /api/sales - Listar Ventas debe obtener lista de ventas" name="Sales CRUD Endpoints GET /api/sales - Listar Ventas debe obtener lista de ventas" time="0.063">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints GET /api/sales - Listar Ventas debe filtrar ventas por estado" name="Sales CRUD Endpoints GET /api/sales - Listar Ventas debe filtrar ventas por estado" time="0.01">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints GET /api/sales/:id - Obtener Venta debe obtener una venta por ID" name="Sales CRUD Endpoints GET /api/sales/:id - Obtener Venta debe obtener una venta por ID" time="0.007">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints GET /api/sales/:id - Obtener Venta debe retornar 404 para ID inexistente" name="Sales CRUD Endpoints GET /api/sales/:id - Obtener Venta debe retornar 404 para ID inexistente" time="0.007">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints POST /api/sales - Crear Venta debe crear una venta" name="Sales CRUD Endpoints POST /api/sales - Crear Venta debe crear una venta" time="0.029">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints POST /api/sales - Crear Venta debe validar campos requeridos" name="Sales CRUD Endpoints POST /api/sales - Crear Venta debe validar campos requeridos" time="0.01">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints PUT /api/sales/:id - Actualizar Venta debe actualizar una venta existente" name="Sales CRUD Endpoints PUT /api/sales/:id - Actualizar Venta debe actualizar una venta existente" time="0.008">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints PUT /api/sales/:id - Actualizar Venta debe validar status inválido" name="Sales CRUD Endpoints PUT /api/sales/:id - Actualizar Venta debe validar status inválido" time="0.006">
-    </testcase>
-    <testcase classname="Sales CRUD Endpoints PUT /api/sales/:id/cancel - Anular Venta debe anular una venta" name="Sales CRUD Endpoints PUT /api/sales/:id/cancel - Anular Venta debe anular una venta" time="0.01">
+    <testcase classname="Pruebas del módulo Index.js debe exportar la instancia de la app" name="Pruebas del módulo Index.js debe exportar la instancia de la app" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="CORS Configuration Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.56" tests="15">
-    <testcase classname="CORS Configuration Tests Default CORS Origins should allow localhost:3000 origin" name="CORS Configuration Tests Default CORS Origins should allow localhost:3000 origin" time="0.065">
+  <testsuite name="Pruebas unitarias - Componentes de la app" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.422" tests="28">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock mockData debe tener estructura correcta" name="Pruebas unitarias - Componentes de la app Validación de datos mock mockData debe tener estructura correcta" time="0.009">
     </testcase>
-    <testcase classname="CORS Configuration Tests Default CORS Origins should allow localhost:4000 origin" name="CORS Configuration Tests Default CORS Origins should allow localhost:4000 origin" time="0.008">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock dailySales debe ser un string" name="Pruebas unitarias - Componentes de la app Validación de datos mock dailySales debe ser un string" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests Default CORS Origins should allow Vercel app domain" name="CORS Configuration Tests Default CORS Origins should allow Vercel app domain" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock branchSales debe ser un arreglo válido" name="Pruebas unitarias - Componentes de la app Validación de datos mock branchSales debe ser un arreglo válido" time="0.008">
     </testcase>
-    <testcase classname="CORS Configuration Tests Default CORS Origins should allow Vercel subdomain" name="CORS Configuration Tests Default CORS Origins should allow Vercel subdomain" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock salesTrend debe ser un arreglo válido" name="Pruebas unitarias - Componentes de la app Validación de datos mock salesTrend debe ser un arreglo válido" time="0.012">
     </testcase>
-    <testcase classname="CORS Configuration Tests Environment Variable CORS Origins should allow origins from ALLOWED_ORIGINS env variable" name="CORS Configuration Tests Environment Variable CORS Origins should allow origins from ALLOWED_ORIGINS env variable" time="0.012">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock productSales debe ser un arreglo válido" name="Pruebas unitarias - Componentes de la app Validación de datos mock productSales debe ser un arreglo válido" time="0.002">
     </testcase>
-    <testcase classname="CORS Configuration Tests Environment Variable CORS Origins should allow multiple origins from ALLOWED_ORIGINS (comma-separated)" name="CORS Configuration Tests Environment Variable CORS Origins should allow multiple origins from ALLOWED_ORIGINS (comma-separated)" time="0.012">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock debe tener la cantidad esperada de puntos de datos" name="Pruebas unitarias - Componentes de la app Validación de datos mock debe tener la cantidad esperada de puntos de datos" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests Environment Variable CORS Origins should handle ALLOWED_ORIGINS with extra whitespace" name="CORS Configuration Tests Environment Variable CORS Origins should handle ALLOWED_ORIGINS with extra whitespace" time="0.005">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos mock los valores de ventas por sucursal deben sumar 100" name="Pruebas unitarias - Componentes de la app Validación de datos mock los valores de ventas por sucursal deben sumar 100" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests Environment Variable CORS Origins should combine env origins with default localhost origins" name="CORS Configuration Tests Environment Variable CORS Origins should combine env origins with default localhost origins" time="0.012">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios users debe ser un arreglo válido" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios users debe ser un arreglo válido" time="0">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS Preflight Requests should handle OPTIONS preflight for allowed origin" name="CORS Configuration Tests CORS Preflight Requests should handle OPTIONS preflight for allowed origin" time="0.01">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios cada usuario debe tener propiedades requeridas" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios cada usuario debe tener propiedades requeridas" time="0.003">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS Preflight Requests should include credentials in CORS headers" name="CORS Configuration Tests CORS Preflight Requests should include credentials in CORS headers" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios los IDs de usuario deben ser únicos" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios los IDs de usuario deben ser únicos" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests Requests without Origin header should allow requests without Origin header (curl, mobile apps)" name="CORS Configuration Tests Requests without Origin header should allow requests without Origin header (curl, mobile apps)" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios los usernames deben ser únicos" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios los usernames deben ser únicos" time="0">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS Error Handling should block and log warning for non-whitelisted origin" name="CORS Configuration Tests CORS Error Handling should block and log warning for non-whitelisted origin" time="0.005">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios debe incluir los usuarios de prueba esperados" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios debe incluir los usuarios de prueba esperados" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS Error Handling should not expose CORS errors in production responses" name="CORS Configuration Tests CORS Error Handling should not expose CORS errors in production responses" time="0.026">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios el usuario admin debe existir con propiedades correctas" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios el usuario admin debe existir con propiedades correctas" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS with Authentication Endpoints should allow authenticated requests from trusted origin" name="CORS Configuration Tests CORS with Authentication Endpoints should allow authenticated requests from trusted origin" time="0.01">
+    <testcase classname="Pruebas unitarias - Componentes de la app Validación de datos de usuarios el usuario demo debe existir con propiedades correctas" name="Pruebas unitarias - Componentes de la app Validación de datos de usuarios el usuario demo debe existir con propiedades correctas" time="0.001">
     </testcase>
-    <testcase classname="CORS Configuration Tests CORS with Authentication Endpoints should allow dashboard access from trusted origin" name="CORS Configuration Tests CORS with Authentication Endpoints should allow dashboard access from trusted origin" time="0.009">
+    <testcase classname="Pruebas unitarias - Componentes de la app Creación de app createApp debe retornar una instancia de app Express" name="Pruebas unitarias - Componentes de la app Creación de app createApp debe retornar una instancia de app Express" time="0.003">
     </testcase>
-  </testsuite>
-  <testsuite name="Products CRUD Endpoints" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.583" tests="22">
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe obtener lista de todos los productos" name="Products CRUD Endpoints GET /api/products - Listar Productos debe obtener lista de todos los productos" time="0.115">
+    <testcase classname="Pruebas unitarias - Componentes de la app Creación de app createApp debe crear instancias independientes de app" name="Pruebas unitarias - Componentes de la app Creación de app createApp debe crear instancias independientes de app" time="0.002">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe filtrar productos por búsqueda" name="Products CRUD Endpoints GET /api/products - Listar Productos debe filtrar productos por búsqueda" time="0.011">
+    <testcase classname="Pruebas unitarias - Componentes de la app Creación de app la app debe tener middleware requerido" name="Pruebas unitarias - Componentes de la app Creación de app la app debe tener middleware requerido" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe filtrar productos por categoría" name="Products CRUD Endpoints GET /api/products - Listar Productos debe filtrar productos por categoría" time="0.009">
+    <testcase classname="Pruebas unitarias - Componentes de la app Cálculos de datos la tendencia de ventas debe tener valores realistas" name="Pruebas unitarias - Componentes de la app Cálculos de datos la tendencia de ventas debe tener valores realistas" time="0.002">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por precio" name="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por precio" time="0.008">
+    <testcase classname="Pruebas unitarias - Componentes de la app Cálculos de datos las cantidades de producto deben ser realistas" name="Pruebas unitarias - Componentes de la app Cálculos de datos las cantidades de producto deben ser realistas" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por stock" name="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por stock" time="0.01">
+    <testcase classname="Pruebas unitarias - Componentes de la app Cálculos de datos los porcentajes de ventas por sucursal deben ser válidos" name="Pruebas unitarias - Componentes de la app Cálculos de datos los porcentajes de ventas por sucursal deben ser válidos" time="0.002">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por ventas" name="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por ventas" time="0.01">
+    <testcase classname="Pruebas unitarias - Componentes de la app Consistencia de datos debe tener todos los días de la semana en sales trend" name="Pruebas unitarias - Componentes de la app Consistencia de datos debe tener todos los días de la semana en sales trend" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por nombre (default)" name="Products CRUD Endpoints GET /api/products - Listar Productos debe ordenar productos por nombre (default)" time="0.007">
+    <testcase classname="Pruebas unitarias - Componentes de la app Consistencia de datos los nombres de sucursales deben ser descriptivos" name="Pruebas unitarias - Componentes de la app Consistencia de datos los nombres de sucursales deben ser descriptivos" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products - Listar Productos debe retornar array vacío para búsqueda sin coincidencias" name="Products CRUD Endpoints GET /api/products - Listar Productos debe retornar array vacío para búsqueda sin coincidencias" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Consistencia de datos los nombres de producto deben seguir el patrón" name="Pruebas unitarias - Componentes de la app Consistencia de datos los nombres de producto deben seguir el patrón" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products/:id - Obtener Producto debe obtener un producto por ID" name="Products CRUD Endpoints GET /api/products/:id - Obtener Producto debe obtener un producto por ID" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Funciones helper el buscador de usuarios debe funcionar correctamente" name="Pruebas unitarias - Componentes de la app Funciones helper el buscador de usuarios debe funcionar correctamente" time="0.001">
     </testcase>
-    <testcase classname="Products CRUD Endpoints GET /api/products/:id - Obtener Producto debe retornar 404 para ID inexistente" name="Products CRUD Endpoints GET /api/products/:id - Obtener Producto debe retornar 404 para ID inexistente" time="0.011">
+    <testcase classname="Pruebas unitarias - Componentes de la app Funciones helper la generación de token debe ser consistente" name="Pruebas unitarias - Componentes de la app Funciones helper la generación de token debe ser consistente" time="0">
     </testcase>
-    <testcase classname="Products CRUD Endpoints POST /api/products - Crear Producto debe crear un nuevo producto" name="Products CRUD Endpoints POST /api/products - Crear Producto debe crear un nuevo producto" time="0.023">
+    <testcase classname="Pruebas unitarias - Componentes de la app Funciones helper user data sanitization" name="Pruebas unitarias - Componentes de la app Funciones helper user data sanitization" time="0.003">
     </testcase>
-    <testcase classname="Products CRUD Endpoints POST /api/products - Crear Producto debe validar campos requeridos" name="Products CRUD Endpoints POST /api/products - Crear Producto debe validar campos requeridos" time="0.006">
+    <testcase classname="Pruebas unitarias - Componentes de la app Generación de timestamp debe generar timestamps ISO válidos" name="Pruebas unitarias - Componentes de la app Generación de timestamp debe generar timestamps ISO válidos" time="0">
     </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar un producto existente" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar un producto existente" time="0.006">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el nombre" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el nombre" time="0.006">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el precio" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el precio" time="0.007">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el stock" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo el stock" time="0.006">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo la categoría" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar solo la categoría" time="0.005">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar múltiples campos" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe actualizar múltiples campos" time="0.005">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe validar en actualización" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe validar en actualización" time="0.005">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe retornar 404 para ID inexistente" name="Products CRUD Endpoints PUT /api/products/:id - Actualizar Producto debe retornar 404 para ID inexistente" time="0.005">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints DELETE /api/products/:id - Eliminar Producto debe eliminar un producto" name="Products CRUD Endpoints DELETE /api/products/:id - Eliminar Producto debe eliminar un producto" time="0.004">
-    </testcase>
-    <testcase classname="Products CRUD Endpoints DELETE /api/products/:id - Eliminar Producto debe retornar 404 para ID inexistente" name="Products CRUD Endpoints DELETE /api/products/:id - Eliminar Producto debe retornar 404 para ID inexistente" time="0.004">
+    <testcase classname="Pruebas unitarias - Componentes de la app Generación de timestamp los timestamps deben ser recientes" name="Pruebas unitarias - Componentes de la app Generación de timestamp los timestamps deben ser recientes" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="Additional API Coverage Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.654" tests="26">
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" name="Additional API Coverage Tests Authentication Edge Cases should fail with valid format but non-existent user token" time="0.05">
+  <testsuite name="Endpoints CRUD de ventas" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.679" tests="9">
+    <testcase classname="Endpoints CRUD de ventas GET /api/sales - Listar Ventas debe obtener lista de ventas" name="Endpoints CRUD de ventas GET /api/sales - Listar Ventas debe obtener lista de ventas" time="0.055">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" name="Additional API Coverage Tests Authentication Edge Cases should fail with zero user ID token" time="0.006">
+    <testcase classname="Endpoints CRUD de ventas GET /api/sales - Listar Ventas debe filtrar ventas por estado" name="Endpoints CRUD de ventas GET /api/sales - Listar Ventas debe filtrar ventas por estado" time="0.011">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" name="Additional API Coverage Tests Authentication Edge Cases should handle negative user ID token" time="0.007">
+    <testcase classname="Endpoints CRUD de ventas GET /api/sales/:id - Obtener Venta debe obtener una venta por ID" name="Endpoints CRUD de ventas GET /api/sales/:id - Obtener Venta debe obtener una venta por ID" time="0.007">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle very long usernames" name="Additional API Coverage Tests Login Edge Cases should handle very long usernames" time="0.028">
+    <testcase classname="Endpoints CRUD de ventas GET /api/sales/:id - Obtener Venta debe retornar 404 para ID inexistente" name="Endpoints CRUD de ventas GET /api/sales/:id - Obtener Venta debe retornar 404 para ID inexistente" time="0.006">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" name="Additional API Coverage Tests Login Edge Cases should handle special characters in credentials" time="0.006">
+    <testcase classname="Endpoints CRUD de ventas POST /api/sales - Crear Venta debe crear una venta" name="Endpoints CRUD de ventas POST /api/sales - Crear Venta debe crear una venta" time="0.028">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null username" name="Additional API Coverage Tests Login Edge Cases should handle null username" time="0.008">
+    <testcase classname="Endpoints CRUD de ventas POST /api/sales - Crear Venta debe validar campos requeridos" name="Endpoints CRUD de ventas POST /api/sales - Crear Venta debe validar campos requeridos" time="0.005">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle null password" name="Additional API Coverage Tests Login Edge Cases should handle null password" time="0.005">
+    <testcase classname="Endpoints CRUD de ventas PUT /api/sales/:id - Actualizar Venta debe actualizar una venta existente" name="Endpoints CRUD de ventas PUT /api/sales/:id - Actualizar Venta debe actualizar una venta existente" time="0.007">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as username" name="Additional API Coverage Tests Login Edge Cases should handle number as username" time="0.005">
+    <testcase classname="Endpoints CRUD de ventas PUT /api/sales/:id - Actualizar Venta debe validar status inválido" name="Endpoints CRUD de ventas PUT /api/sales/:id - Actualizar Venta debe validar status inválido" time="0.008">
     </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle number as password" name="Additional API Coverage Tests Login Edge Cases should handle number as password" time="0.007">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as username" name="Additional API Coverage Tests Login Edge Cases should handle boolean as username" time="0.006">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle boolean as password" name="Additional API Coverage Tests Login Edge Cases should handle boolean as password" time="0.008">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as username" name="Additional API Coverage Tests Login Edge Cases should handle object as username" time="0.005">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle object as password" name="Additional API Coverage Tests Login Edge Cases should handle object as password" time="0.004">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as username" name="Additional API Coverage Tests Login Edge Cases should handle array as username" time="0.005">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Login Edge Cases should handle array as password" name="Additional API Coverage Tests Login Edge Cases should handle array as password" time="0.006">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle malformed Bearer token in dashboard" time="0.006">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle non-existent user in dashboard token" time="0.005">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" name="Additional API Coverage Tests Dashboard Data Edge Cases should handle zero user ID in dashboard token" time="0.005">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" name="Additional API Coverage Tests Additional Security Tests should handle empty string credentials" time="0.006">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" name="Additional API Coverage Tests Additional Security Tests should handle whitespace-only credentials" time="0.006">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" name="Additional API Coverage Tests Additional Security Tests should handle mixed whitespace credentials" time="0.004">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid successive login attempts" time="0.027">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" name="Additional API Coverage Tests Stress and Performance Tests should handle rapid dashboard requests with different tokens" time="0.017">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" name="Additional API Coverage Tests Data Validation Tests should return consistent dashboard data structure" time="0.01">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" name="Additional API Coverage Tests Data Validation Tests should return valid timestamp in dashboard data" time="0.01">
-    </testcase>
-    <testcase classname="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" name="Additional API Coverage Tests Data Validation Tests should return consistent user data structure in auth/me" time="0.008">
+    <testcase classname="Endpoints CRUD de ventas PUT /api/sales/:id/cancel - Anular Venta debe anular una venta" name="Endpoints CRUD de ventas PUT /api/sales/:id/cancel - Anular Venta debe anular una venta" time="0.007">
     </testcase>
   </testsuite>
-  <testsuite name="Customers CRUD Endpoints" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.7" tests="37">
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe obtener lista de todos los clientes" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe obtener lista de todos los clientes" time="0.131">
+  <testsuite name="Pruebas de configuración CORS" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.725" tests="15">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir origen localhost:3000" name="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir origen localhost:3000" time="0.057">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de nombre" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de nombre" time="0.011">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir origen localhost:4000" name="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir origen localhost:4000" time="0.01">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de email" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de email" time="0.01">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir dominio de app Vercel" name="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir dominio de app Vercel" time="0.008">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por estado" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe filtrar clientes por estado" time="0.009">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir subdominio de Vercel" name="Pruebas de configuración CORS Orígenes CORS por defecto debe permitir subdominio de Vercel" time="0.005">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por nombre" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por nombre" time="0.006">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe permitir orígenes desde variable ALLOWED_ORIGINS" name="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe permitir orígenes desde variable ALLOWED_ORIGINS" time="0.007">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por email" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por email" time="0.008">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe permitir múltiples orígenes desde ALLOWED_ORIGINS (separados por coma)" name="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe permitir múltiples orígenes desde ALLOWED_ORIGINS (separados por coma)" time="0.013">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por gasto total (spending)" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por gasto total (spending)" time="0.007">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe manejar ALLOWED_ORIGINS con espacios extra" name="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe manejar ALLOWED_ORIGINS con espacios extra" time="0.01">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por número de compras" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por número de compras" time="0.007">
+    <testcase classname="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe combinar orígenes de entorno con orígenes localhost por defecto" name="Pruebas de configuración CORS Orígenes CORS por variable de entorno debe combinar orígenes de entorno con orígenes localhost por defecto" time="0.015">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por fecha de registro" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe ordenar clientes por fecha de registro" time="0.007">
+    <testcase classname="Pruebas de configuración CORS Solicitudes preflight CORS debe manejar preflight OPTIONS para origen permitido" name="Pruebas de configuración CORS Solicitudes preflight CORS debe manejar preflight OPTIONS para origen permitido" time="0.007">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe retornar array vacío para búsqueda sin coincidencias" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe retornar array vacío para búsqueda sin coincidencias" time="0.009">
+    <testcase classname="Pruebas de configuración CORS Solicitudes preflight CORS debe incluir credenciales en headers CORS" name="Pruebas de configuración CORS Solicitudes preflight CORS debe incluir credenciales en headers CORS" time="0.006">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe combinar búsqueda y filtro de estado" name="Customers CRUD Endpoints GET /api/customers - Listar Clientes debe combinar búsqueda y filtro de estado" time="0.005">
+    <testcase classname="Pruebas de configuración CORS Solicitudes sin header Origin debe permitir solicitudes sin header Origin (curl, apps móviles)" name="Pruebas de configuración CORS Solicitudes sin header Origin debe permitir solicitudes sin header Origin (curl, apps móviles)" time="0.007">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe obtener un cliente por ID" name="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe obtener un cliente por ID" time="0.007">
+    <testcase classname="Pruebas de configuración CORS Manejo de errores CORS debe bloquear y registrar advertencia para origen no permitido" name="Pruebas de configuración CORS Manejo de errores CORS debe bloquear y registrar advertencia para origen no permitido" time="0.007">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe validar que el cliente tenga todos los campos requeridos" name="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe validar que el cliente tenga todos los campos requeridos" time="0.008">
+    <testcase classname="Pruebas de configuración CORS Manejo de errores CORS no debe exponer errores CORS en respuestas de producción" name="Pruebas de configuración CORS Manejo de errores CORS no debe exponer errores CORS en respuestas de producción" time="0.025">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe retornar 404 para ID inexistente" name="Customers CRUD Endpoints GET /api/customers/:id - Obtener Cliente debe retornar 404 para ID inexistente" time="0.006">
+    <testcase classname="Pruebas de configuración CORS CORS con endpoints de autenticación debe permitir solicitudes autenticadas desde origen confiable" name="Pruebas de configuración CORS CORS con endpoints de autenticación debe permitir solicitudes autenticadas desde origen confiable" time="0.009">
     </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe crear un nuevo cliente" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe crear un nuevo cliente" time="0.023">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el nombre es requerido" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el nombre es requerido" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el email es requerido" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el email es requerido" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el teléfono es requerido" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar que el teléfono es requerido" time="0.004">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar formato de email" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar formato de email" time="0.004">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar longitud de teléfono (mínimo 10 caracteres)" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe validar longitud de teléfono (mínimo 10 caracteres)" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe asignar ID automáticamente al crear" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe asignar ID automáticamente al crear" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe establecer fecha de registro al crear" name="Customers CRUD Endpoints POST /api/customers - Crear Cliente debe establecer fecha de registro al crear" time="0.008">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar un cliente existente" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar un cliente existente" time="0.007">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el nombre" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el nombre" time="0.008">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el email" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el email" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el teléfono" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el teléfono" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo la ciudad" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo la ciudad" time="0.006">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el estado" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el estado" time="0.006">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar múltiples campos" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe actualizar múltiples campos" time="0.008">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe validar email en actualización" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe validar email en actualización" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe validar teléfono en actualización" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe validar teléfono en actualización" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe retornar 404 para ID inexistente" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente debe retornar 404 para ID inexistente" time="0.004">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente no debe actualizar el ID del cliente" name="Customers CRUD Endpoints PUT /api/customers/:id - Actualizar Cliente no debe actualizar el ID del cliente" time="0.008">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe eliminar un cliente" name="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe eliminar un cliente" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe retornar el cliente eliminado" name="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe retornar el cliente eliminado" time="0.005">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe retornar 404 para ID inexistente" name="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente debe retornar 404 para ID inexistente" time="0.007">
-    </testcase>
-    <testcase classname="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente no debe permitir acceder a cliente eliminado" name="Customers CRUD Endpoints DELETE /api/customers/:id - Eliminar Cliente no debe permitir acceder a cliente eliminado" time="0.014">
+    <testcase classname="Pruebas de configuración CORS CORS con endpoints de autenticación debe permitir acceso al dashboard desde origen confiable" name="Pruebas de configuración CORS CORS con endpoints de autenticación debe permitir acceso al dashboard desde origen confiable" time="0.009">
     </testcase>
   </testsuite>
-  <testsuite name="Backend API Tests" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:22:32" time="2.748" tests="32">
-    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return status ok" name="Backend API Tests Health Check Endpoint GET /health - should return status ok" time="0.111">
+  <testsuite name="Endpoints CRUD de productos" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.78" tests="22">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe obtener lista de todos los productos" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe obtener lista de todos los productos" time="0.079">
     </testcase>
-    <testcase classname="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" name="Backend API Tests Health Check Endpoint GET /health - should return valid timestamp" time="0.006">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe filtrar productos por búsqueda" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe filtrar productos por búsqueda" time="0.011">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login successfully with valid credentials" time="0.028">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe filtrar productos por categoría" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe filtrar productos por categoría" time="0.009">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/login should login admin user successfully" time="0.008">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por precio" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por precio" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credentials" time="0.008">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por stock" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por stock" time="0.012">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing username" time="0.005">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por ventas" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por ventas" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with missing password" time="0.008">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por nombre (default)" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe ordenar productos por nombre (default)" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with empty credentials" time="0.005">
+    <testcase classname="Endpoints CRUD de productos GET /api/products - Listar Productos debe retornar array vacío para búsqueda sin coincidencias" name="Endpoints CRUD de productos GET /api/products - Listar Productos debe retornar array vacío para búsqueda sin coincidencias" time="0.007">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" name="Backend API Tests Authentication Endpoints POST /api/auth/login should fail with invalid credential types" time="0.009">
+    <testcase classname="Endpoints CRUD de productos GET /api/products/:id - Obtener Producto debe obtener un producto por ID" name="Endpoints CRUD de productos GET /api/products/:id - Obtener Producto debe obtener un producto por ID" time="0.007">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" name="Backend API Tests Authentication Endpoints POST /api/auth/login should not return password in response" time="0.006">
+    <testcase classname="Endpoints CRUD de productos GET /api/products/:id - Obtener Producto debe retornar 404 para ID inexistente" name="Endpoints CRUD de productos GET /api/products/:id - Obtener Producto debe retornar 404 para ID inexistente" time="0.006">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout successfully" time="0.007">
+    <testcase classname="Endpoints CRUD de productos POST /api/products - Crear Producto debe crear un nuevo producto" name="Endpoints CRUD de productos POST /api/products - Crear Producto debe crear un nuevo producto" time="0.023">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" name="Backend API Tests Authentication Endpoints POST /api/auth/logout should logout without authentication" time="0.005">
+    <testcase classname="Endpoints CRUD de productos POST /api/products - Crear Producto debe validar campos requeridos" name="Endpoints CRUD de productos POST /api/products - Crear Producto debe validar campos requeridos" time="0.005">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should return user info with valid token" time="0.005">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar un producto existente" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar un producto existente" time="0.007">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail without token" time="0.006">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el nombre" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el nombre" time="0.004">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with invalid token" time="0.005">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el precio" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el precio" time="0.005">
     </testcase>
-    <testcase classname="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" name="Backend API Tests Authentication Endpoints GET /api/auth/me should fail with malformed token" time="0.004">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el stock" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo el stock" time="0.007">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" name="Backend API Tests Dashboard Data Endpoint should return dashboard data with valid token" time="0.009">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo la categoría" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar solo la categoría" time="0.005">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail without authorization header" name="Backend API Tests Dashboard Data Endpoint should fail without authorization header" time="0.009">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar múltiples campos" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe actualizar múltiples campos" time="0.005">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token format" time="0.004">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe validar en actualización" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe validar en actualización" time="0.006">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should fail with invalid token" name="Backend API Tests Dashboard Data Endpoint should fail with invalid token" time="0.004">
+    <testcase classname="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe retornar 404 para ID inexistente" name="Endpoints CRUD de productos PUT /api/products/:id - Actualizar Producto debe retornar 404 para ID inexistente" time="0.006">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should return correct data structure" name="Backend API Tests Dashboard Data Endpoint should return correct data structure" time="0.007">
+    <testcase classname="Endpoints CRUD de productos DELETE /api/products/:id - Eliminar Producto debe eliminar un producto" name="Endpoints CRUD de productos DELETE /api/products/:id - Eliminar Producto debe eliminar un producto" time="0.005">
     </testcase>
-    <testcase classname="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" name="Backend API Tests Dashboard Data Endpoint should work with different valid tokens" time="0.013">
+    <testcase classname="Endpoints CRUD de productos DELETE /api/products/:id - Eliminar Producto debe retornar 404 para ID inexistente" name="Endpoints CRUD de productos DELETE /api/products/:id - Eliminar Producto debe retornar 404 para ID inexistente" time="0.004">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should return 404 for non-existent routes" name="Backend API Tests Error Handling should return 404 for non-existent routes" time="0.006">
+  </testsuite>
+  <testsuite name="Pruebas adicionales de cobertura de API" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.778" tests="26">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de autenticación debe fallar con formato válido pero token de usuario inexistente" name="Pruebas adicionales de cobertura de API Casos límite de autenticación debe fallar con formato válido pero token de usuario inexistente" time="0.064">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should handle POST to non-existent routes" name="Backend API Tests Error Handling should handle POST to non-existent routes" time="0.006">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de autenticación debe fallar con token de usuario ID cero" name="Pruebas adicionales de cobertura de API Casos límite de autenticación debe fallar con token de usuario ID cero" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Error Handling should handle malformed JSON" name="Backend API Tests Error Handling should handle malformed JSON" time="0.079">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de autenticación debe manejar token con ID de usuario negativo" name="Pruebas adicionales de cobertura de API Casos límite de autenticación debe manejar token con ID de usuario negativo" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Integration Tests complete authentication flow" name="Backend API Tests Integration Tests complete authentication flow" time="0.018">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar usernames muy largos" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar usernames muy largos" time="0.022">
     </testcase>
-    <testcase classname="Backend API Tests Integration Tests should handle concurrent requests" name="Backend API Tests Integration Tests should handle concurrent requests" time="0.027">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar caracteres especiales en credenciales" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar caracteres especiales en credenciales" time="0.007">
     </testcase>
-    <testcase classname="Backend API Tests Performance Tests health check should respond quickly" name="Backend API Tests Performance Tests health check should respond quickly" time="0.004">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar username nulo" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar username nulo" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Performance Tests login should respond within reasonable time" name="Backend API Tests Performance Tests login should respond within reasonable time" time="0.007">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar password nulo" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar password nulo" time="0.01">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should not expose sensitive information in error messages" name="Backend API Tests Security Tests should not expose sensitive information in error messages" time="0.007">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar número como username" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar número como username" time="0.008">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should handle SQL injection attempts safely" name="Backend API Tests Security Tests should handle SQL injection attempts safely" time="0.008">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar número como password" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar número como password" time="0.006">
     </testcase>
-    <testcase classname="Backend API Tests Security Tests should handle XSS attempts safely" name="Backend API Tests Security Tests should handle XSS attempts safely" time="0.003">
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar booleano como username" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar booleano como username" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar booleano como password" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar booleano como password" time="0.007">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar objeto como username" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar objeto como username" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar objeto como password" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar objeto como password" time="0.008">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar arreglo como username" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar arreglo como username" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de login debe manejar arreglo como password" name="Pruebas adicionales de cobertura de API Casos límite de login debe manejar arreglo como password" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar token Bearer malformado en dashboard" name="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar token Bearer malformado en dashboard" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar usuario inexistente en token de dashboard" name="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar usuario inexistente en token de dashboard" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar ID de usuario cero en token de dashboard" name="Pruebas adicionales de cobertura de API Casos límite de datos de dashboard debe manejar ID de usuario cero en token de dashboard" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales en cadena vacía" name="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales en cadena vacía" time="0.008">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales con solo espacios en blanco" name="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales con solo espacios en blanco" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales con espacios mixtos" name="Pruebas adicionales de cobertura de API Pruebas adicionales de seguridad debe manejar credenciales con espacios mixtos" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas de estrés y rendimiento debe manejar intentos rápidos y sucesivos de login" name="Pruebas adicionales de cobertura de API Pruebas de estrés y rendimiento debe manejar intentos rápidos y sucesivos de login" time="0.017">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas de estrés y rendimiento debe manejar solicitudes rápidas de dashboard con distintos tokens" name="Pruebas adicionales de cobertura de API Pruebas de estrés y rendimiento debe manejar solicitudes rápidas de dashboard con distintos tokens" time="0.01">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar estructura consistente de datos de dashboard" name="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar estructura consistente de datos de dashboard" time="0.007">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar timestamp válido en datos de dashboard" name="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar timestamp válido en datos de dashboard" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar estructura consistente de usuario en auth/me" name="Pruebas adicionales de cobertura de API Pruebas de validación de datos debe retornar estructura consistente de usuario en auth/me" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="Endpoints CRUD de clientes" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="1.861" tests="37">
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe obtener lista de todos los clientes" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe obtener lista de todos los clientes" time="0.094">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de nombre" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de nombre" time="0.009">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de email" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por búsqueda de email" time="0.006">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por estado" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe filtrar clientes por estado" time="0.007">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por nombre" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por nombre" time="0.011">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por email" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por email" time="0.007">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por gasto total (spending)" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por gasto total (spending)" time="0.008">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por número de compras" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por número de compras" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por fecha de registro" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe ordenar clientes por fecha de registro" time="0.007">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe retornar array vacío para búsqueda sin coincidencias" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe retornar array vacío para búsqueda sin coincidencias" time="0.007">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe combinar búsqueda y filtro de estado" name="Endpoints CRUD de clientes GET /api/customers - Listar Clientes debe combinar búsqueda y filtro de estado" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe obtener un cliente por ID" name="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe obtener un cliente por ID" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe validar que el cliente tenga todos los campos requeridos" name="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe validar que el cliente tenga todos los campos requeridos" time="0.008">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe retornar 404 para ID inexistente" name="Endpoints CRUD de clientes GET /api/customers/:id - Obtener Cliente debe retornar 404 para ID inexistente" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe crear un nuevo cliente" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe crear un nuevo cliente" time="0.024">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el nombre es requerido" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el nombre es requerido" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el email es requerido" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el email es requerido" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el teléfono es requerido" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar que el teléfono es requerido" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar formato de email" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar formato de email" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar longitud de teléfono (mínimo 10 caracteres)" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe validar longitud de teléfono (mínimo 10 caracteres)" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe asignar ID automáticamente al crear" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe asignar ID automáticamente al crear" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe establecer fecha de registro al crear" name="Endpoints CRUD de clientes POST /api/customers - Crear Cliente debe establecer fecha de registro al crear" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar un cliente existente" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar un cliente existente" time="0.006">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el nombre" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el nombre" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el email" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el email" time="0.006">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el teléfono" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el teléfono" time="0.005">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo la ciudad" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo la ciudad" time="0.006">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el estado" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar solo el estado" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar múltiples campos" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe actualizar múltiples campos" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe validar email en actualización" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe validar email en actualización" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe validar teléfono en actualización" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe validar teléfono en actualización" time="0.003">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe retornar 404 para ID inexistente" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente debe retornar 404 para ID inexistente" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente no debe actualizar el ID del cliente" name="Endpoints CRUD de clientes PUT /api/customers/:id - Actualizar Cliente no debe actualizar el ID del cliente" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe eliminar un cliente" name="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe eliminar un cliente" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe retornar el cliente eliminado" name="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe retornar el cliente eliminado" time="0.003">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe retornar 404 para ID inexistente" name="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente debe retornar 404 para ID inexistente" time="0.004">
+    </testcase>
+    <testcase classname="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente no debe permitir acceder a cliente eliminado" name="Endpoints CRUD de clientes DELETE /api/customers/:id - Eliminar Cliente no debe permitir acceder a cliente eliminado" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="Pruebas de API Backend" errors="0" failures="0" skipped="0" timestamp="2026-02-27T23:34:14" time="2.146" tests="32">
+    <testcase classname="Pruebas de API Backend Endpoint de Health Check GET /health - debe retornar estado ok" name="Pruebas de API Backend Endpoint de Health Check GET /health - debe retornar estado ok" time="0.045">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de Health Check GET /health - debe retornar timestamp válido" name="Pruebas de API Backend Endpoint de Health Check GET /health - debe retornar timestamp válido" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe iniciar sesión correctamente con credenciales válidas" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe iniciar sesión correctamente con credenciales válidas" time="0.017">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe iniciar sesión del usuario admin correctamente" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe iniciar sesión del usuario admin correctamente" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con credenciales inválidas" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con credenciales inválidas" time="0.007">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar cuando falta username" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar cuando falta username" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar cuando falta password" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar cuando falta password" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con credenciales vacías" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con credenciales vacías" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con tipos de credenciales inválidos" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login debe fallar con tipos de credenciales inválidos" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login no debe retornar password en la respuesta" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/login no debe retornar password en la respuesta" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/logout debe cerrar sesión correctamente" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/logout debe cerrar sesión correctamente" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación POST /api/auth/logout debe cerrar sesión sin autenticación" name="Pruebas de API Backend Endpoints de autenticación POST /api/auth/logout debe cerrar sesión sin autenticación" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe retornar información de usuario con token válido" name="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe retornar información de usuario con token válido" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar sin token" name="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar sin token" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar con token inválido" name="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar con token inválido" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar con token malformado" name="Pruebas de API Backend Endpoints de autenticación GET /api/auth/me debe fallar con token malformado" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe retornar datos de dashboard con token válido" name="Pruebas de API Backend Endpoint de datos de dashboard debe retornar datos de dashboard con token válido" time="0.006">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe fallar sin header de autorización" name="Pruebas de API Backend Endpoint de datos de dashboard debe fallar sin header de autorización" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe fallar con formato de token inválido" name="Pruebas de API Backend Endpoint de datos de dashboard debe fallar con formato de token inválido" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe fallar con token inválido" name="Pruebas de API Backend Endpoint de datos de dashboard debe fallar con token inválido" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe retornar estructura de datos correcta" name="Pruebas de API Backend Endpoint de datos de dashboard debe retornar estructura de datos correcta" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Endpoint de datos de dashboard debe funcionar con diferentes tokens válidos" name="Pruebas de API Backend Endpoint de datos de dashboard debe funcionar con diferentes tokens válidos" time="0.015">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Manejo de errores debe retornar 404 para rutas inexistentes" name="Pruebas de API Backend Manejo de errores debe retornar 404 para rutas inexistentes" time="0.008">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Manejo de errores debe manejar POST a rutas inexistentes" name="Pruebas de API Backend Manejo de errores debe manejar POST a rutas inexistentes" time="0.005">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Manejo de errores debe manejar JSON malformado" name="Pruebas de API Backend Manejo de errores debe manejar JSON malformado" time="0.057">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de integración flujo completo de autenticación" name="Pruebas de API Backend Pruebas de integración flujo completo de autenticación" time="0.012">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de integración debe manejar solicitudes concurrentes" name="Pruebas de API Backend Pruebas de integración debe manejar solicitudes concurrentes" time="0.021">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de rendimiento health check debe responder rápido" name="Pruebas de API Backend Pruebas de rendimiento health check debe responder rápido" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de rendimiento login debe responder en un tiempo razonable" name="Pruebas de API Backend Pruebas de rendimiento login debe responder en un tiempo razonable" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de seguridad no debe exponer información sensible en mensajes de error" name="Pruebas de API Backend Pruebas de seguridad no debe exponer información sensible en mensajes de error" time="0.003">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de seguridad debe manejar intentos de SQL injection de forma segura" name="Pruebas de API Backend Pruebas de seguridad debe manejar intentos de SQL injection de forma segura" time="0.004">
+    </testcase>
+    <testcase classname="Pruebas de API Backend Pruebas de seguridad debe manejar intentos de XSS de forma segura" name="Pruebas de API Backend Pruebas de seguridad debe manejar intentos de XSS de forma segura" time="0.003">
     </testcase>
   </testsuite>
 </testsuites>

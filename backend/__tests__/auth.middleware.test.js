@@ -1,6 +1,6 @@
 const { authenticateToken, errorHandler, notFoundHandler } = require("../src/middleware/auth");
 
-describe("Auth Middleware Tests - Extended Coverage", () => {
+describe("Pruebas de middleware de auth - Cobertura extendida", () => {
   describe("authenticateToken", () => {
     let req, res, next;
 

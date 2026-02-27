@@ -1,15 +1,15 @@
 const request = require("supertest");
 const { createApp } = require("../app");
 
-describe("Additional API Coverage Tests", () => {
+describe("Pruebas adicionales de cobertura de API", () => {
   let app;
 
   beforeAll(() => {
     app = createApp();
   });
 
-  describe("Authentication Edge Cases", () => {
-    test("should fail with valid format but non-existent user token", async () => {
+  describe("Casos límite de autenticación", () => {
+    test("debe fallar con formato válido pero token de usuario inexistente", async () => {
       const response = await request(app)
         .get("/api/auth/me")
         .set("Authorization", "Bearer mock-jwt-token-999")
@@ -23,7 +23,7 @@ describe("Additional API Coverage Tests", () => {
       );
     });
 
-    test("should fail with zero user ID token", async () => {
+    test("debe fallar con token de usuario ID cero", async () => {
       const response = await request(app)
         .get("/api/auth/me")
         .set("Authorization", "Bearer mock-jwt-token-0")
@@ -37,7 +37,7 @@ describe("Additional API Coverage Tests", () => {
       );
     });
 
-    test("should handle negative user ID token", async () => {
+    test("debe manejar token con ID de usuario negativo", async () => {
       const response = await request(app)
         .get("/api/auth/me")
         .set("Authorization", "Bearer mock-jwt-token--1")
@@ -52,8 +52,8 @@ describe("Additional API Coverage Tests", () => {
     });
   });
 
-  describe("Login Edge Cases", () => {
-    test("should handle very long usernames", async () => {
+  describe("Casos límite de login", () => {
+    test("debe manejar usernames muy largos", async () => {
       const longUsername = "a".repeat(1000);
       const response = await request(app)
         .post("/api/auth/login")
@@ -66,7 +66,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS");
     });
 
-    test("should handle special characters in credentials", async () => {
+    test("debe manejar caracteres especiales en credenciales", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -78,7 +78,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS");
     });
 
-    test("should handle null username", async () => {
+    test("debe manejar username nulo", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -90,7 +90,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("MISSING_CREDENTIALS");
     });
 
-    test("should handle null password", async () => {
+    test("debe manejar password nulo", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -102,7 +102,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("MISSING_CREDENTIALS");
     });
 
-    test("should handle number as username", async () => {
+    test("debe manejar número como username", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -114,7 +114,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle number as password", async () => {
+    test("debe manejar número como password", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -126,7 +126,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle boolean as username", async () => {
+    test("debe manejar booleano como username", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -138,7 +138,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle boolean as password", async () => {
+    test("debe manejar booleano como password", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -150,7 +150,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("MISSING_CREDENTIALS");
     });
 
-    test("should handle object as username", async () => {
+    test("debe manejar objeto como username", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -162,7 +162,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle object as password", async () => {
+    test("debe manejar objeto como password", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -174,7 +174,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle array as username", async () => {
+    test("debe manejar arreglo como username", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -186,7 +186,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS_TYPE");
     });
 
-    test("should handle array as password", async () => {
+    test("debe manejar arreglo como password", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -199,8 +199,8 @@ describe("Additional API Coverage Tests", () => {
     });
   });
 
-  describe("Dashboard Data Edge Cases", () => {
-    test("should handle malformed Bearer token in dashboard", async () => {
+  describe("Casos límite de datos de dashboard", () => {
+    test("debe manejar token Bearer malformado en dashboard", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer invalid-format-token")
@@ -209,7 +209,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_TOKEN");
     });
 
-    test("should handle non-existent user in dashboard token", async () => {
+    test("debe manejar usuario inexistente en token de dashboard", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-9999")
@@ -218,7 +218,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body).toHaveProperty("dailySales");
     });
 
-    test("should handle zero user ID in dashboard token", async () => {
+    test("debe manejar ID de usuario cero en token de dashboard", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-0")
@@ -228,8 +228,8 @@ describe("Additional API Coverage Tests", () => {
     });
   });
 
-  describe("Additional Security Tests", () => {
-    test("should handle empty string credentials", async () => {
+  describe("Pruebas adicionales de seguridad", () => {
+    test("debe manejar credenciales en cadena vacía", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -241,7 +241,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("MISSING_CREDENTIALS");
     });
 
-    test("should handle whitespace-only credentials", async () => {
+    test("debe manejar credenciales con solo espacios en blanco", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -253,7 +253,7 @@ describe("Additional API Coverage Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS");
     });
 
-    test("should handle mixed whitespace credentials", async () => {
+    test("debe manejar credenciales con espacios mixtos", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({
@@ -266,8 +266,8 @@ describe("Additional API Coverage Tests", () => {
     });
   });
 
-  describe("Stress and Performance Tests", () => {
-    test("should handle rapid successive login attempts", async () => {
+  describe("Pruebas de estrés y rendimiento", () => {
+    test("debe manejar intentos rápidos y sucesivos de login", async () => {
       const credentials = { username: "demo", password: "demo123" };
       
       const requests = Array(5).fill().map(() => 
@@ -282,7 +282,7 @@ describe("Additional API Coverage Tests", () => {
       });
     });
 
-    test("should handle rapid dashboard requests with different tokens", async () => {
+    test("debe manejar solicitudes rápidas de dashboard con distintos tokens", async () => {
       const tokens = ["mock-jwt-token-1", "mock-jwt-token-2", "mock-jwt-token-3"];
       
       const requests = tokens.map(token => 
@@ -300,8 +300,8 @@ describe("Additional API Coverage Tests", () => {
     });
   });
 
-  describe("Data Validation Tests", () => {
-    test("should return consistent dashboard data structure", async () => {
+  describe("Pruebas de validación de datos", () => {
+    test("debe retornar estructura consistente de datos de dashboard", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-1")
@@ -316,7 +316,7 @@ describe("Additional API Coverage Tests", () => {
       });
     });
 
-    test("should return valid timestamp in dashboard data", async () => {
+    test("debe retornar timestamp válido en datos de dashboard", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-1")
@@ -327,7 +327,7 @@ describe("Additional API Coverage Tests", () => {
       expect(timestamp.getTime()).not.toBeNaN();
     });
 
-    test("should return consistent user data structure in auth/me", async () => {
+    test("debe retornar estructura consistente de usuario en auth/me", async () => {
       const response = await request(app)
         .get("/api/auth/me")
         .set("Authorization", "Bearer mock-jwt-token-1")

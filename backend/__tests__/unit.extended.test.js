@@ -10,8 +10,8 @@ const {
   validateLoginCredentials,
 } = require("../src/utils/validators");
 
-describe("Unit Tests - Extended Coverage", () => {
-  describe("Helpers - calculateProductStatus", () => {
+describe("Pruebas unitarias - Cobertura extendida", () => {
+  describe("Helpers - calcular estado de producto", () => {
     it("deve retornar 'En Stock' para cantidad > 20", () => {
       expect(calculateProductStatus(25)).toBe("En Stock");
     });
@@ -35,7 +35,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Helpers - getNextProductId", () => {
+  describe("Helpers - obtener siguiente ID de producto", () => {
     it("debe retornar ID siguiente", () => {
       const products = [{ id: 1 }, { id: 2 }, { id: 5 }];
       expect(getNextProductId(products)).toBe(6);
@@ -51,7 +51,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Helpers - extractToken", () => {
+  describe("Helpers - extraer token", () => {
     it("deve extraer token valido de header Bearer", () => {
       const token = extractToken("Bearer my-secret-token");
       expect(token).toBe("my-secret-token");
@@ -79,7 +79,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Helpers - isValidToken", () => {
+  describe("Helpers - token válido", () => {
     it("debe validar token conocido 'valid_token'", () => {
       expect(isValidToken("valid_token")).toBe(true);
     });
@@ -103,7 +103,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - validateProductCreate", () => {
+  describe("Validadores - validar creación de producto", () => {
     it("deve validar producto valido", () => {
       const result = validateProductCreate({
         name: "Test",
@@ -189,7 +189,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - validateProductUpdate", () => {
+  describe("Validadores - validar actualización de producto", () => {
     it("deve validar actualización parcial", () => {
       const result = validateProductUpdate({ name: "Updated" });
       expect(result.isValid).toBe(true);
@@ -231,7 +231,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - validateLoginCredentials", () => {
+  describe("Validadores - validar credenciales de login", () => {
     it("debe validar credenciales válidas", () => {
       const result = validateLoginCredentials({
         username: "admin",
@@ -302,7 +302,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - Edge cases", () => {
+  describe("Validadores - casos límite", () => {
     it("debe manejar objetos con propiedades adicionales en create", () => {
       const result = validateProductCreate({
         name: "Test",
