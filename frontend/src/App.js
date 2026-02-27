@@ -66,7 +66,16 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Login Route */}
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login onLogin={handleLogin} />
+            )
+          }
+        />
 
         {/* Dashboard Route - Protected */}
         <Route

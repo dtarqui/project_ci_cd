@@ -26,10 +26,7 @@ const DashboardHeader = ({ user, onLogout }) => {
           {showUserMenu && (
             <div className="user-dropdown">
               <div className="user-info">
-                <span>Cuenta</span>
-                {user?.name && (
-                  <small className="user-name">{user.name}</small>
-                )}
+                {user?.name && <small className="user-name">{user.name}</small>}
               </div>
               <button onClick={handleLogout} className="logout-button">
                 Salir
