@@ -15,7 +15,7 @@ jest.mock("../services/api", () => ({
   handleApiError: jest.fn((error) => error?.message || "Error"),
 }));
 
-describe("CustomersSection Component - CRUD Operations", () => {
+describe("Componente CustomersSection - Operaciones CRUD", () => {
   const mockCustomers = [
     {
       id: 1,

@@ -35,7 +35,7 @@ jest.mock("../dashboard", () => {
   };
 });
 
-describe("App Tests", () => {
+describe("Pruebas de App", () => {
   beforeEach(() => {
     localStorage.clear();
     jest.clearAllMocks();
@@ -52,8 +52,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("Initial Rendering", () => {
-    test("should render login when no user is stored", async () => {
+  describe("Renderizado inicial", () => {
+    test("debe renderizar login cuando no hay usuario guardado", async () => {
       localStorage.getItem.mockReturnValue(null);
 
       render(<App />);
@@ -65,7 +65,7 @@ describe("App Tests", () => {
       expect(screen.queryByTestId("dashboard-component")).not.toBeInTheDocument();
     });
 
-    test("should render dashboard when valid user is stored", async () => {
+    test("debe renderizar dashboard cuando hay un usuario válido guardado", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);
@@ -84,8 +84,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("Authentication Flow", () => {
-    test("should handle successful login", async () => {
+  describe("Flujo de autenticación", () => {
+    test("debe manejar login exitoso", async () => {
       localStorage.getItem.mockReturnValue(null);
       const user = userEvent.setup();
 
@@ -107,7 +107,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should handle logout", async () => {
+    test("debe manejar logout", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);
@@ -136,8 +136,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    test("should handle corrupted localStorage data", async () => {
+  describe("Manejo de errores", () => {
+    test("debe manejar datos corruptos en localStorage", async () => {
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return "invalid-json";
         if (key === "token") return "token";
@@ -156,7 +156,7 @@ describe("App Tests", () => {
       consoleSpy.mockRestore();
     });
 
-    test("should handle missing user data with token present", async () => {
+    test("debe manejar ausencia de usuario cuando existe token", async () => {
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return null;
         if (key === "token") return "orphaned-token";
@@ -170,7 +170,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should handle missing token with user present", async () => {
+    test("debe manejar ausencia de token cuando existe usuario", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);
@@ -185,7 +185,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should handle invalid user object", async () => {
+    test("debe manejar objeto de usuario inválido", async () => {
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify({ name: "Test User" }); // Missing ID
         if (key === "token") return "valid-token";
@@ -202,8 +202,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("State Management", () => {
-    test("should update user state after login", async () => {
+  describe("Gestión de estado", () => {
+    test("debe actualizar el estado del usuario después del login", async () => {
       localStorage.getItem.mockReturnValue(null);
       const user = userEvent.setup();
 
@@ -223,7 +223,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should clear user state after logout", async () => {
+    test("debe limpiar el estado del usuario después del logout", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);
@@ -252,8 +252,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("localStorage Integration", () => {
-    test("should save user data to localStorage on login", async () => {
+  describe("Integración con localStorage", () => {
+    test("debe guardar datos de usuario en localStorage al hacer login", async () => {
       localStorage.getItem.mockReturnValue(null);
       const user = userEvent.setup();
 
@@ -277,7 +277,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should remove user data from localStorage on logout", async () => {
+    test("debe eliminar datos de usuario de localStorage al hacer logout", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);
@@ -304,7 +304,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should handle localStorage.getItem throwing error", async () => {
+    test("debe manejar errores cuando localStorage.getItem falla", async () => {
       localStorage.getItem.mockImplementation(() => {
         throw new Error("localStorage error");
       });
@@ -322,8 +322,8 @@ describe("App Tests", () => {
     });
   });
 
-  describe("Component Interactions", () => {
-    test("should pass correct props to Login component", async () => {
+  describe("Interacciones de componentes", () => {
+    test("debe pasar props correctas al componente Login", async () => {
       localStorage.getItem.mockReturnValue(null);
 
       render(<App />);
@@ -336,7 +336,7 @@ describe("App Tests", () => {
       });
     });
 
-    test("should pass correct props to Dashboard component", async () => {
+    test("debe pasar props correctas al componente Dashboard", async () => {
       const mockUser = { id: 1, name: "Test User" };
       localStorage.getItem.mockImplementation((key) => {
         if (key === "user") return JSON.stringify(mockUser);

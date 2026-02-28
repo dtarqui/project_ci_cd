@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import Dashboard from "../dashboard";
 import { dashboardService } from "../services/api";
 
@@ -58,7 +59,7 @@ jest.mock("../services/api", () => ({
   authService: { login: jest.fn(), logout: jest.fn() }
 }));
 
-describe("Dashboard Tests", () => {
+describe("Pruebas de Dashboard", () => {
   const mockUser = { id: 1, name: "Test User", username: "test" };
   const mockOnLogout = jest.fn();
   const mockDashboardData = {
@@ -73,17 +74,24 @@ describe("Dashboard Tests", () => {
     dashboardService.getData.mockResolvedValue(mockDashboardData);
   });
 
-  describe("Rendering", () => {
+  const renderDashboard = (initialEntry = "/dashboard") =>
+    render(
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Dashboard user={mockUser} onLogout={mockOnLogout} />
+      </MemoryRouter>
+    );
+
+  describe("Renderizado", () => {
     it("debe mostrar spinner de carga", () => {
       dashboardService.getData.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve(mockDashboardData), 100))
       );
-      render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
+      renderDashboard();
       expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
     });
 
     it("debe renderizar dashboard cuando carga exitosamente", async () => {
-      render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
+      renderDashboard();
       
       await waitFor(() => {
         expect(screen.getByTestId("dashboard-header")).toBeInTheDocument();
@@ -94,10 +102,18 @@ describe("Dashboard Tests", () => {
     it("debe mostrar error cuando falla la carga", async () => {
       dashboardService.getData.mockRejectedValue(new Error("API Error"));
       
-      render(<Dashboard user={mockUser} onLogout={mockOnLogout} />);
+      renderDashboard();
       
       await waitFor(() => {
         expect(screen.getByText(/error cargando dashboard/i)).toBeInTheDocument();
+      });
+    });
+
+    it("debe renderizar secciones al abrir rutas de nivel raíz", async () => {
+      renderDashboard("/sales");
+
+      await waitFor(() => {
+        expect(screen.getByTestId("sales-section")).toBeInTheDocument();
       });
     });
   });

@@ -1,8 +1,8 @@
 const { createApp, mockData, users } = require("../app");
 
-describe("Unit Tests - App Components", () => {
-  describe("Mock Data Validation", () => {
-    test("mockData should have correct structure", () => {
+describe("Pruebas unitarias - Componentes de la app", () => {
+  describe("Validación de datos mock", () => {
+    test("mockData debe tener estructura correcta", () => {
       expect(mockData).toBeDefined();
       expect(mockData).toHaveProperty("dailySales");
       expect(mockData).toHaveProperty("branchSales");
@@ -10,12 +10,12 @@ describe("Unit Tests - App Components", () => {
       expect(mockData).toHaveProperty("productSales");
     });
 
-    test("dailySales should be a string", () => {
+    test("dailySales debe ser un string", () => {
       expect(typeof mockData.dailySales).toBe("string");
       expect(mockData.dailySales).toBe("2.8M Bs.");
     });
 
-    test("branchSales should be valid array", () => {
+    test("branchSales debe ser un arreglo válido", () => {
       expect(Array.isArray(mockData.branchSales)).toBe(true);
       expect(mockData.branchSales.length).toBeGreaterThan(0);
 
@@ -28,7 +28,7 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("salesTrend should be valid array", () => {
+    test("salesTrend debe ser un arreglo válido", () => {
       expect(Array.isArray(mockData.salesTrend)).toBe(true);
 
       mockData.salesTrend.forEach((trend) => {
@@ -40,7 +40,7 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("productSales should be valid array", () => {
+    test("productSales debe ser un arreglo válido", () => {
       expect(Array.isArray(mockData.productSales)).toBe(true);
 
       mockData.productSales.forEach((product) => {
@@ -52,13 +52,13 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("should have expected number of data points", () => {
+    test("debe tener la cantidad esperada de puntos de datos", () => {
       expect(mockData.branchSales.length).toBe(4);
       expect(mockData.salesTrend.length).toBe(7); // 7 días de la semana
       expect(mockData.productSales.length).toBe(4);
     });
 
-    test("branch sales values should sum to 100", () => {
+    test("los valores de ventas por sucursal deben sumar 100", () => {
       const total = mockData.branchSales.reduce(
         (sum, branch) => sum + branch.value,
         0
@@ -67,13 +67,13 @@ describe("Unit Tests - App Components", () => {
     });
   });
 
-  describe("Users Data Validation", () => {
-    test("users should be valid array", () => {
+  describe("Validación de datos de usuarios", () => {
+    test("users debe ser un arreglo válido", () => {
       expect(Array.isArray(users)).toBe(true);
       expect(users.length).toBe(3);
     });
 
-    test("each user should have required properties", () => {
+    test("cada usuario debe tener propiedades requeridas", () => {
       users.forEach((user) => {
         expect(user).toHaveProperty("id");
         expect(user).toHaveProperty("username");
@@ -92,19 +92,19 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("user IDs should be unique", () => {
+    test("los IDs de usuario deben ser únicos", () => {
       const ids = users.map((user) => user.id);
       const uniqueIds = [...new Set(ids)];
       expect(uniqueIds.length).toBe(ids.length);
     });
 
-    test("usernames should be unique", () => {
+    test("los usernames deben ser únicos", () => {
       const usernames = users.map((user) => user.username);
       const uniqueUsernames = [...new Set(usernames)];
       expect(uniqueUsernames.length).toBe(usernames.length);
     });
 
-    test("should include expected test users", () => {
+    test("debe incluir los usuarios de prueba esperados", () => {
       const expectedUsernames = ["admin", "demo", "test"];
       const actualUsernames = users.map((user) => user.username);
 
@@ -113,7 +113,7 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("admin user should exist with correct properties", () => {
+    test("el usuario admin debe existir con propiedades correctas", () => {
       const adminUser = users.find((user) => user.username === "admin");
       expect(adminUser).toBeDefined();
       expect(adminUser.id).toBe(1);
@@ -121,7 +121,7 @@ describe("Unit Tests - App Components", () => {
       expect(adminUser.password).toBe("admin123");
     });
 
-    test("demo user should exist with correct properties", () => {
+    test("el usuario demo debe existir con propiedades correctas", () => {
       const demoUser = users.find((user) => user.username === "demo");
       expect(demoUser).toBeDefined();
       expect(demoUser.id).toBe(2);
@@ -130,8 +130,8 @@ describe("Unit Tests - App Components", () => {
     });
   });
 
-  describe("App Creation", () => {
-    test("createApp should return Express app instance", () => {
+  describe("Creación de app", () => {
+    test("createApp debe retornar una instancia de app Express", () => {
       const app = createApp();
       expect(app).toBeDefined();
       expect(typeof app).toBe("function"); // Express app is a function
@@ -140,13 +140,13 @@ describe("Unit Tests - App Components", () => {
       expect(app).toHaveProperty("post");
     });
 
-    test("createApp should create independent app instances", () => {
+    test("createApp debe crear instancias independientes de app", () => {
       const app1 = createApp();
       const app2 = createApp();
       expect(app1).not.toBe(app2);
     });
 
-    test("app should have required middleware", () => {
+    test("la app debe tener middleware requerido", () => {
       const app = createApp();
       // Verificar que el app tiene la estructura esperada
       expect(app._router).toBeDefined();
@@ -155,22 +155,22 @@ describe("Unit Tests - App Components", () => {
     });
   });
 
-  describe("Data Calculations", () => {
-    test("sales trend should have realistic values", () => {
+  describe("Cálculos de datos", () => {
+    test("la tendencia de ventas debe tener valores realistas", () => {
       mockData.salesTrend.forEach((trend) => {
         expect(trend.sales).toBeGreaterThan(0);
         expect(trend.sales).toBeLessThan(100); // Valores razonables
       });
     });
 
-    test("product quantities should be realistic", () => {
+    test("las cantidades de producto deben ser realistas", () => {
       mockData.productSales.forEach((product) => {
         expect(product.quantity).toBeGreaterThan(0);
         expect(product.quantity).toBeLessThan(1000); // Valores razonables
       });
     });
 
-    test("branch sales percentages should be valid", () => {
+    test("los porcentajes de ventas por sucursal deben ser válidos", () => {
       mockData.branchSales.forEach((branch) => {
         expect(branch.value).toBeGreaterThan(0);
         expect(branch.value).toBeLessThanOrEqual(100);
@@ -178,8 +178,8 @@ describe("Unit Tests - App Components", () => {
     });
   });
 
-  describe("Data Consistency", () => {
-    test("should have all days of the week in sales trend", () => {
+  describe("Consistencia de datos", () => {
+    test("debe tener todos los días de la semana en sales trend", () => {
       const expectedDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
       const actualDays = mockData.salesTrend.map((trend) => trend.day);
 
@@ -188,22 +188,22 @@ describe("Unit Tests - App Components", () => {
       });
     });
 
-    test("branch names should be descriptive", () => {
+    test("los nombres de sucursales deben ser descriptivos", () => {
       mockData.branchSales.forEach((branch) => {
         expect(branch.name).toMatch(/^Sucursal/);
         expect(branch.name.length).toBeGreaterThan(8); // "Sucursal" + " " + nombre
       });
     });
 
-    test("product names should follow pattern", () => {
+    test("los nombres de producto deben seguir el patrón", () => {
       mockData.productSales.forEach((product) => {
         expect(product.product).toMatch(/^[A-Z]/);
       });
     });
   });
 
-  describe("Helper Functions", () => {
-    test("users finder should work correctly", () => {
+  describe("Funciones helper", () => {
+    test("el buscador de usuarios debe funcionar correctamente", () => {
       const findUser = (username, password) =>
         users.find((u) => u.username === username && u.password === password);
 
@@ -217,7 +217,7 @@ describe("Unit Tests - App Components", () => {
       expect(invalidUser).toBeUndefined();
     });
 
-    test("token generation should be consistent", () => {
+    test("la generación de token debe ser consistente", () => {
       const generateToken = (userId) => `mock-jwt-token-${userId}`;
 
       expect(generateToken(1)).toBe("mock-jwt-token-1");
@@ -247,15 +247,15 @@ describe("Unit Tests - App Components", () => {
     });
   });
 
-  describe("Timestamp Generation", () => {
-    test("should generate valid ISO timestamps", () => {
+  describe("Generación de timestamp", () => {
+    test("debe generar timestamps ISO válidos", () => {
       const timestamp = new Date().toISOString();
       expect(timestamp).toMatch(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
       );
     });
 
-    test("timestamps should be recent", () => {
+    test("los timestamps deben ser recientes", () => {
       const timestamp = new Date().toISOString();
       const timestampDate = new Date(timestamp);
       const now = new Date();

@@ -1,7 +1,7 @@
 const request = require("supertest");
 const { createApp, mockData } = require("../app");
 
-describe("Backend API Tests", () => {
+describe("Pruebas de API Backend", () => {
   let app;
 
   beforeAll(() => {
@@ -12,8 +12,8 @@ describe("Backend API Tests", () => {
     // Limpiar cualquier recurso si es necesario
   });
 
-  describe("Health Check Endpoint", () => {
-    test("GET /health - should return status ok", async () => {
+  describe("Endpoint de Health Check", () => {
+    test("GET /health - debe retornar estado ok", async () => {
       const response = await request(app).get("/health").expect(200);
 
       expect(response.body).toEqual(
@@ -26,7 +26,7 @@ describe("Backend API Tests", () => {
       );
     });
 
-    test("GET /health - should return valid timestamp", async () => {
+    test("GET /health - debe retornar timestamp válido", async () => {
       const response = await request(app).get("/health").expect(200);
 
       const timestamp = new Date(response.body.timestamp);
@@ -35,9 +35,9 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Authentication Endpoints", () => {
+  describe("Endpoints de autenticación", () => {
     describe("POST /api/auth/login", () => {
-      test("should login successfully with valid credentials", async () => {
+      test("debe iniciar sesión correctamente con credenciales válidas", async () => {
         const credentials = {
           username: "demo",
           password: "demo123",
@@ -60,7 +60,7 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should login admin user successfully", async () => {
+      test("debe iniciar sesión del usuario admin correctamente", async () => {
         const credentials = {
           username: "admin",
           password: "admin123",
@@ -75,7 +75,7 @@ describe("Backend API Tests", () => {
         expect(response.body.token).toBe("mock-jwt-token-1");
       });
 
-      test("should fail with invalid credentials", async () => {
+      test("debe fallar con credenciales inválidas", async () => {
         const credentials = {
           username: "wronguser",
           password: "wrongpass",
@@ -92,7 +92,7 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should fail with missing username", async () => {
+      test("debe fallar cuando falta username", async () => {
         const credentials = {
           password: "demo123",
         };
@@ -108,7 +108,7 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should fail with missing password", async () => {
+      test("debe fallar cuando falta password", async () => {
         const credentials = {
           username: "demo",
         };
@@ -121,7 +121,7 @@ describe("Backend API Tests", () => {
         expect(response.body.code).toBe("MISSING_CREDENTIALS");
       });
 
-      test("should fail with empty credentials", async () => {
+      test("debe fallar con credenciales vacías", async () => {
         const credentials = {
           username: "",
           password: "",
@@ -135,7 +135,7 @@ describe("Backend API Tests", () => {
         expect(response.body.code).toBe("MISSING_CREDENTIALS");
       });
 
-      test("should fail with invalid credential types", async () => {
+      test("debe fallar con tipos de credenciales inválidos", async () => {
         const credentials = {
           username: 123,
           password: true,
@@ -152,7 +152,7 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should not return password in response", async () => {
+      test("no debe retornar password en la respuesta", async () => {
         const credentials = {
           username: "test",
           password: "test123",
@@ -169,7 +169,7 @@ describe("Backend API Tests", () => {
     });
 
     describe("POST /api/auth/logout", () => {
-      test("should logout successfully", async () => {
+      test("debe cerrar sesión correctamente", async () => {
         const response = await request(app)
           .post("/api/auth/logout")
           .expect(200);
@@ -181,7 +181,7 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should logout without authentication", async () => {
+      test("debe cerrar sesión sin autenticación", async () => {
         // El logout debería funcionar sin token (para limpiar sesión client-side)
         const response = await request(app)
           .post("/api/auth/logout")
@@ -192,7 +192,7 @@ describe("Backend API Tests", () => {
     });
 
     describe("GET /api/auth/me", () => {
-      test("should return user info with valid token", async () => {
+      test("debe retornar información de usuario con token válido", async () => {
         const response = await request(app)
           .get("/api/auth/me")
           .set("Authorization", "Bearer mock-jwt-token-1")
@@ -208,13 +208,13 @@ describe("Backend API Tests", () => {
         });
       });
 
-      test("should fail without token", async () => {
+      test("debe fallar sin token", async () => {
         const response = await request(app).get("/api/auth/me").expect(401);
 
         expect(response.body.code).toBe("MISSING_TOKEN");
       });
 
-      test("should fail with invalid token", async () => {
+      test("debe fallar con token inválido", async () => {
         const response = await request(app)
           .get("/api/auth/me")
           .set("Authorization", "Bearer invalid-token")
@@ -223,7 +223,7 @@ describe("Backend API Tests", () => {
         expect(response.body.code).toBe("INVALID_TOKEN");
       });
 
-      test("should fail with malformed token", async () => {
+      test("debe fallar con token malformado", async () => {
         const response = await request(app)
           .get("/api/auth/me")
           .set("Authorization", "InvalidFormat token")
@@ -234,8 +234,8 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Dashboard Data Endpoint", () => {
-    test("should return dashboard data with valid token", async () => {
+  describe("Endpoint de datos de dashboard", () => {
+    test("debe retornar datos de dashboard con token válido", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-1")
@@ -247,7 +247,7 @@ describe("Backend API Tests", () => {
       });
     });
 
-    test("should fail without authorization header", async () => {
+    test("debe fallar sin header de autorización", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .expect(401);
@@ -258,7 +258,7 @@ describe("Backend API Tests", () => {
       });
     });
 
-    test("should fail with invalid token format", async () => {
+    test("debe fallar con formato de token inválido", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "InvalidFormat token")
@@ -267,7 +267,7 @@ describe("Backend API Tests", () => {
       expect(response.body.code).toBe("INVALID_TOKEN_FORMAT");
     });
 
-    test("should fail with invalid token", async () => {
+    test("debe fallar con token inválido", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer invalid-token")
@@ -276,7 +276,7 @@ describe("Backend API Tests", () => {
       expect(response.body.code).toBe("INVALID_TOKEN");
     });
 
-    test("should return correct data structure", async () => {
+    test("debe retornar estructura de datos correcta", async () => {
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", "Bearer mock-jwt-token-2")
@@ -300,7 +300,7 @@ describe("Backend API Tests", () => {
       }
     });
 
-    test("should work with different valid tokens", async () => {
+    test("debe funcionar con diferentes tokens válidos", async () => {
       const tokens = [
         "mock-jwt-token-1",
         "mock-jwt-token-2",
@@ -318,8 +318,8 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    test("should return 404 for non-existent routes", async () => {
+  describe("Manejo de errores", () => {
+    test("debe retornar 404 para rutas inexistentes", async () => {
       const response = await request(app)
         .get("/api/non-existent-route")
         .expect(404);
@@ -332,7 +332,7 @@ describe("Backend API Tests", () => {
       });
     });
 
-    test("should handle POST to non-existent routes", async () => {
+    test("debe manejar POST a rutas inexistentes", async () => {
       const response = await request(app)
         .post("/api/fake-endpoint")
         .send({ data: "test" })
@@ -341,7 +341,7 @@ describe("Backend API Tests", () => {
       expect(response.body.method).toBe("POST");
     });
 
-    test("should handle malformed JSON", async () => {
+    test("debe manejar JSON malformado", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send('{"invalid": json}')
@@ -353,8 +353,8 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Integration Tests", () => {
-    test("complete authentication flow", async () => {
+  describe("Pruebas de integración", () => {
+    test("flujo completo de autenticación", async () => {
       // 1. Login
       const loginResponse = await request(app)
         .post("/api/auth/login")
@@ -379,7 +379,7 @@ describe("Backend API Tests", () => {
       await request(app).post("/api/auth/logout").expect(200);
     });
 
-    test("should handle concurrent requests", async () => {
+    test("debe manejar solicitudes concurrentes", async () => {
       const requests = [];
 
       // Crear múltiples requests simultáneas
@@ -401,8 +401,8 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Performance Tests", () => {
-    test("health check should respond quickly", async () => {
+  describe("Pruebas de rendimiento", () => {
+    test("health check debe responder rápido", async () => {
       const start = Date.now();
 
       await request(app).get("/health").expect(200);
@@ -411,7 +411,7 @@ describe("Backend API Tests", () => {
       expect(duration).toBeLessThan(100); // Debería responder en menos de 100ms
     });
 
-    test("login should respond within reasonable time", async () => {
+    test("login debe responder en un tiempo razonable", async () => {
       const start = Date.now();
 
       await request(app)
@@ -424,8 +424,8 @@ describe("Backend API Tests", () => {
     });
   });
 
-  describe("Security Tests", () => {
-    test("should not expose sensitive information in error messages", async () => {
+  describe("Pruebas de seguridad", () => {
+    test("no debe exponer información sensible en mensajes de error", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .send({ username: "admin", password: "wrongpassword" })
@@ -436,7 +436,7 @@ describe("Backend API Tests", () => {
       expect(response.body.error).not.toContain("user not found");
     });
 
-    test("should handle SQL injection attempts safely", async () => {
+    test("debe manejar intentos de SQL injection de forma segura", async () => {
       const sqlInjection = "'; DROP TABLE users; --";
 
       const response = await request(app)
@@ -447,7 +447,7 @@ describe("Backend API Tests", () => {
       expect(response.body.code).toBe("INVALID_CREDENTIALS");
     });
 
-    test("should handle XSS attempts safely", async () => {
+    test("debe manejar intentos de XSS de forma segura", async () => {
       const xssPayload = '<script>alert("xss")</script>';
 
       const response = await request(app)

@@ -7,7 +7,7 @@ const mockServer = {
   })
 };
 
-describe('Index.js Module Tests', () => {
+describe('Pruebas del módulo Index.js', () => {
   let originalConsoleLog;
   let originalProcessOn;
   let logSpy;
@@ -27,7 +27,7 @@ describe('Index.js Module Tests', () => {
     process.on = originalProcessOn;
   });
 
-  test('should require and execute index.js code', () => {
+  test('debe requerir y ejecutar el código de index.js', () => {
     // Mock app.listen to avoid real server startup
     const mockApp = createApp();
     mockApp.listen = jest.fn((port, callback) => {
@@ -73,7 +73,7 @@ describe('Index.js Module Tests', () => {
     require.cache[require.resolve('../app')].exports.createApp = originalCreateApp;
   });
 
-  test('should handle PORT environment variable', () => {
+  test('debe manejar la variable de entorno PORT', () => {
     const originalPort = process.env.PORT;
     
     // Test default port (4000)
@@ -90,7 +90,7 @@ describe('Index.js Module Tests', () => {
     process.env.PORT = originalPort;
   });
 
-  test('should export the app instance', () => {
+  test('debe exportar la instancia de la app', () => {
     // Mock app.listen to avoid real server startup
     const mockApp = createApp();
     mockApp.listen = jest.fn(() => mockServer);

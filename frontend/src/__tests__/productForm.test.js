@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ProductForm from "../components/ProductForm";
 
-describe("ProductForm Component", () => {
+describe("Componente ProductForm", () => {
   const mockOnClose = jest.fn();
   const mockOnSubmit = jest.fn();
   const mockCategories = ["Electrónica", "Ropa", "Alimentos"];
@@ -20,7 +20,7 @@ describe("ProductForm Component", () => {
     jest.clearAllMocks();
   });
 
-  describe("Rendering", () => {
+  describe("Renderizado", () => {
     it("debe renderizar el componente cuando isOpen es true", () => {
       render(<ProductForm {...defaultProps} />);
       expect(screen.getByText("Crear Nuevo Producto")).toBeInTheDocument();

@@ -1,7 +1,7 @@
 const request = require("supertest");
 const { createApp } = require("../app");
 
-describe("Customers CRUD Endpoints", () => {
+describe("Endpoints CRUD de clientes", () => {
   let app;
 
   beforeAll(() => {

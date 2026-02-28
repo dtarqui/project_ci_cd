@@ -2,8 +2,8 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Settings from "../components/Settings";
 
-describe("Settings Component", () => {
-  test("renders header and default profile tab", () => {
+describe("Componente Settings", () => {
+  test("debe renderizar el encabezado y la pestaña de perfil por defecto", () => {
     render(<Settings />);
 
     expect(screen.getByText(/Configuraciones/)).toBeInTheDocument();
@@ -13,7 +13,7 @@ describe("Settings Component", () => {
     expect(screen.getByText(/Información de Perfil/)).toBeInTheDocument();
   });
 
-  test("enters edit mode and saves profile", async () => {
+  test("debe entrar en modo edición y guardar el perfil", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Editar/ }));
@@ -27,7 +27,7 @@ describe("Settings Component", () => {
     });
   });
 
-  test("cancels profile edit and restores original values", async () => {
+  test("debe cancelar la edición del perfil y restaurar valores originales", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Editar/ }));
@@ -42,7 +42,7 @@ describe("Settings Component", () => {
     });
   });
 
-  test("opens notifications tab and toggles email notifications", async () => {
+  test("debe abrir notificaciones y alternar notificaciones por email", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Notificaciones/ }));
@@ -58,7 +58,7 @@ describe("Settings Component", () => {
     });
   });
 
-  test("shows validation errors and success on password change", async () => {
+  test("debe mostrar errores de validación y éxito al cambiar contraseña", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Seguridad/ }));
@@ -115,7 +115,7 @@ describe("Settings Component", () => {
     });
   });
 
-  test("updates preferences and shows info tab", async () => {
+  test("debe actualizar preferencias y mostrar la pestaña de información", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Preferencias/ }));
@@ -135,7 +135,7 @@ describe("Settings Component", () => {
     });
   });
 
-  test("shows support links in info tab", async () => {
+  test("debe mostrar enlaces de soporte en la pestaña de información", async () => {
     render(<Settings />);
 
     fireEvent.click(screen.getByRole("button", { name: /Información/ }));

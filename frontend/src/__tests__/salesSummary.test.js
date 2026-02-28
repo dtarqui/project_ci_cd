@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import SalesSummary from "../components/SalesSummary";
 
-describe("SalesSummary Component", () => {
+describe("Componente SalesSummary", () => {
   const mockData = {
     dailySales: "$5,234",
     totalOrders: 234,

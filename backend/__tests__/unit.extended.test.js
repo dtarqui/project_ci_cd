@@ -10,32 +10,32 @@ const {
   validateLoginCredentials,
 } = require("../src/utils/validators");
 
-describe("Unit Tests - Extended Coverage", () => {
-  describe("Helpers - calculateProductStatus", () => {
-    it("deve retornar 'En Stock' para cantidad > 20", () => {
+describe("Pruebas unitarias - Cobertura extendida", () => {
+  describe("Helpers - calcular estado de producto", () => {
+    it("debe retornar 'En Stock' para cantidad > 20", () => {
       expect(calculateProductStatus(25)).toBe("En Stock");
     });
 
-    it("deve retornar 'En Stock' para cantidad = 21", () => {
+    it("debe retornar 'En Stock' para cantidad = 21", () => {
       expect(calculateProductStatus(21)).toBe("En Stock");
     });
 
-    it("deve retornar 'Bajo Stock' para quantidade entre 1-20", () => {
+    it("debe retornar 'Bajo Stock' para cantidad entre 1-20", () => {
       expect(calculateProductStatus(5)).toBe("Bajo Stock");
       expect(calculateProductStatus(1)).toBe("Bajo Stock");
       expect(calculateProductStatus(20)).toBe("Bajo Stock");
     });
 
-    it("deve retornar 'Sin Stock' para quantidade = 0", () => {
+    it("debe retornar 'Sin Stock' para cantidad = 0", () => {
       expect(calculateProductStatus(0)).toBe("Sin Stock");
     });
 
-    it("deve retornar 'Sin Stock' para quantidade < 0", () => {
+    it("debe retornar 'Sin Stock' para cantidad < 0", () => {
       expect(calculateProductStatus(-5)).toBe("Sin Stock");
     });
   });
 
-  describe("Helpers - getNextProductId", () => {
+  describe("Helpers - obtener siguiente ID de producto", () => {
     it("debe retornar ID siguiente", () => {
       const products = [{ id: 1 }, { id: 2 }, { id: 5 }];
       expect(getNextProductId(products)).toBe(6);
@@ -51,35 +51,35 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Helpers - extractToken", () => {
-    it("deve extraer token valido de header Bearer", () => {
+  describe("Helpers - extraer token", () => {
+    it("debe extraer token válido de header Bearer", () => {
       const token = extractToken("Bearer my-secret-token");
       expect(token).toBe("my-secret-token");
     });
 
-    it("deve retornar null para header vacio", () => {
+    it("debe retornar null para header vacío", () => {
       expect(extractToken(null)).toBeNull();
     });
 
-    it("deve retornar null para header indefinido", () => {
+    it("debe retornar null para header indefinido", () => {
       expect(extractToken(undefined)).toBeNull();
     });
 
-    it("deve retornar null para header sin Bearer", () => {
+    it("debe retornar null para header sin Bearer", () => {
       expect(extractToken("my-token")).toBeNull();
     });
 
-    it("deve retornar null para header malformado", () => {
+    it("debe retornar null para header malformado", () => {
       expect(extractToken("Bearer")).toBeNull();
     });
 
-    it("deve extraer token sin hacer trim", () => {
+    it("debe extraer token sin hacer trim", () => {
       const token = extractToken("Bearer   my-token-here  ");
       expect(token).toBe("  my-token-here  ");
     });
   });
 
-  describe("Helpers - isValidToken", () => {
+  describe("Helpers - token válido", () => {
     it("debe validar token conocido 'valid_token'", () => {
       expect(isValidToken("valid_token")).toBe(true);
     });
@@ -93,18 +93,18 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(isValidToken("user_something")).toBe(true);
     });
 
-    it("deve retornar false para token invalido", () => {
+    it("debe retornar false para token inválido", () => {
       expect(isValidToken("invalid-token")).toBe(false);
       expect(isValidToken("wrong")).toBe(false);
     });
 
-    it("deve retornar false para token vacio", () => {
+    it("debe retornar false para token vacío", () => {
       expect(isValidToken("")).toBe(false);
     });
   });
 
-  describe("Validators - validateProductCreate", () => {
-    it("deve validar producto valido", () => {
+  describe("Validadores - validar creación de producto", () => {
+    it("debe validar producto válido", () => {
       const result = validateProductCreate({
         name: "Test",
         category: "Test",
@@ -114,7 +114,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(true);
     });
 
-    it("deve rejeitar producto sin campos requeridos", () => {
+    it("debe rechazar producto sin campos requeridos", () => {
       const result = validateProductCreate({
         category: "Test",
         price: 99.99,
@@ -124,7 +124,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toBeDefined();
     });
 
-    it("deve rejeitar producto con price no número", () => {
+    it("debe rechazar producto con price no número", () => {
       const result = validateProductCreate({
         name: "Test",
         category: "Test",
@@ -135,7 +135,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toContain("número");
     });
 
-    it("deve rejeitar producto con stock no número", () => {
+    it("debe rechazar producto con stock no número", () => {
       const result = validateProductCreate({
         name: "Test",
         category: "Test",
@@ -146,7 +146,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toContain("número");
     });
 
-    it("deve rejeitar precio negativo", () => {
+    it("debe rechazar precio negativo", () => {
       const result = validateProductCreate({
         name: "Test",
         category: "Test",
@@ -157,7 +157,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toContain("negativos");
     });
 
-    it("deve rejeitar stock negativo", () => {
+    it("debe rechazar stock negativo", () => {
       const result = validateProductCreate({
         name: "Test",
         category: "Test",
@@ -189,38 +189,38 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - validateProductUpdate", () => {
-    it("deve validar actualización parcial", () => {
+  describe("Validadores - validar actualización de producto", () => {
+    it("debe validar actualización parcial", () => {
       const result = validateProductUpdate({ name: "Updated" });
       expect(result.isValid).toBe(true);
     });
 
-    it("deve validar actualización con precio", () => {
+    it("debe validar actualización con precio", () => {
       const result = validateProductUpdate({ price: 150.99 });
       expect(result.isValid).toBe(true);
     });
 
-    it("deve validar actualización con stock", () => {
+    it("debe validar actualización con stock", () => {
       const result = validateProductUpdate({ stock: 50 });
       expect(result.isValid).toBe(true);
     });
 
-    it("deve rejeitar precio invalido en actualización", () => {
+    it("debe rechazar precio inválido en actualización", () => {
       const result = validateProductUpdate({ price: "invalid" });
       expect(result.isValid).toBe(false);
     });
 
-    it("deve rejeitar stock negativo en actualización", () => {
+    it("debe rechazar stock negativo en actualización", () => {
       const result = validateProductUpdate({ stock: -10 });
       expect(result.isValid).toBe(false);
     });
 
-    it("deve aceptar objeto vacío (sin cambios)", () => {
+    it("debe aceptar objeto vacío (sin cambios)", () => {
       const result = validateProductUpdate({});
       expect(result.isValid).toBe(true);
     });
 
-    it("deve validar múltiples campos en actualización", () => {
+    it("debe validar múltiples campos en actualización", () => {
       const result = validateProductUpdate({
         name: "New Name",
         price: 99.99,
@@ -231,7 +231,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - validateLoginCredentials", () => {
+  describe("Validadores - validar credenciales de login", () => {
     it("debe validar credenciales válidas", () => {
       const result = validateLoginCredentials({
         username: "admin",
@@ -240,7 +240,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(true);
     });
 
-    it("debe rejeitar sin username", () => {
+    it("debe rechazar sin username", () => {
       const result = validateLoginCredentials({
         password: "admin123",
       });
@@ -248,7 +248,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toBeDefined();
     });
 
-    it("debe rejeitar sin password", () => {
+    it("debe rechazar sin password", () => {
       const result = validateLoginCredentials({
         username: "admin",
       });
@@ -256,7 +256,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.error).toBeDefined();
     });
 
-    it("debe rejeitar username vacio", () => {
+    it("debe rechazar username vacío", () => {
       const result = validateLoginCredentials({
         username: "",
         password: "admin123",
@@ -264,7 +264,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(false);
     });
 
-    it("debe rejeitar password vacio", () => {
+    it("debe rechazar password vacío", () => {
       const result = validateLoginCredentials({
         username: "admin",
         password: "",
@@ -272,7 +272,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(false);
     });
 
-    it("debe rejeitar si faltan ambos campos", () => {
+    it("debe rechazar si faltan ambos campos", () => {
       const result = validateLoginCredentials({});
       expect(result.isValid).toBe(false);
     });
@@ -285,7 +285,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(true);
     });
 
-    it("debe rejeitar si username no es string", () => {
+    it("debe rechazar si username no es string", () => {
       const result = validateLoginCredentials({
         username: 123,
         password: "admin123",
@@ -293,7 +293,7 @@ describe("Unit Tests - Extended Coverage", () => {
       expect(result.isValid).toBe(false);
     });
 
-    it("debe rejeitar si password no es string", () => {
+    it("debe rechazar si password no es string", () => {
       const result = validateLoginCredentials({
         username: "admin",
         password: 123,
@@ -302,7 +302,7 @@ describe("Unit Tests - Extended Coverage", () => {
     });
   });
 
-  describe("Validators - Edge cases", () => {
+  describe("Validadores - casos límite", () => {
     it("debe manejar objetos con propiedades adicionales en create", () => {
       const result = validateProductCreate({
         name: "Test",

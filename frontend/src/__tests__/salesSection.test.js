@@ -30,7 +30,7 @@ jest.mock("../services/api", () => ({
   handleApiError: jest.fn((error) => error?.message || "Error"),
 }));
 
-describe("SalesSection Component", () => {
+describe("Componente SalesSection", () => {
   const mockSales = [
     {
       id: 1,

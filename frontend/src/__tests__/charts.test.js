@@ -9,7 +9,7 @@ import {
   CategoryChart
 } from "../components/Charts";
 
-describe("Charts Components", () => {
+describe("Componentes de gráficos", () => {
   const mockProductSales = [
     { product: "Producto A", quantity: 45 },
     { product: "Producto B", quantity: 30 }

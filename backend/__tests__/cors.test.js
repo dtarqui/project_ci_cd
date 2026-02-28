@@ -1,7 +1,7 @@
 const request = require("supertest");
 const { createApp } = require("../app");
 
-describe("CORS Configuration Tests", () => {
+describe("Pruebas de configuración CORS", () => {
   let app;
   const originalEnv = process.env.ALLOWED_ORIGINS;
 
@@ -19,12 +19,12 @@ describe("CORS Configuration Tests", () => {
     }
   });
 
-  describe("Default CORS Origins", () => {
+  describe("Orígenes CORS por defecto", () => {
     beforeEach(() => {
       app = createApp();
     });
 
-    test("should allow localhost:3000 origin", async () => {
+    test("debe permitir origen localhost:3000", async () => {
       const response = await request(app)
         .get("/health")
         .set("Origin", "http://localhost:3000")
@@ -35,7 +35,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should allow localhost:4000 origin", async () => {
+    test("debe permitir origen localhost:4000", async () => {
       const response = await request(app)
         .get("/health")
         .set("Origin", "http://localhost:4000")
@@ -46,7 +46,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should allow Vercel app domain", async () => {
+    test("debe permitir dominio de app Vercel", async () => {
       const response = await request(app)
         .get("/health")
         .set("Origin", "https://my-app.vercel.app")
@@ -57,7 +57,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should allow Vercel subdomain", async () => {
+    test("debe permitir subdominio de Vercel", async () => {
       const response = await request(app)
         .get("/health")
         .set("Origin", "https://my-app-git-main.vercel.app")
@@ -69,8 +69,8 @@ describe("CORS Configuration Tests", () => {
     });
   });
 
-  describe("Environment Variable CORS Origins", () => {
-    test("should allow origins from ALLOWED_ORIGINS env variable", async () => {
+  describe("Orígenes CORS por variable de entorno", () => {
+    test("debe permitir orígenes desde variable ALLOWED_ORIGINS", async () => {
       process.env.ALLOWED_ORIGINS = "https://custom-frontend.com";
       app = createApp();
 
@@ -84,7 +84,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should allow multiple origins from ALLOWED_ORIGINS (comma-separated)", async () => {
+    test("debe permitir múltiples orígenes desde ALLOWED_ORIGINS (separados por coma)", async () => {
       process.env.ALLOWED_ORIGINS = "https://frontend1.com,https://frontend2.com";
       app = createApp();
 
@@ -107,7 +107,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should handle ALLOWED_ORIGINS with extra whitespace", async () => {
+    test("debe manejar ALLOWED_ORIGINS con espacios extra", async () => {
       process.env.ALLOWED_ORIGINS = " https://frontend.com , https://another.com ";
       app = createApp();
 
@@ -121,7 +121,7 @@ describe("CORS Configuration Tests", () => {
       );
     });
 
-    test("should combine env origins with default localhost origins", async () => {
+    test("debe combinar orígenes de entorno con orígenes localhost por defecto", async () => {
       process.env.ALLOWED_ORIGINS = "https://production.com";
       app = createApp();
 
@@ -147,12 +147,12 @@ describe("CORS Configuration Tests", () => {
     });
   });
 
-  describe("CORS Preflight Requests", () => {
+  describe("Solicitudes preflight CORS", () => {
     beforeEach(() => {
       app = createApp();
     });
 
-    test("should handle OPTIONS preflight for allowed origin", async () => {
+    test("debe manejar preflight OPTIONS para origen permitido", async () => {
       const response = await request(app)
         .options("/api/auth/login")
         .set("Origin", "http://localhost:3000")
@@ -166,7 +166,7 @@ describe("CORS Configuration Tests", () => {
       expect(response.headers["access-control-allow-methods"]).toContain("POST");
     });
 
-    test("should include credentials in CORS headers", async () => {
+    test("debe incluir credenciales en headers CORS", async () => {
       const response = await request(app)
         .get("/health")
         .set("Origin", "http://localhost:3000")
@@ -178,20 +178,20 @@ describe("CORS Configuration Tests", () => {
     });
   });
 
-  describe("Requests without Origin header", () => {
+  describe("Solicitudes sin header Origin", () => {
     beforeEach(() => {
       app = createApp();
     });
 
-    test("should allow requests without Origin header (curl, mobile apps)", async () => {
+    test("debe permitir solicitudes sin header Origin (curl, apps móviles)", async () => {
       const response = await request(app).get("/health").expect(200);
 
       expect(response.body.status).toBe("ok");
     });
   });
 
-  describe("CORS Error Handling", () => {
-    test("should block and log warning for non-whitelisted origin", async () => {
+  describe("Manejo de errores CORS", () => {
+    test("debe bloquear y registrar advertencia para origen no permitido", async () => {
       const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
       app = createApp();
 
@@ -206,7 +206,7 @@ describe("CORS Configuration Tests", () => {
       consoleSpy.mockRestore();
     });
 
-    test("should not expose CORS errors in production responses", async () => {
+    test("no debe exponer errores CORS en respuestas de producción", async () => {
       app = createApp();
 
       const response = await request(app)
@@ -219,13 +219,13 @@ describe("CORS Configuration Tests", () => {
     });
   });
 
-  describe("CORS with Authentication Endpoints", () => {
+  describe("CORS con endpoints de autenticación", () => {
     beforeEach(() => {
       process.env.ALLOWED_ORIGINS = "https://trusted-frontend.vercel.app";
       app = createApp();
     });
 
-    test("should allow authenticated requests from trusted origin", async () => {
+    test("debe permitir solicitudes autenticadas desde origen confiable", async () => {
       const response = await request(app)
         .post("/api/auth/login")
         .set("Origin", "https://trusted-frontend.vercel.app")
@@ -238,7 +238,7 @@ describe("CORS Configuration Tests", () => {
       expect(response.body.token).toBeDefined();
     });
 
-    test("should allow dashboard access from trusted origin", async () => {
+    test("debe permitir acceso al dashboard desde origen confiable", async () => {
       // Login primero
       const loginResponse = await request(app)
         .post("/api/auth/login")
