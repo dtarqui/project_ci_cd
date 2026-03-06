@@ -3,3 +3,12 @@ dist
 .env
 .DS_Store
 coverage
+
+# Jenkins / CI generated artifacts
+metrics-*.txt
+
+# Automated CI metrics outputs (keep docs/metrics/README.md tracked)
+docs/metrics/pre-cicd-baseline.csv
+docs/metrics/pre-cicd-baseline.md
+docs/metrics/build-metrics-*.json
+docs/metrics/pre-cicd-baseline-legacy-*.csv

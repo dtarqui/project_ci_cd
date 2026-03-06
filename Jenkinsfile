@@ -33,6 +33,8 @@ pipeline {
         TOTAL_TEST_COUNT = "0"
         FAILED_TEST_COUNT = "0"
         COVERAGE_THRESHOLD = "70"
+        METRICS_PROFILE = "pre-cicd"
+        METRICS_DIR = "docs/metrics"
         
         // Email notifications
         NOTIFICATION_EMAIL = "dmtarqui@gmail.com"
@@ -275,6 +277,7 @@ pipeline {
                                     --coverageReporters=html \
                                     --coverageReporters=lcov \
                                     --coverageReporters=cobertura \
+                                    --coverageReporters=json-summary \
                                     --coverageThreshold='{}' || {
                                     echo "ADVERTENCIA: Tests fallaron pero continuamos para generar reportes"
                                     exit 1
@@ -287,7 +290,7 @@ pipeline {
                                 set CI=true
                                 set NODE_ENV=test
                                 
-                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura --coverageThreshold="{}"
+                                npm test -- --ci --runInBand --watchAll=false --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura --coverageReporters=json-summary --coverageThreshold="{}"
                                 if errorlevel 1 (
                                     echo ADVERTENCIA: Tests fallaron pero continuamos para generar reportes
                                     exit /b 1
@@ -303,6 +306,7 @@ pipeline {
                 always {
                     script {
                         def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
+                        env.FRONTEND_TEST_DURATION_SECONDS = duration.toString()
                         echo "Frontend Tests duration: ${duration}s"
                         
                         // Publicar resultados de tests (formato JUnit)
@@ -340,6 +344,7 @@ pipeline {
                                     --coverageReporters=html \
                                     --coverageReporters=lcov \
                                     --coverageReporters=cobertura \
+                                    --coverageReporters=json-summary \
                                     --coverageThreshold='{}' || {
                                     echo "ADVERTENCIA: Tests fallaron pero continuamos para generar reportes"
                                     exit 1
@@ -351,7 +356,7 @@ pipeline {
                             bat '''
                                 set NODE_ENV=test
                                 
-                                npm test -- --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura --coverageThreshold="{}"
+                                npm test -- --coverage --coverageReporters=html --coverageReporters=lcov --coverageReporters=cobertura --coverageReporters=json-summary --coverageThreshold="{}"
                                 if errorlevel 1 (
                                     echo ADVERTENCIA: Tests fallaron pero continuamos para generar reportes
                                     exit /b 1
@@ -367,6 +372,7 @@ pipeline {
                 always {
                     script {
                         def duration = env.STAGE_START_TIME ? (System.currentTimeMillis() - env.STAGE_START_TIME.toLong()) / 1000 : 0
+                        env.BACKEND_TEST_DURATION_SECONDS = duration.toString()
                         echo "Backend Tests duration: ${duration}s"
                         
                         // Publicar resultados de tests
@@ -742,6 +748,23 @@ pipeline {
                     text: metricsReport
                 )
                 archiveArtifacts(artifacts: "metrics-${env.BUILD_NUMBER}.txt", allowEmptyArchive: true)
+
+                // Generar línea base de métricas CI/CD automáticamente
+                env.BUILD_DURATION_SECONDS = ((currentBuild.duration ?: 0) / 1000).toString()
+                env.BUILD_STATUS = currentBuild.result ?: 'SUCCESS'
+                if (isUnix()) {
+                    sh '''
+                        node scripts/ci/generate-ci-metrics.js
+                    '''
+                } else {
+                    bat '''
+                        node scripts\\ci\\generate-ci-metrics.js
+                    '''
+                }
+                archiveArtifacts(
+                    artifacts: "${env.METRICS_DIR}/pre-cicd-baseline.csv,${env.METRICS_DIR}/pre-cicd-baseline.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json",
+                    allowEmptyArchive: true
+                )
                 
                 // Limpieza
                 if (isUnix()) {
