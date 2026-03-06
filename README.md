@@ -96,18 +96,6 @@ docker build -t mi-tienda-backend:latest .
 docker run -p 4000:4000 -e PORT=4000 -e NODE_ENV=production mi-tienda-backend:latest
 ```
 
-### CI/CD (Jenkins)
-- Pipeline con etapas: checkout, setup, frontend, backend, build/push, deploy.
-- Incluye `pollSCM`, reintentos, timeout, reportes de pruebas y cobertura.
-
-### Metricas pre-CI/CD automatizadas
-- Jenkins genera automaticamente una linea base al finalizar cada build.
-- Se publican como artefactos y archivos versionables en `docs/metrics/`:
-	- `pre-cicd-baseline.csv` (historico acumulado)
-	- `pre-cicd-baseline.md` (resumen legible)
-	- `build-metrics-<BUILD_NUMBER>.json` (detalle por ejecucion)
-- Fuente automatica: resultados JUnit, cobertura (`coverage-summary.json`) y metadatos del build.
-
 ### Estructura general del repositorio
 - `frontend/`: aplicación cliente.
 - `backend/`: API y lógica de negocio.

@@ -463,7 +463,7 @@ if (!fs.existsSync(csvPath)) {
 
 const mdPath = path.join(metricsDir, "pre-cicd-baseline.md");
 const md = [
-  "# Linea Base de Metricas Pre-CI/CD",
+  "# Metricas Pre-CI/CD",
   "",
   "Este archivo se actualiza automaticamente en Jenkins al finalizar cada build.",
   "",
@@ -482,7 +482,7 @@ const md = [
   `- Tasa de omitidos (%): ${skippedRatePct}`,
   `- Suites detectadas: ${totalSuites} (FE: ${frontendSuiteCount}, BE: ${backendSuiteCount})`,
   "",
-  "## Cobertura detallada",
+  "## Cobertura",
   `- Objetivo de cobertura lineas (%): ${coverageThreshold}`,
   `- Cobertura frontend lineas (%): ${frontendLineCoverage ?? "N/A"}`,
   `- Cobertura frontend statements/branches/functions (%): ${frontendCoverage.statements.pct ?? "N/A"} / ${frontendCoverage.branches.pct ?? "N/A"} / ${frontendCoverage.functions.pct ?? "N/A"}`,
@@ -517,7 +517,7 @@ const md = [
       : ["- N/A"]
   ),
   "",
-  "## Casos de prueba fallidos (si aplica)",
+  "## Casos de prueba fallidos",
   "### Frontend",
   ...(
     frontendFailedTestcases.length
