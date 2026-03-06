@@ -12,3 +12,10 @@ docs/metrics/pre-cicd-baseline.csv
 docs/metrics/pre-cicd-baseline.md
 docs/metrics/build-metrics-*.json
 docs/metrics/pre-cicd-baseline-legacy-*.csv
+
+# Automated research/reporting outputs
+docs/metrics/comparative-before-after.md
+docs/metrics/scrum-indicators.md
+docs/metrics/methodology-barriers-template.md
+docs/metrics/sprint-metrics-template.csv
+docs/metrics/sprint-metrics.csv

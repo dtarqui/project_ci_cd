@@ -755,14 +755,16 @@ pipeline {
                 if (isUnix()) {
                     sh '''
                         node scripts/ci/generate-ci-metrics.js
+                        node scripts/ci/generate-research-reports.js
                     '''
                 } else {
                     bat '''
                         node scripts\\ci\\generate-ci-metrics.js
+                        node scripts\\ci\\generate-research-reports.js
                     '''
                 }
                 archiveArtifacts(
-                    artifacts: "${env.METRICS_DIR}/pre-cicd-baseline.csv,${env.METRICS_DIR}/pre-cicd-baseline.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json",
+                    artifacts: "${env.METRICS_DIR}/pre-cicd-baseline.csv,${env.METRICS_DIR}/pre-cicd-baseline.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json,${env.METRICS_DIR}/comparative-before-after.md,${env.METRICS_DIR}/scrum-indicators.md,${env.METRICS_DIR}/methodology-barriers-template.md,${env.METRICS_DIR}/sprint-metrics-template.csv,${env.METRICS_DIR}/sprint-metrics.csv",
                     allowEmptyArchive: true
                 )
                 
