@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   MdAccountCircle,
   MdSave,
@@ -9,6 +9,20 @@ import {
 } from "react-icons/md";
 import { userService } from "../services/api";
 import "../styles/settings.css";
+
+const mapUserToProfileForm = (user = {}) => ({
+  id: user.id || null,
+  name: user.name || "",
+  email: user.email || "",
+  username: user.username || "",
+  phone: user.phone || "",
+  address: user.address || "",
+  city: user.city || "",
+  state: user.state || "",
+  country: user.country || "",
+  postalCode: user.postalCode || "",
+  dateOfBirth: user.dateOfBirth || "",
+});
 
 const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -31,25 +45,7 @@ const Settings = () => {
     dateOfBirth: "",
   });
 
-  useEffect(() => {
-    loadUserProfile();
-  }, []);
-
-  const mapUserToProfileForm = (user = {}) => ({
-    id: user.id || null,
-    name: user.name || "",
-    email: user.email || "",
-    username: user.username || "",
-    phone: user.phone || "",
-    address: user.address || "",
-    city: user.city || "",
-    state: user.state || "",
-    country: user.country || "",
-    postalCode: user.postalCode || "",
-    dateOfBirth: user.dateOfBirth || "",
-  });
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     setLoadingProfile(true);
 
     try {
@@ -65,7 +61,11 @@ const Settings = () => {
     } finally {
       setLoadingProfile(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, [loadUserProfile]);
 
   // ==================== PROFILE HANDLERS ====================
   const handleProfileChange = (field, value) => {
