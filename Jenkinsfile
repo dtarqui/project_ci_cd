@@ -12,8 +12,6 @@ pipeline {
         FRONTEND_DIR = "frontend"
         BACKEND_DIR = "backend"
         CI = "true"
-        DOCKER_REGISTRY = "docker.io"
-        IMAGE_NAME = "mi-tienda-backend"
         GITHUB_REPO = "https://github.com/dtarqui/project_ci_cd.git"
         
         // Vercel backend project identifiers (opcionales)
@@ -30,9 +28,7 @@ pipeline {
         
         // Métricas y monitoreo
         STAGE_START_TIME = ""
-        TOTAL_TEST_COUNT = "0"
-        FAILED_TEST_COUNT = "0"
-        COVERAGE_THRESHOLD = "70"
+        COVERAGE_THRESHOLD = "85"
         METRICS_PROFILE = "pre-cicd"
         METRICS_DIR = "docs/metrics"
         

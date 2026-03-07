@@ -3,6 +3,7 @@
  */
 
 const { mockData } = require("../db/mockData");
+const { calculateProductStatus } = require("../utils/helpers");
 const { validateSaleCreate, validateSaleUpdate } = require("../utils/validators");
 
 const TAX_RATE = 0.13;
@@ -84,6 +85,35 @@ const createSale = (req, res) => {
 
   let subtotal = 0;
   const saleItems = [];
+  const requestedByProduct = new Map();
+
+  for (const item of items) {
+    const requestedQty = requestedByProduct.get(item.productId) || 0;
+    requestedByProduct.set(item.productId, requestedQty + item.quantity);
+  }
+
+  for (const [productId, requestedQty] of requestedByProduct.entries()) {
+    const product = mockData.products.find((p) => p.id === productId);
+
+    if (!product) {
+      return res.status(404).json({
+        error: "Producto no encontrado",
+        code: "PRODUCT_NOT_FOUND",
+      });
+    }
+
+    if (requestedQty > product.stock) {
+      return res.status(400).json({
+        error: `Stock insuficiente para ${product.name}`,
+        code: "INSUFFICIENT_STOCK",
+        data: {
+          productId: product.id,
+          availableStock: product.stock,
+          requestedQuantity: requestedQty,
+        },
+      });
+    }
+  }
 
   for (const item of items) {
     const product = mockData.products.find((p) => p.id === item.productId);
@@ -112,6 +142,8 @@ const createSale = (req, res) => {
   const total = parseFloat((subtotal + tax - discount).toFixed(2));
 
   const now = new Date().toISOString();
+  const saleDate = now.split("T")[0];
+  const finalStatus = status || "Completada";
   const newSale = {
     id: Math.max(...mockData.sales.map((s) => s.id), 0) + 1,
     customerId: customer.id,
@@ -121,12 +153,31 @@ const createSale = (req, res) => {
     tax,
     discount,
     total: total < 0 ? 0 : total,
-    status: status || "Completada",
+    status: finalStatus,
     paymentMethod,
     notes: notes || "",
     createdAt: now,
     updatedAt: now,
   };
+
+  // Actualiza inventario y métricas del cliente solo para ventas activas.
+  if (finalStatus.toLowerCase() !== "anulada") {
+    for (const item of saleItems) {
+      const product = mockData.products.find((p) => p.id === item.productId);
+      if (!product) {
+        continue;
+      }
+
+      product.stock = Math.max(product.stock - item.quantity, 0);
+      product.sales += item.quantity;
+      product.lastSale = saleDate;
+      product.status = calculateProductStatus(product.stock);
+    }
+
+    customer.purchases += 1;
+    customer.totalSpent = parseFloat((customer.totalSpent + newSale.total).toFixed(2));
+    customer.lastPurchase = saleDate;
+  }
 
   mockData.sales.push(newSale);
 

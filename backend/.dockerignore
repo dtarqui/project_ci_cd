@@ -1,0 +1,21 @@
+# Dependency and test artifacts
+node_modules
+coverage
+__tests__
+
+# Local env and VCS/editor files
+.env
+.git
+.gitignore
+.vscode
+
+# CI and local reports
+junit.xml
+npm-debug.log*
+
+# Docs and deployment config not needed at runtime
+README.md
+ENDPOINTS_EJEMPLOS.md
+sample.env
+vercel.json
+.vercelignore

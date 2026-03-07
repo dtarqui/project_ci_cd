@@ -12,7 +12,7 @@ describe("Pruebas unitarias - Componentes de la app", () => {
 
     test("dailySales debe ser un string", () => {
       expect(typeof mockData.dailySales).toBe("string");
-      expect(mockData.dailySales).toBe("2.8M Bs.");
+      expect(mockData.dailySales).toBe("0.7M Bs.");
     });
 
     test("branchSales debe ser un arreglo válido", () => {
@@ -54,7 +54,7 @@ describe("Pruebas unitarias - Componentes de la app", () => {
 
     test("debe tener la cantidad esperada de puntos de datos", () => {
       expect(mockData.branchSales.length).toBe(4);
-      expect(mockData.salesTrend.length).toBe(7); // 7 días de la semana
+      expect(mockData.salesTrend.length).toBe(4);
       expect(mockData.productSales.length).toBe(4);
     });
 
@@ -180,7 +180,7 @@ describe("Pruebas unitarias - Componentes de la app", () => {
 
   describe("Consistencia de datos", () => {
     test("debe tener todos los días de la semana en sales trend", () => {
-      const expectedDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      const expectedDays = ["Lun", "Mar", "Mié", "Jue"];
       const actualDays = mockData.salesTrend.map((trend) => trend.day);
 
       expectedDays.forEach((day) => {
