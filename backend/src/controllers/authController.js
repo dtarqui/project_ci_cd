@@ -3,11 +3,85 @@
  */
 
 const { createAuthToken, verifyAuthToken } = require("../utils/helpers");
-const { validateLoginCredentials } = require("../utils/validators");
+const {
+  validateLoginCredentials,
+  validateUserRegistration,
+} = require("../utils/validators");
 const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
 
 const userRepository = createUserRepository();
+
+/**
+ * Maneja el registro de usuarios
+ */
+const register = async (req, res) => {
+  const validation = validateUserRegistration(req.body);
+
+  if (!validation.isValid) {
+    return res.status(400).json({
+      error: validation.error,
+      code: validation.code,
+    });
+  }
+
+  const {
+    username,
+    email,
+    password,
+    name,
+    phone,
+    address,
+    city,
+    state,
+    country,
+    postalCode,
+    dateOfBirth,
+  } = req.body;
+
+  const existingByUsername = await userRepository.findByUsername(username);
+  if (existingByUsername) {
+    return res.status(409).json({
+      error: "username ya registrado",
+      code: "USERNAME_TAKEN",
+    });
+  }
+
+  const existingByEmail = await userRepository.findByEmail(email);
+  if (existingByEmail) {
+    return res.status(409).json({
+      error: "email ya registrado",
+      code: "EMAIL_TAKEN",
+    });
+  }
+
+  const createdUser = await userRepository.createUser({
+    username,
+    email,
+    password,
+    name,
+    phone,
+    address,
+    city,
+    state,
+    country,
+    postalCode,
+    dateOfBirth,
+  });
+
+  const safeUser = userRepository.sanitizeUser(createdUser);
+  const token = createAuthToken(safeUser.id, {
+    username: safeUser.username,
+    name: safeUser.name,
+  });
+
+  return res.status(201).json({
+    success: true,
+    user: safeUser,
+    token,
+    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+  });
+};
 
 /**
  * Maneja el login de usuarios
@@ -32,7 +106,7 @@ const login = async (req, res) => {
     });
   }
 
-  const { password: _password, ...userWithoutPassword } = user;
+  const userWithoutPassword = userRepository.sanitizeUser(user);
   const token = createAuthToken(user.id, {
     username: user.username,
     name: user.name,
@@ -106,7 +180,7 @@ const getMe = async (req, res) => {
     });
   }
 
-  const { password: _password, ...userWithoutPassword } = user;
+  const userWithoutPassword = userRepository.sanitizeUser(user);
   res.json({
     success: true,
     user: userWithoutPassword,
@@ -114,6 +188,7 @@ const getMe = async (req, res) => {
 };
 
 module.exports = {
+  register,
   login,
   logout,
   getMe,

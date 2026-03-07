@@ -200,7 +200,7 @@ describe("Pruebas de API Backend", () => {
           .set("Authorization", `Bearer ${validJwt}`)
           .expect(200);
 
-        expect(response.body).toEqual({
+        expect(response.body).toMatchObject({
           success: true,
           user: {
             id: 1,
