@@ -226,7 +226,15 @@ const validateUserRegistration = (body) => {
     };
   }
 
-  if (!email.includes("@") || email.length > 120) {
+  if (name.trim().length < 2 || name.length > 120) {
+    return {
+      isValid: false,
+      error: "name inválido",
+      code: "INVALID_NAME",
+    };
+  }
+
+  if (!email.includes("@") || email.length > 120 || email.trim() !== email) {
     return {
       isValid: false,
       error: "email inválido",
@@ -291,7 +299,11 @@ const validateUserUpdate = (body) => {
   }
 
   if (body.name !== undefined) {
-    if (typeof body.name !== "string" || body.name.trim().length < 2) {
+    if (
+      typeof body.name !== "string" ||
+      body.name.trim().length < 2 ||
+      body.name.length > 120
+    ) {
       return {
         isValid: false,
         error: "name inválido",

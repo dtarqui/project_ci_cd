@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MdAccountCircle,
   MdNotifications,
@@ -10,6 +10,7 @@ import {
   MdCheckCircle,
   MdErrorOutline,
 } from "react-icons/md";
+import { userService } from "../services/api";
 import "../styles/settings.css";
 
 const Settings = () => {
@@ -17,14 +18,22 @@ const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [passwordError, setPasswordError] = useState("");
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [profileSnapshot, setProfileSnapshot] = useState(null);
 
   // Profile Form State
   const [profileData, setProfileData] = useState({
-    name: "Usuario Demo",
-    email: "demo@example.com",
-    username: "demo",
-    phone: "+591 XXXXXXXX",
-    location: "La Paz, Bolivia",
+    id: null,
+    name: "",
+    email: "",
+    username: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    country: "",
+    postalCode: "",
+    dateOfBirth: "",
   });
 
   // Notifications State
@@ -51,6 +60,42 @@ const Settings = () => {
     dateFormat: "DD/MM/YYYY",
   });
 
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const mapUserToProfileForm = (user = {}) => ({
+    id: user.id || null,
+    name: user.name || "",
+    email: user.email || "",
+    username: user.username || "",
+    phone: user.phone || "",
+    address: user.address || "",
+    city: user.city || "",
+    state: user.state || "",
+    country: user.country || "",
+    postalCode: user.postalCode || "",
+    dateOfBirth: user.dateOfBirth || "",
+  });
+
+  const loadUserProfile = async () => {
+    setLoadingProfile(true);
+
+    try {
+      const response = await userService.getMyProfile();
+      const mappedProfile = mapUserToProfileForm(response.user);
+      setProfileData(mappedProfile);
+      setProfileSnapshot(mappedProfile);
+    } catch (error) {
+      setSaveStatus({
+        type: "error",
+        message: error.response?.data?.error || "No se pudo cargar tu perfil",
+      });
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
   // ==================== PROFILE HANDLERS ====================
   const handleProfileChange = (field, value) => {
     setProfileData((prev) => ({
@@ -59,24 +104,56 @@ const Settings = () => {
     }));
   };
 
-  const handleSaveProfile = () => {
-    setSaveStatus({
-      type: "success",
-      message: "Perfil guardado correctamente",
-    });
-    setIsEditing(false);
-    setTimeout(() => setSaveStatus(null), 3000);
+  const handleSaveProfile = async () => {
+    try {
+      const payload = {
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone || undefined,
+        address: profileData.address || undefined,
+        city: profileData.city || undefined,
+        state: profileData.state || undefined,
+        country: profileData.country || undefined,
+        postalCode: profileData.postalCode || undefined,
+        dateOfBirth: profileData.dateOfBirth || undefined,
+      };
+
+      const response = await userService.updateMyProfile(payload);
+      const updatedProfile = mapUserToProfileForm(response.user);
+
+      setProfileData(updatedProfile);
+      setProfileSnapshot(updatedProfile);
+      setIsEditing(false);
+
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        const mergedUser = { ...parsedUser, ...response.user };
+        localStorage.setItem("user", JSON.stringify(mergedUser));
+        window.dispatchEvent(new CustomEvent("user-updated", { detail: mergedUser }));
+      } else {
+        window.dispatchEvent(new CustomEvent("user-updated", { detail: response.user }));
+      }
+
+      setSaveStatus({
+        type: "success",
+        message: "Perfil guardado correctamente",
+      });
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (error) {
+      setSaveStatus({
+        type: "error",
+        message: error.response?.data?.error || "No se pudo guardar el perfil",
+      });
+    }
   };
 
   const handleCancelProfile = () => {
     setIsEditing(false);
-    setProfileData({
-      name: "Usuario Demo",
-      email: "demo@example.com",
-      username: "demo",
-      phone: "+591 XXXXXXXX",
-      location: "La Paz, Bolivia",
-    });
+
+    if (profileSnapshot) {
+      setProfileData(profileSnapshot);
+    }
   };
 
   // ==================== NOTIFICATIONS HANDLERS ====================
@@ -114,22 +191,42 @@ const Settings = () => {
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError("La contraseña debe tener al menos 6 caracteres");
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError("La contraseña debe tener al menos 8 caracteres");
       return;
     }
 
-    // Simulate password change
-    setSaveStatus({
-      type: "success",
-      message: "Contraseña actualizada correctamente",
-    });
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-    setTimeout(() => setSaveStatus(null), 3000);
+    if (
+      !/[a-z]/.test(passwordData.newPassword) ||
+      !/[A-Z]/.test(passwordData.newPassword) ||
+      !/\d/.test(passwordData.newPassword)
+    ) {
+      setPasswordError("Debe incluir mayúsculas, minúsculas y números");
+      return;
+    }
+
+    userService
+      .updateMyProfile({
+        currentPassword: passwordData.currentPassword,
+        password: passwordData.newPassword,
+      })
+      .then(() => {
+        setSaveStatus({
+          type: "success",
+          message: "Contraseña actualizada correctamente",
+        });
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setTimeout(() => setSaveStatus(null), 3000);
+      })
+      .catch((error) => {
+        setPasswordError(
+          error.response?.data?.error || "No se pudo actualizar la contraseña"
+        );
+      });
   };
 
   // ==================== PREFERENCES HANDLERS ====================
@@ -156,7 +253,9 @@ const Settings = () => {
         )}
       </div>
 
-      {isEditing ? (
+      {loadingProfile ? (
+        <p className="section-description">Cargando perfil...</p>
+      ) : isEditing ? (
         <div className="form-group">
           <div className="form-row">
             <div className="form-field">
@@ -202,12 +301,65 @@ const Settings = () => {
           </div>
 
           <div className="form-field">
-            <label>Ubicación</label>
+            <label>Dirección</label>
             <input
               type="text"
-              value={profileData.location}
-              onChange={(e) => handleProfileChange("location", e.target.value)}
+              value={profileData.address}
+              onChange={(e) => handleProfileChange("address", e.target.value)}
               className="input-field"
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label>Ciudad</label>
+              <input
+                type="text"
+                value={profileData.city}
+                onChange={(e) => handleProfileChange("city", e.target.value)}
+                className="input-field"
+              />
+            </div>
+            <div className="form-field">
+              <label>Estado / Provincia</label>
+              <input
+                type="text"
+                value={profileData.state}
+                onChange={(e) => handleProfileChange("state", e.target.value)}
+                className="input-field"
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-field">
+              <label>País</label>
+              <input
+                type="text"
+                value={profileData.country}
+                onChange={(e) => handleProfileChange("country", e.target.value)}
+                className="input-field"
+              />
+            </div>
+            <div className="form-field">
+              <label>Código Postal</label>
+              <input
+                type="text"
+                value={profileData.postalCode}
+                onChange={(e) => handleProfileChange("postalCode", e.target.value)}
+                className="input-field"
+              />
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label>Fecha de Nacimiento</label>
+            <input
+              type="date"
+              value={profileData.dateOfBirth}
+              onChange={(e) => handleProfileChange("dateOfBirth", e.target.value)}
+              className="input-field"
+              max={new Date().toISOString().split("T")[0]}
             />
           </div>
 
@@ -236,11 +388,31 @@ const Settings = () => {
           </div>
           <div className="info-row">
             <span className="info-label">Teléfono:</span>
-            <span className="info-value">{profileData.phone}</span>
+            <span className="info-value">{profileData.phone || "No definido"}</span>
           </div>
           <div className="info-row">
-            <span className="info-label">Ubicación:</span>
-            <span className="info-value">{profileData.location}</span>
+            <span className="info-label">Dirección:</span>
+            <span className="info-value">{profileData.address || "No definida"}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Ciudad:</span>
+            <span className="info-value">{profileData.city || "No definida"}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Estado / Provincia:</span>
+            <span className="info-value">{profileData.state || "No definido"}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">País:</span>
+            <span className="info-value">{profileData.country || "No definido"}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Código Postal:</span>
+            <span className="info-value">{profileData.postalCode || "No definido"}</span>
+          </div>
+          <div className="info-row">
+            <span className="info-label">Fecha de Nacimiento:</span>
+            <span className="info-value">{profileData.dateOfBirth || "No definida"}</span>
           </div>
         </div>
       )}
@@ -326,7 +498,7 @@ const Settings = () => {
               className="input-field"
               placeholder="Ingresa tu nueva contraseña"
             />
-            <small>Mínimo 6 caracteres</small>
+            <small>Mínimo 8 caracteres con mayúsculas, minúsculas y números</small>
           </div>
 
           <div className="form-field">

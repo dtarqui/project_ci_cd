@@ -12,11 +12,39 @@ const { createUserRepository } = require("../repositories/userRepository");
 
 const userRepository = createUserRepository();
 
+const normalizeRegistrationPayload = (body = {}) => {
+  const normalizeText = (value) => {
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : undefined;
+  };
+
+  const normalizedEmail = normalizeText(body.email);
+
+  return {
+    username: normalizeText(body.username),
+    email: normalizedEmail ? normalizedEmail.toLowerCase() : normalizedEmail,
+    password: body.password,
+    name: normalizeText(body.name),
+    phone: normalizeText(body.phone),
+    address: normalizeText(body.address),
+    city: normalizeText(body.city),
+    state: normalizeText(body.state),
+    country: normalizeText(body.country),
+    postalCode: normalizeText(body.postalCode),
+    dateOfBirth: normalizeText(body.dateOfBirth),
+  };
+};
+
 /**
  * Maneja el registro de usuarios
  */
 const register = async (req, res) => {
-  const validation = validateUserRegistration(req.body);
+  const normalizedPayload = normalizeRegistrationPayload(req.body);
+  const validation = validateUserRegistration(normalizedPayload);
 
   if (!validation.isValid) {
     return res.status(400).json({
@@ -37,7 +65,7 @@ const register = async (req, res) => {
     country,
     postalCode,
     dateOfBirth,
-  } = req.body;
+  } = normalizedPayload;
 
   const existingByUsername = await userRepository.findByUsername(username);
   if (existingByUsername) {
