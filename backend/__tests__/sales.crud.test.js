@@ -70,7 +70,7 @@ describe("Endpoints CRUD de ventas", () => {
         customerId: 1,
         items: [
           { productId: 1, quantity: 1 },
-          { productId: 9, quantity: 2 },
+          { productId: 4, quantity: 2 },
         ],
         paymentMethod: "Tarjeta",
         discount: 0,

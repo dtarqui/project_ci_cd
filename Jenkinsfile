@@ -32,7 +32,7 @@ pipeline {
         STAGE_START_TIME = ""
         TOTAL_TEST_COUNT = "0"
         FAILED_TEST_COUNT = "0"
-        COVERAGE_THRESHOLD = "70"
+        COVERAGE_THRESHOLD = "85"
         METRICS_PROFILE = "pre-cicd"
         METRICS_DIR = "docs/metrics"
         
