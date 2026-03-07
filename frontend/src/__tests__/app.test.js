@@ -1,18 +1,24 @@
 import React from "react";
-import { render, screen, waitFor, act } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
+import { authService } from "../services/api";
 
-// Mock de Login component
+jest.mock("../services/api", () => ({
+  authService: {
+    getMe: jest.fn(),
+  },
+}));
+
 jest.mock("../login", () => {
   return function MockLogin({ onLogin }) {
     return (
       <div data-testid="login-component">
-        <input data-testid="username-input" placeholder="Username" />
-        <input data-testid="password-input" placeholder="Password" type="password" />
-        <button 
+        <button
           data-testid="login-button"
-          onClick={() => onLogin({ id: 1, name: "Test User" }, "test-token")}
+          onClick={() =>
+            onLogin({ id: 1, name: "Test User", username: "test" }, "test-token")
+          }
         >
           Login
         </button>
@@ -21,7 +27,6 @@ jest.mock("../login", () => {
   };
 });
 
-// Mock de Dashboard component
 jest.mock("../dashboard", () => {
   return function MockDashboard({ user, onLogout }) {
     return (
@@ -37,320 +42,142 @@ jest.mock("../dashboard", () => {
 
 describe("Pruebas de App", () => {
   beforeEach(() => {
-    localStorage.clear();
     jest.clearAllMocks();
-    
-    // Setup localStorage mocks
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: jest.fn(),
-        setItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn(),
-      },
-      writable: true,
-    });
+    localStorage.clear();
   });
 
-  describe("Renderizado inicial", () => {
-    test("debe renderizar login cuando no hay usuario guardado", async () => {
-      localStorage.getItem.mockReturnValue(null);
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-
-      expect(screen.queryByTestId("dashboard-component")).not.toBeInTheDocument();
+  test("debe renderizar login cuando no hay token guardado", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return null;
+      return null;
     });
 
-    test("debe renderizar dashboard cuando hay un usuario válido guardado", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return "valid-token";
-        return null;
-      });
+    render(<App />);
 
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-        expect(screen.getByTestId("user-name")).toHaveTextContent("Welcome Test User");
-      });
-
-      expect(screen.queryByTestId("login-component")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("login-component")).toBeInTheDocument();
     });
+
+    expect(authService.getMe).not.toHaveBeenCalled();
   });
 
-  describe("Flujo de autenticación", () => {
-    test("debe manejar login exitoso", async () => {
-      localStorage.getItem.mockReturnValue(null);
-      const user = userEvent.setup();
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-
-      const loginButton = screen.getByTestId("login-button");
-      await act(async () => {
-        await user.click(loginButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-        expect(localStorage.setItem).toHaveBeenCalledWith("user", JSON.stringify({ id: 1, name: "Test User" }));
-        expect(localStorage.setItem).toHaveBeenCalledWith("token", "test-token");
-      });
+  test("debe renderizar dashboard cuando getMe retorna usuario válido", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return "valid-token";
+      return null;
     });
 
-    test("debe manejar logout", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return "valid-token";
-        return null;
-      });
-
-      const user = userEvent.setup();
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-      });
-
-      const logoutButton = screen.getByTestId("logout-button");
-      await act(async () => {
-        await user.click(logoutButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-        expect(localStorage.removeItem).toHaveBeenCalledWith("user");
-        expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-      });
+    authService.getMe.mockResolvedValue({
+      user: { id: 1, name: "Test User", username: "test" },
     });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
+      expect(screen.getByTestId("user-name")).toHaveTextContent("Welcome Test User");
+    });
+
+    expect(authService.getMe).toHaveBeenCalledTimes(1);
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      "user",
+      JSON.stringify({ id: 1, name: "Test User", username: "test" })
+    );
   });
 
-  describe("Manejo de errores", () => {
-    test("debe manejar datos corruptos en localStorage", async () => {
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return "invalid-json";
-        if (key === "token") return "token";
-        return null;
-      });
-
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-        expect(consoleSpy).toHaveBeenCalledWith("Error parsing user data:", expect.any(SyntaxError));
-      });
-
-      consoleSpy.mockRestore();
+  test("debe volver a login cuando getMe falla y limpiar sesión", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return "expired-token";
+      return null;
     });
 
-    test("debe manejar ausencia de usuario cuando existe token", async () => {
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return null;
-        if (key === "token") return "orphaned-token";
-        return null;
-      });
+    authService.getMe.mockRejectedValue(new Error("Token inválido"));
 
-      render(<App />);
+    render(<App />);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByTestId("login-component")).toBeInTheDocument();
     });
 
-    test("debe manejar ausencia de token cuando existe usuario", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return null;
-        return null;
-      });
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-    });
-
-    test("debe manejar objeto de usuario inválido", async () => {
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify({ name: "Test User" }); // Missing ID
-        if (key === "token") return "valid-token";
-        return null;
-      });
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-        expect(localStorage.removeItem).toHaveBeenCalledWith("user");
-        expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-      });
-    });
+    expect(localStorage.removeItem).toHaveBeenCalledWith("user");
+    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
   });
 
-  describe("Gestión de estado", () => {
-    test("debe actualizar el estado del usuario después del login", async () => {
-      localStorage.getItem.mockReturnValue(null);
-      const user = userEvent.setup();
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-
-      const loginButton = screen.getByTestId("login-button");
-      await act(async () => {
-        await user.click(loginButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId("user-name")).toHaveTextContent("Welcome Test User");
-      });
+  test("debe manejar login exitoso", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return null;
+      return null;
     });
 
-    test("debe limpiar el estado del usuario después del logout", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return "valid-token";
-        return null;
-      });
+    const user = userEvent.setup();
 
-      const user = userEvent.setup();
+    render(<App />);
 
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-      });
-
-      const logoutButton = screen.getByTestId("logout-button");
-      await act(async () => {
-        await user.click(logoutButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-
-      expect(screen.queryByTestId("dashboard-component")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("login-component")).toBeInTheDocument();
     });
+
+    await user.click(screen.getByTestId("login-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
+    });
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      "user",
+      JSON.stringify({ id: 1, name: "Test User", username: "test" })
+    );
+    expect(localStorage.setItem).toHaveBeenCalledWith("token", "test-token");
   });
 
-  describe("Integración con localStorage", () => {
-    test("debe guardar datos de usuario en localStorage al hacer login", async () => {
-      localStorage.getItem.mockReturnValue(null);
-      const user = userEvent.setup();
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-      });
-
-      const loginButton = screen.getByTestId("login-button");
-      await act(async () => {
-        await user.click(loginButton);
-      });
-
-      await waitFor(() => {
-        expect(localStorage.setItem).toHaveBeenCalledWith(
-          "user", 
-          JSON.stringify({ id: 1, name: "Test User" })
-        );
-        expect(localStorage.setItem).toHaveBeenCalledWith("token", "test-token");
-      });
+  test("debe manejar logout", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return "valid-token";
+      return null;
     });
 
-    test("debe eliminar datos de usuario de localStorage al hacer logout", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return "valid-token";
-        return null;
-      });
-
-      const user = userEvent.setup();
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-      });
-
-      const logoutButton = screen.getByTestId("logout-button");
-      await act(async () => {
-        await user.click(logoutButton);
-      });
-
-      await waitFor(() => {
-        expect(localStorage.removeItem).toHaveBeenCalledWith("user");
-        expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-      });
+    authService.getMe.mockResolvedValue({
+      user: { id: 1, name: "Test User", username: "test" },
     });
 
-    test("debe manejar errores cuando localStorage.getItem falla", async () => {
-      localStorage.getItem.mockImplementation(() => {
-        throw new Error("localStorage error");
-      });
+    const user = userEvent.setup();
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    render(<App />);
 
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-        expect(consoleSpy).toHaveBeenCalledWith("Error parsing user data:", expect.any(Error));
-      });
-
-      consoleSpy.mockRestore();
+    await waitFor(() => {
+      expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
     });
+
+    await user.click(screen.getByTestId("logout-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-component")).toBeInTheDocument();
+    });
+
+    expect(localStorage.removeItem).toHaveBeenCalledWith("user");
+    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
   });
 
-  describe("Interacciones de componentes", () => {
-    test("debe pasar props correctas al componente Login", async () => {
-      localStorage.getItem.mockReturnValue(null);
-
-      render(<App />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("login-component")).toBeInTheDocument();
-        expect(screen.getByTestId("username-input")).toBeInTheDocument();
-        expect(screen.getByTestId("password-input")).toBeInTheDocument();
-        expect(screen.getByTestId("login-button")).toBeInTheDocument();
-      });
+  test("debe limpiar usuario al recibir evento unauthorized", async () => {
+    localStorage.getItem.mockImplementation((key) => {
+      if (key === "token") return "valid-token";
+      return null;
     });
 
-    test("debe pasar props correctas al componente Dashboard", async () => {
-      const mockUser = { id: 1, name: "Test User" };
-      localStorage.getItem.mockImplementation((key) => {
-        if (key === "user") return JSON.stringify(mockUser);
-        if (key === "token") return "valid-token";
-        return null;
-      });
+    authService.getMe.mockResolvedValue({
+      user: { id: 1, name: "Test User", username: "test" },
+    });
 
-      render(<App />);
+    render(<App />);
 
-      await waitFor(() => {
-        expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
-        expect(screen.getByTestId("user-name")).toHaveTextContent("Welcome Test User");
-        expect(screen.getByTestId("logout-button")).toBeInTheDocument();
-      });
+    await waitFor(() => {
+      expect(screen.getByTestId("dashboard-component")).toBeInTheDocument();
+    });
+
+    window.dispatchEvent(new Event("unauthorized"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("login-component")).toBeInTheDocument();
     });
   });
 });

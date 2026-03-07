@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MdError, MdRefresh } from "react-icons/md";
@@ -36,8 +36,15 @@ export default function Dashboard({ user, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    loadDashboardData();
+  const loadDashboardData = useCallback(async () => {
+    try {
+      const data = await dashboardService.getData();
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -53,18 +60,12 @@ export default function Dashboard({ user, onLogout }) {
 
     const resolvedSection = slugToSection[slug] || "Dashboard";
     setActiveSection(resolvedSection);
-  }, [location.pathname]);
 
-  const loadDashboardData = async () => {
-    try {
-      const data = await dashboardService.getData();
-      setDashboardData(data);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-    } finally {
-      setLoading(false);
+    // Re-fetch when entering Dashboard so cards/charts reflect recent CRUD changes.
+    if (resolvedSection === "Dashboard") {
+      loadDashboardData();
     }
-  };
+  }, [location.pathname, loadDashboardData]);
 
   const handleLogout = async () => {
     try {
@@ -82,7 +83,7 @@ export default function Dashboard({ user, onLogout }) {
     navigate(slug ? `/${slug}` : "/dashboard");
   };
 
-  if (loading) {
+  if (loading && activeSection === "Dashboard") {
     return (
       <div className="loading-container">
         <div className="loading-spinner" data-testid="loading-spinner"></div>
@@ -92,7 +93,7 @@ export default function Dashboard({ user, onLogout }) {
     );
   }
 
-  if (!dashboardData) {
+  if (!dashboardData && activeSection === "Dashboard") {
     return (
       <div className="loading-container">
         <h3>

@@ -1,37 +1,87 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Settings from "../components/Settings";
+import { userService } from "../services/api";
+
+jest.mock("../services/api", () => ({
+  userService: {
+    getMyProfile: jest.fn(),
+    updateMyProfile: jest.fn(),
+  },
+}));
+
+const mockProfileUser = {
+  id: 2,
+  name: "Usuario Demo",
+  email: "demo@email.com",
+  username: "demo",
+  phone: "+591 70000001",
+  address: "Santa Cruz",
+  city: "Santa Cruz",
+  state: "Santa Cruz",
+  country: "Bolivia",
+  postalCode: "SC-01",
+  dateOfBirth: "1990-10-15",
+};
+
+const mockProfileResponse = { user: mockProfileUser };
 
 describe("Componente Settings", () => {
-  test("debe renderizar el encabezado y la pestaña de perfil por defecto", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    userService.getMyProfile.mockResolvedValue(mockProfileResponse);
+    userService.updateMyProfile.mockResolvedValue(mockProfileResponse);
+  });
+
+  test("debe renderizar el encabezado y la información de perfil por defecto", async () => {
     render(<Settings />);
 
-    expect(screen.getByText(/Configuraciones/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Administra tu perfil, preferencias y configuración de seguridad/)
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Perfil" })).toBeInTheDocument();
+    expect(screen.getByText(/Administra tu información personal/)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Usuario Demo")).toBeInTheDocument();
+    });
+
     expect(screen.getByText(/Información de Perfil/)).toBeInTheDocument();
   });
 
   test("debe entrar en modo edición y guardar el perfil", async () => {
+    userService.updateMyProfile.mockResolvedValue({
+      user: {
+        ...mockProfileUser,
+        name: "Nombre Actualizado",
+      },
+    });
+
     render(<Settings />);
 
+    await waitFor(() => {
+      expect(screen.getByText("Usuario Demo")).toBeInTheDocument();
+    });
+
     fireEvent.click(screen.getByRole("button", { name: /Editar/ }));
-    const nameInput = screen.getByDisplayValue("Usuario Demo");
+    const nameInput = await screen.findByDisplayValue("Usuario Demo");
 
     fireEvent.change(nameInput, { target: { value: "Nombre Actualizado" } });
     fireEvent.click(screen.getByRole("button", { name: /Guardar Cambios/ }));
 
     await waitFor(() => {
+      expect(userService.updateMyProfile).toHaveBeenCalledTimes(1);
       expect(screen.getByText(/Perfil guardado correctamente/)).toBeInTheDocument();
+      expect(screen.getByText("Nombre Actualizado")).toBeInTheDocument();
     });
   });
 
   test("debe cancelar la edición del perfil y restaurar valores originales", async () => {
     render(<Settings />);
 
+    await waitFor(() => {
+      expect(screen.getByText("Usuario Demo")).toBeInTheDocument();
+    });
+
     fireEvent.click(screen.getByRole("button", { name: /Editar/ }));
-    const nameInput = screen.getByDisplayValue("Usuario Demo");
+    const nameInput = await screen.findByDisplayValue("Usuario Demo");
 
     fireEvent.change(nameInput, { target: { value: "Nombre Temporal" } });
     fireEvent.click(screen.getByRole("button", { name: /Cancelar/ }));
@@ -42,107 +92,34 @@ describe("Componente Settings", () => {
     });
   });
 
-  test("debe abrir notificaciones y alternar notificaciones por email", async () => {
+  test("debe mostrar error cuando falla la carga del perfil", async () => {
+    userService.getMyProfile.mockRejectedValueOnce({
+      response: { data: { error: "No se pudo cargar tu perfil" } },
+    });
+
     render(<Settings />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Notificaciones/ }));
-
-    const emailToggle = screen.getByLabelText(/Notificaciones por Email/);
-    expect(emailToggle).toBeChecked();
-
-    fireEvent.click(emailToggle);
-
     await waitFor(() => {
-      expect(emailToggle).not.toBeChecked();
-      expect(screen.getByText(/Preferencias actualizadas/)).toBeInTheDocument();
+      expect(screen.getByText(/No se pudo cargar tu perfil/)).toBeInTheDocument();
     });
   });
 
-  test("debe mostrar errores de validación y éxito al cambiar contraseña", async () => {
+  test("debe mostrar error cuando falla el guardado del perfil", async () => {
+    userService.updateMyProfile.mockRejectedValueOnce({
+      response: { data: { error: "No se pudo guardar el perfil" } },
+    });
+
     render(<Settings />);
 
-    fireEvent.click(screen.getByRole("button", { name: /Seguridad/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Actualizar Contraseña/ }));
+    await waitFor(() => {
+      expect(screen.getByText("Usuario Demo")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Editar/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Guardar Cambios/ }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Todos los campos son requeridos/)).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/contraseña actual/i), {
-      target: { value: "actual123" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Ingresa tu nueva contraseña/), {
-      target: { value: "nueva123" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Confirma tu nueva contraseña/), {
-      target: { value: "diferente" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Actualizar Contraseña/ }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Las contraseñas no coinciden/)).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/Ingresa tu nueva contraseña/), {
-      target: { value: "abc" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Confirma tu nueva contraseña/), {
-      target: { value: "abc" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Actualizar Contraseña/ }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/La contraseña debe tener al menos 6 caracteres/)
-      ).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText(/Ingresa tu nueva contraseña/), {
-      target: { value: "nueva123" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Confirma tu nueva contraseña/), {
-      target: { value: "nueva123" },
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Actualizar Contraseña/ }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Contraseña actualizada correctamente/)
-      ).toBeInTheDocument();
-    });
-  });
-
-  test("debe actualizar preferencias y mostrar la pestaña de información", async () => {
-    render(<Settings />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Preferencias/ }));
-
-    const languageSelect = screen.getByLabelText(/Idioma/);
-    fireEvent.change(languageSelect, { target: { value: "en" } });
-
-    await waitFor(() => {
-      expect(languageSelect.value).toBe("en");
-      expect(screen.getByText(/Preferencias guardadas/)).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: /Información/ }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Versión de la Aplicación/)).toBeInTheDocument();
-    });
-  });
-
-  test("debe mostrar enlaces de soporte en la pestaña de información", async () => {
-    render(<Settings />);
-
-    fireEvent.click(screen.getByRole("button", { name: /Información/ }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Documentación/)).toBeInTheDocument();
-      expect(screen.getByText(/Contactar Soporte/)).toBeInTheDocument();
+      expect(screen.getByText(/No se pudo guardar el perfil/)).toBeInTheDocument();
     });
   });
 });
