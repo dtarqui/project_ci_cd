@@ -169,6 +169,20 @@ const mockData = {
       purchases: 9,
       lastPurchase: "2026-03-02",
     },
+    {
+      id: 5,
+      name: "Luis Rojas",
+      email: "luis.rojas@email.com",
+      phone: "+591 33456789",
+      address: "Av. Banzer 1200, Santa Cruz",
+      city: "Santa Cruz de la Sierra",
+      postalCode: "SC-05",
+      status: "Pendiente",
+      registeredDate: "2026-01-18",
+      totalSpent: 420.5,
+      purchases: 1,
+      lastPurchase: "2026-02-28",
+    },
   ],
   sales: [
     {
