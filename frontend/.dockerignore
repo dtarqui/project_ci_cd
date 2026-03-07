@@ -1,0 +1,21 @@
+# Dependencies and build/test output
+node_modules
+coverage
+dist
+
+# VCS/editor and local env
+.git
+.gitignore
+.vscode
+.env
+
+# Tests and reports not needed in image
+__tests__
+junit.xml
+
+# Docs and local deployment files
+README.md
+sample.env
+vercel.json
+.vercelignore
+npm-debug.log*
