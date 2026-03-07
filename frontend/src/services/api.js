@@ -51,6 +51,12 @@ api.interceptors.response.use(
 
 // Servicios de autenticación
 export const authService = {
+  // payload: username, password, name, email
+  register: async (payload) => {
+    const response = await api.post("/api/auth/register", payload);
+    return response.data;
+  },
+
   login: async (credentials) => {
     const response = await api.post("/api/auth/login", credentials);
     return response.data;
@@ -58,6 +64,23 @@ export const authService = {
 
   logout: async () => {
     const response = await api.post("/api/auth/logout");
+    return response.data;
+  },
+
+  getMe: async () => {
+    const response = await api.get("/api/auth/me");
+    return response.data;
+  },
+};
+
+export const userService = {
+  getMyProfile: async () => {
+    const response = await api.get("/api/users/me");
+    return response.data;
+  },
+
+  updateMyProfile: async (payload) => {
+    const response = await api.put("/api/users/me", payload);
     return response.data;
   },
 };

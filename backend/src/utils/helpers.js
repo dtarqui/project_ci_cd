@@ -2,6 +2,25 @@
  * Utilities - Funciones reutilizables
  */
 
+const jwt = require("jsonwebtoken");
+
+const DEFAULT_JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+
+  if (secret && secret.trim()) {
+    return secret;
+  }
+
+  // En producción se requiere secreto explícito para evitar tokens débiles.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET no configurado en producción");
+  }
+
+  return "dev-only-jwt-secret-change-me";
+};
+
 /**
  * Calcula el estado del producto basado en el stock
  * @param {number} stock - Cantidad de stock
@@ -35,31 +54,53 @@ const extractToken = (authHeader) => {
 };
 
 /**
- * Crea un token mock para un usuario
+ * Crea un token JWT firmado para un usuario
  * @param {number} userId - ID del usuario
- * @returns {string} Token JWT mock
+ * @param {Object} extraPayload - Claims adicionales
+ * @returns {string} JWT firmado
  */
-const createMockToken = (userId) => {
-  return `mock-jwt-token-${userId}`;
+const createAuthToken = (userId, extraPayload = {}) => {
+  const payload = {
+    sub: userId,
+    ...extraPayload,
+  };
+
+  return jwt.sign(payload, getJwtSecret(), {
+    expiresIn: DEFAULT_JWT_EXPIRES_IN,
+  });
 };
 
 /**
- * Valida si un token es válido
+ * Verifica y decodifica un JWT
+ * @param {string} token - Token a validar
+ * @returns {Object|null} Payload decodificado o null
+ */
+const verifyAuthToken = (token) => {
+  if (!token || typeof token !== "string") {
+    return null;
+  }
+
+  try {
+    return jwt.verify(token, getJwtSecret());
+  } catch (_error) {
+    return null;
+  }
+};
+
+/**
+ * Valida si un token JWT es válido
  * @param {string} token - Token a validar
  * @returns {boolean} True si es válido
  */
 const isValidToken = (token) => {
-  return (
-    token === "valid_token" ||
-    token.includes("user_") ||
-    token.startsWith("mock-jwt-token-")
-  );
+  return Boolean(verifyAuthToken(token));
 };
 
 module.exports = {
   calculateProductStatus,
   getNextProductId,
   extractToken,
-  createMockToken,
+  createAuthToken,
+  verifyAuthToken,
   isValidToken,
 };

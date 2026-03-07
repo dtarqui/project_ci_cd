@@ -52,11 +52,30 @@ En este proyecto, la parte de usuarios ya está desacoplada con repositorio para
 
 ### 3.1 Autenticación
 
+- `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 
-### 3.2 Productos (protegido)
+### 3.2 Usuarios (perfil propio protegido)
+
+- `GET /api/users/me`
+- `PUT /api/users/me`
+- `DELETE /api/users/me`
+
+Campos de perfil soportados para registro/actualización:
+
+- `name`
+- `email`
+- `phone` (celular/teléfono)
+- `address`
+- `city`
+- `state`
+- `country`
+- `postalCode`
+- `dateOfBirth`
+
+### 3.3 Productos (protegido)
 
 - `GET /api/products`
 - `POST /api/products`
@@ -64,7 +83,7 @@ En este proyecto, la parte de usuarios ya está desacoplada con repositorio para
 - `PUT /api/products/:id`
 - `DELETE /api/products/:id`
 
-### 3.3 Clientes (protegido)
+### 3.4 Clientes (protegido)
 
 - `GET /api/customers`
 - `POST /api/customers`
@@ -72,7 +91,7 @@ En este proyecto, la parte de usuarios ya está desacoplada con repositorio para
 - `PUT /api/customers/:id`
 - `DELETE /api/customers/:id`
 
-### 3.4 Ventas (protegido)
+### 3.5 Ventas (protegido)
 
 - `GET /api/sales`
 - `POST /api/sales`
@@ -80,7 +99,7 @@ En este proyecto, la parte de usuarios ya está desacoplada con repositorio para
 - `PUT /api/sales/:id`
 - `PUT /api/sales/:id/cancel`
 
-### 3.5 Dashboard y health check
+### 3.6 Dashboard y health check
 
 - `GET /api/dashboard/data`
 - `GET /health`
@@ -111,6 +130,8 @@ Usa `sample.env` como base:
 PORT=4000
 NODE_ENV=development
 USER_REPOSITORY=memory
+JWT_SECRET=change-this-secret-in-production
+JWT_EXPIRES_IN=1h
 ```
 
 ## 7. Testing

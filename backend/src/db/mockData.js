@@ -169,6 +169,20 @@ const mockData = {
       purchases: 9,
       lastPurchase: "2026-03-02",
     },
+    {
+      id: 5,
+      name: "Luis Rojas",
+      email: "luis.rojas@email.com",
+      phone: "+591 33456789",
+      address: "Av. Banzer 1200, Santa Cruz",
+      city: "Santa Cruz de la Sierra",
+      postalCode: "SC-05",
+      status: "Pendiente",
+      registeredDate: "2026-01-18",
+      totalSpent: 420.5,
+      purchases: 1,
+      lastPurchase: "2026-02-28",
+    },
   ],
   sales: [
     {
@@ -251,9 +265,33 @@ const mockData = {
 };
 
 const users = [
-  { id: 1, username: "admin", password: "admin123", name: "Administrador" },
-  { id: 2, username: "demo", password: "demo123", name: "Usuario Demo" },
-  { id: 3, username: "test", password: "test123", name: "Usuario Test" },
+  {
+    id: 1,
+    username: "admin",
+    password: "admin123",
+    name: "Administrador",
+    cellphone: "+591 70000000",
+    email: "admin@email.com",
+    address: "La Paz",
+  },
+  {
+    id: 2,
+    username: "demo",
+    password: "demo123",
+    name: "Usuario Demo",
+    cellphone: "+591 70000001",
+    email: "demo@email.com",
+    address: "Santa Cruz",
+  },
+  {
+    id: 3,
+    username: "test",
+    password: "test123",
+    name: "Usuario Test",
+    cellphone: "+591 70000002",
+    email: "test@email.com",
+    address: "Cochabamba",
+  },
 ];
 
 module.exports = {

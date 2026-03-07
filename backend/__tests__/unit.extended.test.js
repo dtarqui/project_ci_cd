@@ -2,6 +2,8 @@ const {
   calculateProductStatus,
   getNextProductId,
   extractToken,
+  createAuthToken,
+  verifyAuthToken,
   isValidToken,
 } = require("../src/utils/helpers");
 const {
@@ -80,17 +82,15 @@ describe("Pruebas unitarias - Cobertura extendida", () => {
   });
 
   describe("Helpers - token válido", () => {
-    it("debe validar token conocido 'valid_token'", () => {
-      expect(isValidToken("valid_token")).toBe(true);
+    it("debe validar JWT firmado", () => {
+      const token = createAuthToken(1, { username: "admin" });
+      expect(isValidToken(token)).toBe(true);
     });
 
-    it("debe validar tokens mock JWT", () => {
-      expect(isValidToken("mock-jwt-token-1")).toBe(true);
-      expect(isValidToken("mock-jwt-token-2")).toBe(true);
-    });
-
-    it("debe validar tokens con prefijo user_", () => {
-      expect(isValidToken("user_something")).toBe(true);
+    it("debe decodificar payload válido de JWT", () => {
+      const token = createAuthToken(2, { username: "demo" });
+      const payload = verifyAuthToken(token);
+      expect(payload).toMatchObject({ sub: 2, username: "demo" });
     });
 
     it("debe retornar false para token inválido", () => {

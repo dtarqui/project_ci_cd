@@ -5,10 +5,16 @@
 const express = require("express");
 const router = express.Router();
 const {
+  register,
   login,
   logout,
   getMe,
 } = require("../controllers/authController");
+
+/**
+ * POST /api/auth/register - Registrar usuario
+ */
+router.post("/register", register);
 
 /**
  * POST /api/auth/login - Iniciar sesión
