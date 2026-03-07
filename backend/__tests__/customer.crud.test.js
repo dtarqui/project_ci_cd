@@ -1,5 +1,6 @@
 const request = require("supertest");
 const { createApp } = require("../app");
+const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Endpoints CRUD de clientes", () => {
   let app;
@@ -8,7 +9,7 @@ describe("Endpoints CRUD de clientes", () => {
     app = createApp();
   });
 
-  const validToken = "Bearer valid_token";
+  const validToken = `Bearer ${createAuthToken(1, { username: "admin" })}`;
 
   describe("GET /api/customers - Listar Clientes", () => {
     it("debe obtener lista de todos los clientes", (done) => {

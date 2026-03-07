@@ -2,7 +2,7 @@
  * Auth Controller - Lógica de autenticación
  */
 
-const { createMockToken } = require("../utils/helpers");
+const { createAuthToken, verifyAuthToken } = require("../utils/helpers");
 const { validateLoginCredentials } = require("../utils/validators");
 const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
@@ -33,13 +33,16 @@ const login = async (req, res) => {
   }
 
   const { password: _password, ...userWithoutPassword } = user;
-  const token = createMockToken(user.id);
+  const token = createAuthToken(user.id, {
+    username: user.username,
+    name: user.name,
+  });
 
   res.json({
     success: true,
     user: userWithoutPassword,
     token,
-    expiresIn: 3600, // 1 hour
+    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
   });
 };
 
@@ -76,14 +79,24 @@ const getMe = async (req, res) => {
 
   const token = extractToken(authHeader);
 
-  if (!token || !token.startsWith("mock-jwt-token-")) {
+  const payload = verifyAuthToken(token);
+
+  if (!payload) {
     return res.status(401).json({
       error: "Token inválido",
       code: "INVALID_TOKEN",
     });
   }
 
-  const userId = parseInt(token.replace("mock-jwt-token-", ""));
+  const userId = Number(payload.sub);
+
+  if (!Number.isFinite(userId) || userId <= 0) {
+    return res.status(401).json({
+      error: "Token inválido",
+      code: "INVALID_TOKEN",
+    });
+  }
+
   const user = await userRepository.findById(userId);
 
   if (!user) {

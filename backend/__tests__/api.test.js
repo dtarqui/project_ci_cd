@@ -1,5 +1,6 @@
 const request = require("supertest");
 const { createApp, mockData } = require("../app");
+const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas de API Backend", () => {
   let app;
@@ -48,16 +49,16 @@ describe("Pruebas de API Backend", () => {
           .send(credentials)
           .expect(200);
 
-        expect(response.body).toEqual({
+        expect(response.body).toMatchObject({
           success: true,
           user: {
             id: 2,
             username: "demo",
             name: "Usuario Demo",
           },
-          token: "mock-jwt-token-2",
-          expiresIn: 3600,
+          expiresIn: "1h",
         });
+        expect(response.body.token).toEqual(expect.any(String));
       });
 
       test("debe iniciar sesión del usuario admin correctamente", async () => {
@@ -72,7 +73,7 @@ describe("Pruebas de API Backend", () => {
           .expect(200);
 
         expect(response.body.user.name).toBe("Administrador");
-        expect(response.body.token).toBe("mock-jwt-token-1");
+        expect(response.body.token).toEqual(expect.any(String));
       });
 
       test("debe fallar con credenciales inválidas", async () => {
@@ -193,9 +194,10 @@ describe("Pruebas de API Backend", () => {
 
     describe("GET /api/auth/me", () => {
       test("debe retornar información de usuario con token válido", async () => {
+        const validJwt = createAuthToken(1, { username: "admin", name: "Administrador" });
         const response = await request(app)
           .get("/api/auth/me")
-          .set("Authorization", "Bearer mock-jwt-token-1")
+          .set("Authorization", `Bearer ${validJwt}`)
           .expect(200);
 
         expect(response.body).toEqual({
@@ -236,9 +238,10 @@ describe("Pruebas de API Backend", () => {
 
   describe("Endpoint de datos de dashboard", () => {
     test("debe retornar datos de dashboard con token válido", async () => {
+      const validJwt = createAuthToken(1, { username: "admin", name: "Administrador" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-1")
+        .set("Authorization", `Bearer ${validJwt}`)
         .expect(200);
 
       expect(response.body).toEqual({
@@ -277,9 +280,10 @@ describe("Pruebas de API Backend", () => {
     });
 
     test("debe retornar estructura de datos correcta", async () => {
+      const validJwt = createAuthToken(2, { username: "demo", name: "Usuario Demo" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-2")
+        .set("Authorization", `Bearer ${validJwt}`)
         .expect(200);
 
       expect(response.body).toHaveProperty("dailySales");
@@ -302,9 +306,9 @@ describe("Pruebas de API Backend", () => {
 
     test("debe funcionar con diferentes tokens válidos", async () => {
       const tokens = [
-        "mock-jwt-token-1",
-        "mock-jwt-token-2",
-        "mock-jwt-token-3",
+        createAuthToken(1, { username: "admin", name: "Administrador" }),
+        createAuthToken(2, { username: "demo", name: "Usuario Demo" }),
+        createAuthToken(3, { username: "test", name: "Usuario Test" }),
       ];
 
       for (const token of tokens) {

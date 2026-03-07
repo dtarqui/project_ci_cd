@@ -1,5 +1,6 @@
 const request = require("supertest");
 const { createApp } = require("../app");
+const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas adicionales de cobertura de API", () => {
   let app;
@@ -10,9 +11,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
 
   describe("Casos límite de autenticación", () => {
     test("debe fallar con formato válido pero token de usuario inexistente", async () => {
+      const missingUserToken = createAuthToken(999, { username: "ghost" });
       const response = await request(app)
         .get("/api/auth/me")
-        .set("Authorization", "Bearer mock-jwt-token-999")
+        .set("Authorization", `Bearer ${missingUserToken}`)
         .expect(401);
 
       expect(response.body).toEqual(
@@ -24,9 +26,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe fallar con token de usuario ID cero", async () => {
+      const zeroIdToken = createAuthToken(0, { username: "zero" });
       const response = await request(app)
         .get("/api/auth/me")
-        .set("Authorization", "Bearer mock-jwt-token-0")
+        .set("Authorization", `Bearer ${zeroIdToken}`)
         .expect(401);
 
       expect(response.body).toEqual(
@@ -38,9 +41,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe manejar token con ID de usuario negativo", async () => {
+      const negativeIdToken = createAuthToken(-1, { username: "negative" });
       const response = await request(app)
         .get("/api/auth/me")
-        .set("Authorization", "Bearer mock-jwt-token--1")
+        .set("Authorization", `Bearer ${negativeIdToken}`)
         .expect(401);
 
       expect(response.body).toEqual(
@@ -210,18 +214,20 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe manejar usuario inexistente en token de dashboard", async () => {
+      const unknownUserToken = createAuthToken(9999, { username: "unknown" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-9999")
+        .set("Authorization", `Bearer ${unknownUserToken}`)
         .expect(200);
 
       expect(response.body).toHaveProperty("dailySales");
     });
 
     test("debe manejar ID de usuario cero en token de dashboard", async () => {
+      const zeroIdToken = createAuthToken(0, { username: "zero" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-0")
+        .set("Authorization", `Bearer ${zeroIdToken}`)
         .expect(200);
 
       expect(response.body).toHaveProperty("dailySales");
@@ -283,7 +289,11 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe manejar solicitudes rápidas de dashboard con distintos tokens", async () => {
-      const tokens = ["mock-jwt-token-1", "mock-jwt-token-2", "mock-jwt-token-3"];
+      const tokens = [
+        createAuthToken(1, { username: "admin" }),
+        createAuthToken(2, { username: "demo" }),
+        createAuthToken(3, { username: "test" }),
+      ];
       
       const requests = tokens.map(token => 
         request(app)
@@ -302,9 +312,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
 
   describe("Pruebas de validación de datos", () => {
     test("debe retornar estructura consistente de datos de dashboard", async () => {
+      const validToken = createAuthToken(1, { username: "admin" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-1")
+        .set("Authorization", `Bearer ${validToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({
@@ -317,9 +328,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe retornar timestamp válido en datos de dashboard", async () => {
+      const validToken = createAuthToken(1, { username: "admin" });
       const response = await request(app)
         .get("/api/dashboard/data")
-        .set("Authorization", "Bearer mock-jwt-token-1")
+        .set("Authorization", `Bearer ${validToken}`)
         .expect(200);
 
       const timestamp = new Date(response.body.timestamp);
@@ -328,9 +340,10 @@ describe("Pruebas adicionales de cobertura de API", () => {
     });
 
     test("debe retornar estructura consistente de usuario en auth/me", async () => {
+      const validToken = createAuthToken(1, { username: "admin", name: "Administrador" });
       const response = await request(app)
         .get("/api/auth/me")
-        .set("Authorization", "Bearer mock-jwt-token-1")
+        .set("Authorization", `Bearer ${validToken}`)
         .expect(200);
 
       expect(response.body).toMatchObject({

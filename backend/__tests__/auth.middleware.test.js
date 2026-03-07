@@ -1,4 +1,5 @@
 const { authenticateToken, errorHandler, notFoundHandler } = require("../src/middleware/auth");
+const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas de middleware de auth - Cobertura extendida", () => {
   describe("authenticateToken", () => {
@@ -16,14 +17,14 @@ describe("Pruebas de middleware de auth - Cobertura extendida", () => {
     });
 
     it("debe llamar next() cuando token es válido", () => {
-      req.headers.authorization = "Bearer valid_token";
+      req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
       authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalled();
     });
 
     it("debe llamar next() para tokens mock JWT válidos", () => {
-      req.headers.authorization = "Bearer mock-jwt-token-1";
+      req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
       authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
     });
@@ -68,14 +69,14 @@ describe("Pruebas de middleware de auth - Cobertura extendida", () => {
 
     it("debe ser case-sensitive para Bearer", () => {
       // La implementación es case-sensitive, así que "bearer" falla
-      req.headers.authorization = "bearer valid_token";
+      req.headers.authorization = `bearer ${createAuthToken(1, { username: "admin" })}`;
       authenticateToken(req, res, next);
       expect(res.status).toHaveBeenCalledWith(401);
     });
 
     it("debe extraer token sin trim automático", () => {
       // Token con espacios extras - la implementación no hace trim
-      req.headers.authorization = "Bearer valid_token";
+      req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
       authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
     });

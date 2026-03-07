@@ -3,7 +3,7 @@
  * Valida que el token Bearer sea válido antes de acceder a rutas protegidas
  */
 
-const { extractToken, isValidToken } = require("../utils/helpers");
+const { extractToken, verifyAuthToken } = require("../utils/helpers");
 
 /**
  * Middleware para validar token Bearer
@@ -30,12 +30,20 @@ const authenticateToken = (req, res, next) => {
 
   const token = extractToken(authHeader);
 
-  if (!isValidToken(token)) {
+  const payload = verifyAuthToken(token);
+
+  if (!payload) {
     return res.status(401).json({
       error: "Token inválido",
       code: "INVALID_TOKEN",
     });
   }
+
+  req.user = {
+    id: Number(payload.sub),
+    username: payload.username,
+    name: payload.name,
+  };
 
   next();
 };

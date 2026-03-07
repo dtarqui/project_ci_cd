@@ -1,4 +1,5 @@
 const { createApp, mockData, users } = require("../app");
+const { createAuthToken, verifyAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas unitarias - Componentes de la app", () => {
   describe("Validación de datos mock", () => {
@@ -218,11 +219,13 @@ describe("Pruebas unitarias - Componentes de la app", () => {
     });
 
     test("la generación de token debe ser consistente", () => {
-      const generateToken = (userId) => `mock-jwt-token-${userId}`;
+      const token1 = createAuthToken(1, { username: "admin" });
+      const token2 = createAuthToken(2, { username: "demo" });
+      const token999 = createAuthToken(999, { username: "ghost" });
 
-      expect(generateToken(1)).toBe("mock-jwt-token-1");
-      expect(generateToken(2)).toBe("mock-jwt-token-2");
-      expect(generateToken(999)).toBe("mock-jwt-token-999");
+      expect(verifyAuthToken(token1).sub).toBe(1);
+      expect(verifyAuthToken(token2).sub).toBe(2);
+      expect(verifyAuthToken(token999).sub).toBe(999);
     });
 
     test("user data sanitization", () => {
