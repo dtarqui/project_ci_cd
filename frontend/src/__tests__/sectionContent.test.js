@@ -36,9 +36,9 @@ describe("Componente SectionContent", () => {
 
     it("debe renderizar Settings cuando el tipo es 'Configuraciones'", () => {
       render(<SectionContent type="Configuraciones" />);
-      expect(screen.getByText(/Configuraciones/)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: "Perfil" })).toBeInTheDocument();
       expect(
-        screen.getByText(/Administra tu perfil, preferencias y configuración de seguridad/)
+        screen.getByText(/Administra tu información personal y completa tus datos de contacto/)
       ).toBeInTheDocument();
     });
 
