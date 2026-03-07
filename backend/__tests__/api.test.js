@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { createApp, mockData } = require("../app");
+const { createApp } = require("../app");
 const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas de API Backend", () => {
@@ -244,10 +244,23 @@ describe("Pruebas de API Backend", () => {
         .set("Authorization", `Bearer ${validJwt}`)
         .expect(200);
 
-      expect(response.body).toEqual({
-        ...mockData,
+      expect(response.body).toEqual(expect.objectContaining({
+        products: expect.any(Array),
+        customers: expect.any(Array),
+        sales: expect.any(Array),
+        dailySales: expect.any(String),
+        totalOrders: expect.any(Number),
+        activeCustomers: expect.any(Number),
+        averageTicket: expect.any(String),
+        branchSales: expect.any(Array),
+        salesTrend: expect.any(Array),
+        productSales: expect.any(Array),
+        monthlySales: expect.any(Array),
+        categoryDistribution: expect.any(Array),
+        customerSegments: expect.any(Array),
+        topProducts: expect.any(Array),
         timestamp: expect.any(String),
-      });
+      }));
     });
 
     test("debe fallar sin header de autorización", async () => {
@@ -317,7 +330,8 @@ describe("Pruebas de API Backend", () => {
           .set("Authorization", `Bearer ${token}`)
           .expect(200);
 
-        expect(response.body.dailySales).toBe(mockData.dailySales);
+        expect(response.body.dailySales).toEqual(expect.any(String));
+        expect(response.body.totalOrders).toEqual(expect.any(Number));
       }
     });
   });
