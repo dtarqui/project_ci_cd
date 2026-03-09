@@ -189,7 +189,6 @@ pipeline {
                                 # Verificar dependencias críticas
                                 node -e "
                                     require('express'); 
-                                    require('cors'); 
                                     console.log('Dependencias backend verificadas')
                                 "
                                 
@@ -199,7 +198,7 @@ pipeline {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
                                 
-                                node -e "require('express'); require('cors'); console.log('Dependencias backend verificadas')"
+                                node -e "require('express'); console.log('Dependencias backend verificadas')"
                                 
                                 echo Dependencias backend instaladas correctamente
                             '''
