@@ -432,7 +432,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
                         script {
                             if (isUnix()) {
-                                env.BACKEND_VERCEL_URL = sh(
+                                def backendDeployOutput = sh(
                                     script: '''
                                         set -e
                                         npm install -g vercel 1>&2
@@ -462,6 +462,9 @@ pipeline {
                                     ''',
                                     returnStdout: true
                                 ).trim()
+
+                                // Evita mezclar logs con la URL en correos/notificaciones.
+                                env.BACKEND_VERCEL_URL = backendDeployOutput.readLines().last().trim()
                             } else {
                                 bat '''
                                     npm install -g vercel
@@ -571,7 +574,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
                         script {
                             if (isUnix()) {
-                                env.VERCEL_URL = sh(
+                                def frontendDeployOutput = sh(
                                     script: '''
                                         set -e
                                         npm install -g vercel 1>&2
@@ -583,12 +586,12 @@ pipeline {
                                         # Inyectar URL del backend en variables de entorno de Vercel ANTES de hacer pull
                                         # Esto asegura que el frontend tenga acceso al backend real durante el build
                                         if [ -n "$BACKEND_VERCEL_URL" ]; then
-                                            echo "Inyectando BACKEND_VERCEL_URL=$BACKEND_VERCEL_URL en Vercel..."
+                                            echo "Inyectando BACKEND_VERCEL_URL=$BACKEND_VERCEL_URL en Vercel..." 1>&2
                                             # Remover si existe
                                             vercel env rm API_BASE_URL "$FRONTEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null || true
                                             # Agregar nueva variable
                                             printf "%s" "$BACKEND_VERCEL_URL" | vercel env add API_BASE_URL "$FRONTEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
-                                            echo "Variable API_BASE_URL inyectada correctamente"
+                                            echo "Variable API_BASE_URL inyectada correctamente" 1>&2
                                         fi
 
                                         vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
@@ -598,6 +601,9 @@ pipeline {
                                     ''',
                                     returnStdout: true
                                 ).trim()
+
+                                // Evita mezclar logs con la URL en correos/notificaciones.
+                                env.VERCEL_URL = frontendDeployOutput.readLines().last().trim()
                             } else {
                                 bat '''
                                     npm install -g vercel
