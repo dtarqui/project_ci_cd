@@ -2,7 +2,9 @@
  * Dashboard Controller - Lógica del dashboard
  */
 
-const { mockData } = require("../db/mockData");
+const { createDashboardRepository } = require("../repositories/dashboardRepository");
+
+const dashboardRepository = createDashboardRepository();
 
 const WEEKDAY_LABELS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const MONTH_LABELS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -199,10 +201,7 @@ const buildCustomerSegments = (customers) => {
   });
 };
 
-const buildDynamicDashboardData = () => {
-  const products = mockData.products || [];
-  const customers = mockData.customers || [];
-  const sales = mockData.sales || [];
+const buildDynamicDashboardData = ({ products, customers, sales }) => {
 
   const validSales = sales.filter((sale) => sale.status?.toLowerCase() !== "anulada");
   const completedSales = sales.filter((sale) => sale.status?.toLowerCase() === "completada");
@@ -238,11 +237,15 @@ const buildDynamicDashboardData = () => {
 /**
  * Obtiene datos del dashboard
  */
-const getDashboardData = (req, res) => {
-  const dynamicData = buildDynamicDashboardData();
+const getDashboardData = async (req, res) => {
+  const sourceData = await dashboardRepository.getSourceData();
+  const dynamicData = buildDynamicDashboardData(sourceData);
 
   res.json({
-    ...mockData,
+    ...sourceData.baseDashboard,
+    products: sourceData.products,
+    customers: sourceData.customers,
+    sales: sourceData.sales,
     ...dynamicData,
     timestamp: new Date().toISOString(),
   });

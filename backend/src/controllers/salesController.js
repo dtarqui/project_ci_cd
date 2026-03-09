@@ -2,19 +2,23 @@
  * Sales Controller - Lógica de ventas
  */
 
-const { mockData } = require("../db/mockData");
-const { calculateProductStatus } = require("../utils/helpers");
 const { validateSaleCreate, validateSaleUpdate } = require("../utils/validators");
+const { createSaleRepository } = require("../repositories/saleRepository");
+const { createProductRepository } = require("../repositories/productRepository");
+const { createCustomerRepository } = require("../repositories/customerRepository");
 
 const TAX_RATE = 0.13;
+const saleRepository = createSaleRepository();
+const productRepository = createProductRepository();
+const customerRepository = createCustomerRepository();
 
 /**
  * Obtiene lista de ventas con filtros
  */
-const getSales = (req, res) => {
+const getSales = async (req, res) => {
   const { status = "", customerId = "" } = req.query;
 
-  let sales = [...mockData.sales];
+  let sales = await saleRepository.list();
 
   if (status) {
     sales = sales.filter(
@@ -40,9 +44,9 @@ const getSales = (req, res) => {
 /**
  * Obtiene una venta específica por ID
  */
-const getSale = (req, res) => {
+const getSale = async (req, res) => {
   const saleId = parseInt(req.params.id);
-  const sale = mockData.sales.find((s) => s.id === saleId);
+  const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
     return res.status(404).json({
@@ -61,7 +65,7 @@ const getSale = (req, res) => {
 /**
  * Crea una nueva venta
  */
-const createSale = (req, res) => {
+const createSale = async (req, res) => {
   const validation = validateSaleCreate(req.body);
 
   if (!validation.isValid) {
@@ -74,7 +78,7 @@ const createSale = (req, res) => {
   const { customerId, items, discount = 0, paymentMethod, notes, status } =
     req.body;
 
-  const customer = mockData.customers.find((c) => c.id === customerId);
+  const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
     return res.status(404).json({
@@ -93,7 +97,7 @@ const createSale = (req, res) => {
   }
 
   for (const [productId, requestedQty] of requestedByProduct.entries()) {
-    const product = mockData.products.find((p) => p.id === productId);
+    const product = await productRepository.findById(productId);
 
     if (!product) {
       return res.status(404).json({
@@ -116,7 +120,7 @@ const createSale = (req, res) => {
   }
 
   for (const item of items) {
-    const product = mockData.products.find((p) => p.id === item.productId);
+    const product = await productRepository.findById(item.productId);
 
     if (!product) {
       return res.status(404).json({
@@ -144,8 +148,7 @@ const createSale = (req, res) => {
   const now = new Date().toISOString();
   const saleDate = now.split("T")[0];
   const finalStatus = status || "Completada";
-  const newSale = {
-    id: Math.max(...mockData.sales.map((s) => s.id), 0) + 1,
+  const newSale = await saleRepository.create({
     customerId: customer.id,
     customerName: customer.name,
     items: saleItems,
@@ -156,30 +159,18 @@ const createSale = (req, res) => {
     status: finalStatus,
     paymentMethod,
     notes: notes || "",
-    createdAt: now,
-    updatedAt: now,
-  };
+  });
 
   // Actualiza inventario y métricas del cliente solo para ventas activas.
   if (finalStatus.toLowerCase() !== "anulada") {
-    for (const item of saleItems) {
-      const product = mockData.products.find((p) => p.id === item.productId);
-      if (!product) {
-        continue;
-      }
+    await productRepository.applySaleImpact(saleItems, saleDate);
 
-      product.stock = Math.max(product.stock - item.quantity, 0);
-      product.sales += item.quantity;
-      product.lastSale = saleDate;
-      product.status = calculateProductStatus(product.stock);
-    }
-
-    customer.purchases += 1;
-    customer.totalSpent = parseFloat((customer.totalSpent + newSale.total).toFixed(2));
-    customer.lastPurchase = saleDate;
+    await customerRepository.updateStats(customer.id, {
+      totalSpentDelta: newSale.total,
+      purchasesDelta: 1,
+      lastPurchase: saleDate,
+    });
   }
-
-  mockData.sales.push(newSale);
 
   res.status(201).json({
     success: true,
@@ -192,9 +183,9 @@ const createSale = (req, res) => {
 /**
  * Actualiza una venta existente
  */
-const updateSale = (req, res) => {
+const updateSale = async (req, res) => {
   const saleId = parseInt(req.params.id);
-  const sale = mockData.sales.find((s) => s.id === saleId);
+  const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
     return res.status(404).json({
@@ -212,28 +203,22 @@ const updateSale = (req, res) => {
     });
   }
 
-  const { status, paymentMethod, notes } = req.body;
-
-  if (status) sale.status = status;
-  if (paymentMethod) sale.paymentMethod = paymentMethod;
-  if (notes !== undefined) sale.notes = notes;
-
-  sale.updatedAt = new Date().toISOString();
+  const updatedSale = await saleRepository.update(saleId, req.body);
 
   res.json({
     success: true,
-    data: sale,
+    data: updatedSale,
     message: "Venta actualizada exitosamente",
-    timestamp: sale.updatedAt,
+    timestamp: updatedSale.updatedAt,
   });
 };
 
 /**
  * Anula una venta
  */
-const cancelSale = (req, res) => {
+const cancelSale = async (req, res) => {
   const saleId = parseInt(req.params.id);
-  const sale = mockData.sales.find((s) => s.id === saleId);
+  const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
     return res.status(404).json({
@@ -242,14 +227,13 @@ const cancelSale = (req, res) => {
     });
   }
 
-  sale.status = "Anulada";
-  sale.updatedAt = new Date().toISOString();
+  const canceledSale = await saleRepository.update(saleId, { status: "Anulada" });
 
   res.json({
     success: true,
-    data: sale,
+    data: canceledSale,
     message: "Venta anulada exitosamente",
-    timestamp: sale.updatedAt,
+    timestamp: canceledSale.updatedAt,
   });
 };
 

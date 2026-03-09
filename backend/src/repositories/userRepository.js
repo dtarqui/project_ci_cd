@@ -4,7 +4,8 @@
  */
 
 const crypto = require("crypto");
-const { users: seedUsers } = require("../db/mockData");
+const { UserDao } = require("../dao/userDao");
+const { getUsers, resetDataStore } = require("../db/dataStore");
 
 const HASH_PREFIX = "scrypt";
 const SCRYPT_KEYLEN = 64;
@@ -28,8 +29,6 @@ const normalizeSeedUser = (user) => {
     updatedAt: user.updatedAt || new Date().toISOString(),
   };
 };
-
-const createInitialUsers = () => seedUsers.map((user) => normalizeSeedUser(user));
 
 const hashPassword = (password) => {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -68,18 +67,18 @@ const sanitizeUser = (user) => {
   return safeUser;
 };
 
-const userStore = {
-  users: createInitialUsers(),
+const ensureUsersNormalized = () => {
+  const users = getUsers();
+
+  for (let index = 0; index < users.length; index += 1) {
+    users[index] = normalizeSeedUser(users[index]);
+  }
 };
 
 class InMemoryUserRepository {
-  constructor(store) {
-    this.store = store;
-  }
-
   async findByCredentials(username, password) {
     return (
-      this.store.users.find(
+      getUsers().find(
         (user) =>
           user.username.toLowerCase() === String(username).toLowerCase() &&
           verifyPassword(password, user.passwordHash)
@@ -88,12 +87,12 @@ class InMemoryUserRepository {
   }
 
   async findById(id) {
-    return this.store.users.find((user) => user.id === id) || null;
+    return getUsers().find((user) => user.id === id) || null;
   }
 
   async findByUsername(username) {
     return (
-      this.store.users.find(
+      getUsers().find(
         (user) => user.username.toLowerCase() === String(username).toLowerCase()
       ) || null
     );
@@ -101,7 +100,7 @@ class InMemoryUserRepository {
 
   async findByEmail(email) {
     return (
-      this.store.users.find(
+      getUsers().find(
         (user) =>
           user.email && user.email.toLowerCase() === String(email).toLowerCase()
       ) || null
@@ -109,42 +108,35 @@ class InMemoryUserRepository {
   }
 
   async createUser(userData) {
+    const users = getUsers();
     const nextId =
-      this.store.users.length > 0
-        ? Math.max(...this.store.users.map((user) => user.id)) + 1
+      users.length > 0
+        ? Math.max(...users.map((user) => user.id)) + 1
         : 1;
 
     const now = new Date().toISOString();
     const user = {
       id: nextId,
-      username: userData.username,
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone || null,
-      address: userData.address || null,
-      city: userData.city || null,
-      state: userData.state || null,
-      country: userData.country || null,
-      postalCode: userData.postalCode || null,
-      dateOfBirth: userData.dateOfBirth || null,
+      ...UserDao.normalizeRegistration(userData),
       passwordHash: hashPassword(userData.password),
       createdAt: now,
       updatedAt: now,
     };
 
-    this.store.users.push(user);
+    users.push(user);
 
     return user;
   }
 
   async updateUser(id, updates) {
-    const userIndex = this.store.users.findIndex((user) => user.id === id);
+    const users = getUsers();
+    const userIndex = users.findIndex((user) => user.id === id);
 
     if (userIndex === -1) {
       return null;
     }
 
-    const currentUser = this.store.users[userIndex];
+    const currentUser = users[userIndex];
     const nextUser = {
       ...currentUser,
       ...updates,
@@ -157,18 +149,19 @@ class InMemoryUserRepository {
 
     delete nextUser.password;
 
-    this.store.users[userIndex] = nextUser;
+    users[userIndex] = nextUser;
     return nextUser;
   }
 
   async deleteUser(id) {
-    const userIndex = this.store.users.findIndex((user) => user.id === id);
+    const users = getUsers();
+    const userIndex = users.findIndex((user) => user.id === id);
 
     if (userIndex === -1) {
       return null;
     }
 
-    const [deletedUser] = this.store.users.splice(userIndex, 1);
+    const [deletedUser] = users.splice(userIndex, 1);
     return deletedUser;
   }
 
@@ -200,11 +193,12 @@ const createUserRepository = () => {
     return new DatabaseUserRepository();
   }
 
-  return new InMemoryUserRepository(userStore);
+  ensureUsersNormalized();
+  return new InMemoryUserRepository();
 };
 
 const resetInMemoryUserRepository = () => {
-  userStore.users = createInitialUsers();
+  resetDataStore();
 };
 
 module.exports = {

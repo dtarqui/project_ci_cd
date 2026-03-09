@@ -2,8 +2,6 @@
  * Configuration - CORS Options
  */
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const commonMethods = [
   "GET",
   "POST",
@@ -28,31 +26,19 @@ const commonHeaders = [
   "Authorization",
 ];
 
-const corsOptions = isProduction
-  ? {
-      // Modo permisivo para despliegues cross-domain.
-      origin: "*",
-      methods: commonMethods,
-      credentials: false,
-      allowedHeaders: commonHeaders,
-      exposedHeaders: ["Content-Length", "X-Request-Id"],
-      maxAge: 86400,
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-    }
-  : {
-      origin: (origin, callback) => {
-        // Permitir cualquier origen en desarrollo/tests.
-        callback(null, origin || "*");
-      },
-      methods: commonMethods,
-      credentials: false,
-      allowedHeaders: commonHeaders,
-      exposedHeaders: ["Content-Length", "X-Request-Id"],
-      maxAge: 86400,
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-    };
+const corsOptions = {
+  // Refleja el origin recibido para compatibilidad con preflight y despliegues cross-domain.
+  origin: (origin, callback) => {
+    callback(null, origin || "*");
+  },
+  methods: commonMethods,
+  credentials: false,
+  allowedHeaders: commonHeaders,
+  exposedHeaders: ["Content-Length", "X-Request-Id"],
+  maxAge: 86400,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
 
 module.exports = {
   corsOptions,
