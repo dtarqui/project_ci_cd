@@ -22,6 +22,26 @@ const createApp = () => {
 
   // ==================== MIDDLEWARE ====================
 
+  // Garantiza headers CORS incluso cuando el preflight no alcanza las rutas.
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", process.env.CORS_ALLOW_ORIGIN || "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      process.env.CORS_ALLOW_METHODS || "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      process.env.CORS_ALLOW_HEADERS ||
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    return next();
+  });
+
   // CORS abierto para todos los orígenes
   app.use(cors(corsOptions));
   app.options("*", cors(corsOptions));
