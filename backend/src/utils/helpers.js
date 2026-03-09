@@ -5,17 +5,48 @@
 const jwt = require("jsonwebtoken");
 
 const DEFAULT_JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+const DEFAULT_JWT_ALGORITHM = process.env.JWT_ALGORITHM || "HS256";
+const ALLOWED_HMAC_ALGORITHMS = ["HS256", "HS384", "HS512"];
+
+const getJwtAlgorithm = () => {
+  if (ALLOWED_HMAC_ALGORITHMS.includes(DEFAULT_JWT_ALGORITHM)) {
+    return DEFAULT_JWT_ALGORITHM;
+  }
+
+  return "HS256";
+};
 
 const getJwtSecret = () => {
-  const secret = process.env.JWT_SECRET;
+  const secretCandidates = [
+    process.env.JWT_SECRET,
+    process.env.VERCEL_JWT_SECRET,
+    process.env.AUTH_JWT_SECRET,
+    process.env.AUTH_SECRET,
+    process.env.JWT_SECRET_KEY,
+  ];
 
-  if (secret && secret.trim()) {
-    return secret;
+  const secret = secretCandidates.find(
+    (value) => typeof value === "string" && value.trim()
+  );
+
+  if (secret) {
+    const normalized = secret.trim();
+
+    // Recomendación JWT (HMAC): usar secreto de al menos 256 bits.
+    if (process.env.NODE_ENV === "production" && normalized.length < 32) {
+      throw new Error(
+        "JWT secret inseguro: define JWT_SECRET (o VERCEL_JWT_SECRET) con al menos 32 caracteres en producción"
+      );
+    }
+
+    return normalized;
   }
 
   // En producción se requiere secreto explícito para evitar tokens débiles.
   if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET no configurado en producción");
+    throw new Error(
+      "JWT_SECRET no configurado en producción. Configúralo en Vercel con un valor fuerte (>=32 caracteres)."
+    );
   }
 
   return "dev-only-jwt-secret-change-me";
@@ -60,14 +91,25 @@ const extractToken = (authHeader) => {
  * @returns {string} JWT firmado
  */
 const createAuthToken = (userId, extraPayload = {}) => {
+  const signOptions = {
+    expiresIn: DEFAULT_JWT_EXPIRES_IN,
+    algorithm: getJwtAlgorithm(),
+  };
+
+  if (process.env.JWT_ISSUER) {
+    signOptions.issuer = process.env.JWT_ISSUER;
+  }
+
+  if (process.env.JWT_AUDIENCE) {
+    signOptions.audience = process.env.JWT_AUDIENCE;
+  }
+
   const payload = {
     sub: userId,
     ...extraPayload,
   };
 
-  return jwt.sign(payload, getJwtSecret(), {
-    expiresIn: DEFAULT_JWT_EXPIRES_IN,
-  });
+  return jwt.sign(payload, getJwtSecret(), signOptions);
 };
 
 /**
@@ -81,7 +123,19 @@ const verifyAuthToken = (token) => {
   }
 
   try {
-    return jwt.verify(token, getJwtSecret());
+    const verifyOptions = {
+      algorithms: [getJwtAlgorithm()],
+    };
+
+    if (process.env.JWT_ISSUER) {
+      verifyOptions.issuer = process.env.JWT_ISSUER;
+    }
+
+    if (process.env.JWT_AUDIENCE) {
+      verifyOptions.audience = process.env.JWT_AUDIENCE;
+    }
+
+    return jwt.verify(token, getJwtSecret(), verifyOptions);
   } catch (_error) {
     return null;
   }
