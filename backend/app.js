@@ -3,7 +3,6 @@
  * 
  * Estructura refactorizada:
  * src/
- *   ├── config/          - Configuración (CORS, etc)
  *   ├── db/              - Mock data y base de datos
  *   ├── middleware/      - Middleware (autenticación, errores)
  *   ├── controllers/     - Lógica de negocio (auth, products, dashboard)

@@ -10,8 +10,6 @@ backend/
   index.js                      # arranque del servidor
   src/
     index.js                    # factory de la app (middlewares + rutas)
-    config/
-      cors.js                   # configuración CORS
     middleware/
       auth.js                   # autenticación y manejo de errores
     routes/
@@ -141,4 +139,4 @@ npm run test
 npm run test:coverage
 ```
 
-Incluye pruebas de API, middleware, CORS, CRUD y cobertura extendida.
+Incluye pruebas de API, middleware, CRUD y cobertura extendida.

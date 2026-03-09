@@ -28,7 +28,7 @@ Analizar el uso de un pipeline CI/CD automatizado con Jenkins, aplicado al desar
 
 ## Stack tecnológico
 - **Frontend:** React 18, Webpack 5, Babel 7, Axios, Recharts, Jest, React Testing Library, ESLint.
-- **Backend:** Node.js 18+, Express 4, Jest, Supertest, CORS, dotenv.
+- **Backend:** Node.js 18+, Express 4, Jest, Supertest, dotenv.
 - **DevOps:** Jenkins, Docker, JUnit Reports, LCOV/HTML Coverage, Vercel (opcional).
 
 ## Arquitectura
