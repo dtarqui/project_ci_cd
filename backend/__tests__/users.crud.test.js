@@ -60,6 +60,30 @@ describe("Users registration and profile CRUD", () => {
     expect(duplicate.body.code).toBe("USERNAME_TAKEN");
   });
 
+  it("debe evitar registro con email duplicado", async () => {
+    await request(app)
+      .post("/api/auth/register")
+      .send({
+        username: "first_email_user",
+        password: "StrongPass1",
+        name: "Primer Usuario",
+        email: "same.email@email.com",
+      })
+      .expect(201);
+
+    const duplicateEmail = await request(app)
+      .post("/api/auth/register")
+      .send({
+        username: "second_email_user",
+        password: "StrongPass1",
+        name: "Segundo Usuario",
+        email: "same.email@email.com",
+      })
+      .expect(409);
+
+    expect(duplicateEmail.body.code).toBe("EMAIL_TAKEN");
+  });
+
   it("debe obtener y actualizar perfil propio", async () => {
     const register = await request(app)
       .post("/api/auth/register")
