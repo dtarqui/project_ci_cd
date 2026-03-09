@@ -3,8 +3,6 @@
  */
 
 const express = require("express");
-const cors = require("cors");
-const { corsOptions } = require("./config/cors");
 const { notFoundHandler, errorHandler } = require("./middleware/auth");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -22,9 +20,24 @@ const createApp = () => {
 
   // ==================== MIDDLEWARE ====================
 
-  // CORS
-  app.use(cors(corsOptions));
-  app.options("*", cors(corsOptions));
+  // CORS permisivo para despliegues cross-domain (frontend/backend en dominios distintos)
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    return next();
+  });
 
   // Body parser
   app.use(express.json());
