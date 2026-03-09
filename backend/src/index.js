@@ -3,6 +3,8 @@
  */
 
 const express = require("express");
+const cors = require("cors");
+const { corsOptions } = require("./config/cors");
 const { notFoundHandler, errorHandler } = require("./middleware/auth");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -19,6 +21,10 @@ const createApp = () => {
   const app = express();
 
   // ==================== MIDDLEWARE ====================
+
+  // CORS abierto para todos los orígenes
+  app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
 
   // Body parser
   app.use(express.json());
