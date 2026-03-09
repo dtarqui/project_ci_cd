@@ -2,16 +2,18 @@
  * Customer Controller - Lógica de clientes
  */
 
-const { mockData } = require("../db/mockData");
 const {
   validateCustomerCreate,
   validateCustomerUpdate,
 } = require("../utils/validators");
+const { createCustomerRepository } = require("../repositories/customerRepository");
+
+const customerRepository = createCustomerRepository();
 
 /**
  * Crea un nuevo cliente
  */
-const createCustomer = (req, res) => {
+const createCustomer = async (req, res) => {
   const validation = validateCustomerCreate(req.body);
 
   if (!validation.isValid) {
@@ -21,24 +23,7 @@ const createCustomer = (req, res) => {
     });
   }
 
-  const { name, email, phone, address, city, postalCode } = req.body;
-
-  const newCustomer = {
-    id: Math.max(...mockData.customers.map((c) => c.id), 0) + 1,
-    name,
-    email,
-    phone,
-    address: address || "",
-    city: city || "",
-    postalCode: postalCode || "",
-    status: "Activo",
-    registeredDate: new Date().toISOString().split("T")[0],
-    totalSpent: 0,
-    purchases: 0,
-    lastPurchase: null,
-  };
-
-  mockData.customers.push(newCustomer);
+  const newCustomer = await customerRepository.create(req.body);
 
   res.status(201).json({
     success: true,
@@ -51,10 +36,10 @@ const createCustomer = (req, res) => {
 /**
  * Obtiene lista de clientes con filtros y búsqueda
  */
-const getCustomers = (req, res) => {
+const getCustomers = async (req, res) => {
   const { search = "", status = "", sort = "name" } = req.query;
 
-  let customers = [...mockData.customers];
+  let customers = await customerRepository.list();
 
   // Filtrar por búsqueda
   if (search) {
@@ -104,9 +89,9 @@ const getCustomers = (req, res) => {
 /**
  * Obtiene un cliente específico por ID
  */
-const getCustomer = (req, res) => {
+const getCustomer = async (req, res) => {
   const customerId = parseInt(req.params.id);
-  const customer = mockData.customers.find((c) => c.id === customerId);
+  const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
     return res.status(404).json({
@@ -125,9 +110,9 @@ const getCustomer = (req, res) => {
 /**
  * Actualiza un cliente existente
  */
-const updateCustomer = (req, res) => {
+const updateCustomer = async (req, res) => {
   const customerId = parseInt(req.params.id);
-  const customer = mockData.customers.find((c) => c.id === customerId);
+  const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
     return res.status(404).json({
@@ -145,20 +130,11 @@ const updateCustomer = (req, res) => {
     });
   }
 
-  const { name, email, phone, address, city, postalCode, status } = req.body;
-
-  // Actualizar campos
-  if (name) customer.name = name;
-  if (email) customer.email = email;
-  if (phone) customer.phone = phone;
-  if (address !== undefined) customer.address = address;
-  if (city !== undefined) customer.city = city;
-  if (postalCode !== undefined) customer.postalCode = postalCode;
-  if (status) customer.status = status;
+  const updatedCustomer = await customerRepository.update(customerId, req.body);
 
   res.json({
     success: true,
-    data: customer,
+    data: updatedCustomer,
     message: "Cliente actualizado exitosamente",
     timestamp: new Date().toISOString(),
   });
@@ -167,18 +143,16 @@ const updateCustomer = (req, res) => {
 /**
  * Elimina un cliente
  */
-const deleteCustomer = (req, res) => {
+const deleteCustomer = async (req, res) => {
   const customerId = parseInt(req.params.id);
-  const index = mockData.customers.findIndex((c) => c.id === customerId);
+  const deletedCustomer = await customerRepository.delete(customerId);
 
-  if (index === -1) {
+  if (!deletedCustomer) {
     return res.status(404).json({
       error: "Cliente no encontrado",
       code: "CUSTOMER_NOT_FOUND",
     });
   }
-
-  const deletedCustomer = mockData.customers.splice(index, 1)[0];
 
   res.json({
     success: true,

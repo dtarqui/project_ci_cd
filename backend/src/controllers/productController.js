@@ -2,20 +2,18 @@
  * Product Controller - Lógica de productos
  */
 
-const { mockData } = require("../db/mockData");
-const {
-  calculateProductStatus,
-  getNextProductId,
-} = require("../utils/helpers");
 const {
   validateProductCreate,
   validateProductUpdate,
 } = require("../utils/validators");
+const { createProductRepository } = require("../repositories/productRepository");
+
+const productRepository = createProductRepository();
 
 /**
  * Crea un nuevo producto
  */
-const createProduct = (req, res) => {
+const createProduct = async (req, res) => {
   const validation = validateProductCreate(req.body);
 
   if (!validation.isValid) {
@@ -25,20 +23,7 @@ const createProduct = (req, res) => {
     });
   }
 
-  const { name, category, price, stock } = req.body;
-
-  const newProduct = {
-    id: getNextProductId(mockData.products),
-    name,
-    category,
-    price: parseFloat(price),
-    stock: parseInt(stock),
-    status: calculateProductStatus(parseInt(stock)),
-    lastSale: new Date().toISOString().split("T")[0],
-    sales: 0,
-  };
-
-  mockData.products.push(newProduct);
+  const newProduct = await productRepository.create(req.body);
 
   res.status(201).json({
     success: true,
@@ -51,10 +36,10 @@ const createProduct = (req, res) => {
 /**
  * Obtiene lista de productos con filtros y búsqueda
  */
-const getProducts = (req, res) => {
+const getProducts = async (req, res) => {
   const { search = "", category = "", sort = "name" } = req.query;
 
-  let products = [...mockData.products];
+  let products = await productRepository.list();
 
   // Filtrar por búsqueda
   if (search) {
@@ -96,9 +81,9 @@ const getProducts = (req, res) => {
 /**
  * Obtiene un producto específico por ID
  */
-const getProduct = (req, res) => {
+const getProduct = async (req, res) => {
   const productId = parseInt(req.params.id);
-  const product = mockData.products.find((p) => p.id === productId);
+  const product = await productRepository.findById(productId);
 
   if (!product) {
     return res.status(404).json({
@@ -117,9 +102,9 @@ const getProduct = (req, res) => {
 /**
  * Actualiza un producto existente
  */
-const updateProduct = (req, res) => {
+const updateProduct = async (req, res) => {
   const productId = parseInt(req.params.id);
-  const product = mockData.products.find((p) => p.id === productId);
+  const product = await productRepository.findById(productId);
 
   if (!product) {
     return res.status(404).json({
@@ -137,20 +122,11 @@ const updateProduct = (req, res) => {
     });
   }
 
-  const { name, category, price, stock } = req.body;
-
-  // Actualizar campos
-  if (name) product.name = name;
-  if (category) product.category = category;
-  if (price !== undefined) product.price = parseFloat(price);
-  if (stock !== undefined) {
-    product.stock = parseInt(stock);
-    product.status = calculateProductStatus(parseInt(stock));
-  }
+  const updatedProduct = await productRepository.update(productId, req.body);
 
   res.json({
     success: true,
-    data: product,
+    data: updatedProduct,
     message: "Producto actualizado exitosamente",
     timestamp: new Date().toISOString(),
   });
@@ -159,18 +135,16 @@ const updateProduct = (req, res) => {
 /**
  * Elimina un producto
  */
-const deleteProduct = (req, res) => {
+const deleteProduct = async (req, res) => {
   const productId = parseInt(req.params.id);
-  const productIndex = mockData.products.findIndex((p) => p.id === productId);
+  const deletedProduct = await productRepository.delete(productId);
 
-  if (productIndex === -1) {
+  if (!deletedProduct) {
     return res.status(404).json({
       error: "Producto no encontrado",
       code: "PRODUCT_NOT_FOUND",
     });
   }
-
-  const deletedProduct = mockData.products.splice(productIndex, 1)[0];
 
   res.json({
     success: true,
