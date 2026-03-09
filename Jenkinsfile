@@ -189,6 +189,7 @@ pipeline {
                                 # Verificar dependencias críticas
                                 node -e "
                                     require('express'); 
+                                    require('cors');
                                     console.log('Dependencias backend verificadas')
                                 "
                                 
@@ -198,7 +199,7 @@ pipeline {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
                                 
-                                node -e "require('express'); console.log('Dependencias backend verificadas')"
+                                node -e "require('express'); require('cors'); console.log('Dependencias backend verificadas')"
                                 
                                 echo Dependencias backend instaladas correctamente
                             '''
@@ -453,6 +454,16 @@ pipeline {
                                                 printf "%s" "$VALUE" | vercel env add "$NAME" "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
                                             done
                                         fi
+
+                                        # Forzar configuración CORS abierta para despliegue backend
+                                        vercel env rm CORS_ALLOW_ORIGIN "$BACKEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null || true
+                                        printf "%s" "*" | vercel env add CORS_ALLOW_ORIGIN "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+
+                                        vercel env rm CORS_ALLOW_METHODS "$BACKEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null || true
+                                        printf "%s" "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD" | vercel env add CORS_ALLOW_METHODS "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
+
+                                        vercel env rm CORS_ALLOW_HEADERS "$BACKEND_VERCEL_ENV" --yes --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null || true
+                                        printf "%s" "Origin, X-Requested-With, Content-Type, Accept, Authorization" | vercel env add CORS_ALLOW_HEADERS "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
 
                                         vercel pull --yes --environment=production --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
                                         vercel build --prod --token $VERCEL_TOKEN $PROJECT_ARGS 1>&2
