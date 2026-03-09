@@ -3,8 +3,6 @@
  */
 
 const express = require("express");
-const cors = require("cors");
-const { corsOptions } = require("./config/cors");
 const { notFoundHandler, errorHandler } = require("./middleware/auth");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -21,10 +19,6 @@ const createApp = () => {
   const app = express();
 
   // ==================== MIDDLEWARE ====================
-
-  // CORS
-  app.use(cors(corsOptions));
-  app.options("*", cors(corsOptions)); // Enable CORS preflight handling for all routes
 
   // Body parser
   app.use(express.json());
