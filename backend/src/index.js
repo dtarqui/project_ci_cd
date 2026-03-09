@@ -24,6 +24,7 @@ const createApp = () => {
 
   // CORS
   app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions)); // Enable CORS preflight handling for all routes
 
   // Body parser
   app.use(express.json());
