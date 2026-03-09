@@ -464,8 +464,8 @@ pipeline {
                                         fi
 
                                         # Validar existencia de secreto JWT antes de construir/desplegar.
-                                        if ! vercel env ls "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null | grep -Eq "(^|[[:space:]])(JWT_SECRET|VERCEL_JWT_SECRET)([[:space:]]|$)"; then
-                                            echo "ERROR: JWT_SECRET/VERCEL_JWT_SECRET no configurado en Vercel para entorno $BACKEND_VERCEL_ENV" 1>&2
+                                        if ! vercel env ls "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null | grep -Eq "(^|[[:space:]])JWT_SECRET([[:space:]]|$)"; then
+                                            echo "ERROR: JWT_SECRET no configurado en Vercel para entorno $BACKEND_VERCEL_ENV" 1>&2
                                             exit 1
                                         fi
 

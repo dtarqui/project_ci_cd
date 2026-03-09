@@ -19,7 +19,6 @@ const getJwtAlgorithm = () => {
 const getJwtSecret = () => {
   const secretCandidates = [
     process.env.JWT_SECRET,
-    process.env.VERCEL_JWT_SECRET,
     process.env.AUTH_JWT_SECRET,
     process.env.AUTH_SECRET,
     process.env.JWT_SECRET_KEY,
@@ -35,7 +34,7 @@ const getJwtSecret = () => {
     // Recomendación JWT (HMAC): usar secreto de al menos 256 bits.
     if (process.env.NODE_ENV === "production" && normalized.length < 32) {
       throw new Error(
-        "JWT secret inseguro: define JWT_SECRET (o VERCEL_JWT_SECRET) con al menos 32 caracteres en producción"
+        "JWT secret inseguro: define JWT_SECRET con al menos 32 caracteres en producción"
       );
     }
 

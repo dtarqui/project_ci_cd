@@ -133,7 +133,6 @@ CORS_ALLOW_ORIGIN=*
 CORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD
 CORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization
 JWT_SECRET=change-this-secret-in-production
-VERCEL_JWT_SECRET=
 JWT_EXPIRES_IN=1h
 JWT_ALGORITHM=HS256
 JWT_ISSUER=ci-cd-backend
@@ -141,7 +140,7 @@ JWT_AUDIENCE=ci-cd-frontend
 ```
 
 Notas para producción en Vercel:
-- Debes configurar `JWT_SECRET` (o `VERCEL_JWT_SECRET`) con al menos 32 caracteres.
+- Debes configurar `JWT_SECRET` con al menos 32 caracteres.
 - `JWT_ALGORITHM` soporta `HS256`, `HS384` o `HS512` (recomendado `HS256`).
 - Si defines `JWT_ISSUER` y `JWT_AUDIENCE`, los tokens se validan con esos claims.
 
