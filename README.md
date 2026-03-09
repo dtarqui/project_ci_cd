@@ -1,105 +1,126 @@
 # Mi Tienda Online
 
-## Descripción
-Aplicación web full-stack para gestión comercial de una tienda, con autenticación, dashboard de métricas y módulos CRUD para productos, clientes y ventas. El proyecto está orientado a práctica de arquitectura modular, testing automatizado y pipeline CI/CD con Jenkins.
+Aplicacion web full-stack para gestion comercial de una tienda, con autenticacion JWT, dashboard de metricas y modulos CRUD para productos, clientes y ventas.
 
-## Objetivo general
-Analizar el uso de un pipeline CI/CD automatizado con Jenkins, aplicado al desarrollo de una aplicación web full-stack con Node.js y React, con el fin de evaluar su incidencia en la eficiencia operativa y la calidad del software en el contexto de PyMEs bolivianas, bajo un marco metodológico basado en SCRUM.
+## Estado actual del proyecto
+- Backend Express modular con rutas protegidas por token.
+- Frontend React (Webpack) con login, registro y dashboard por secciones.
+- Testing automatizado en frontend y backend con Jest + reportes de cobertura.
+- Pipeline CI/CD en `Jenkinsfile` con lint, tests, build, despliegue opcional a Vercel y generacion de metricas de investigacion en `docs/metrics/`.
 
-## Objetivos específicos
-1. Se identificaron y analizaron métricas relacionadas con el nivel de automatización, la frecuencia de errores y los tiempos de despliegue durante el desarrollo de la aplicación web de ventas.
-2. Se analizaron las principales barreras técnicas y organizacionales que influyen en la adopción de prácticas de Integración Continua y Entrega Continua (CI/CD) en PyMEs bolivianas del sector de desarrollo de software.
-3. Se modeló un pipeline CI/CD acorde a las características del proyecto académico y a un contexto de recursos limitados, considerando herramientas accesibles y buenas prácticas DevOps.
-4. Se describió y configuró un pipeline CI/CD a nivel de proyecto académico, orientado a la automatización de los procesos de construcción, pruebas y despliegue del software.
-5. Se evaluó comparativamente el comportamiento de las métricas seleccionadas antes y después de la incorporación del pipeline CI/CD, para analizar su relación con la eficiencia operativa y la calidad del software.
+## Requisitos
+- Node.js 18+
+- npm 9+
+- Docker (opcional, para backend)
 
-## Alcance
-### Incluye
-- Frontend React con dashboard y vistas de gestión.
-- Backend Express con rutas REST de autenticación, productos, clientes, ventas y dashboard.
-- Pruebas unitarias/integración con Jest (backend y frontend).
-- Pipeline Jenkins para validación automática (lint, test, build) y opciones de deploy.
-- Containerización del backend con Docker.
+## Ejecucion local
+1. Clonar repositorio:
 
-### NO incluye
-- Persistencia en base de datos real en producción (se usan datos mock para el flujo principal).
-- Gestión avanzada de usuarios/roles.
-- Infraestructura cloud productiva (deploy en Vercel/registry es opcional según entorno).
-
-## Stack tecnológico
-- **Frontend:** React 18, Webpack 5, Babel 7, Axios, Recharts, Jest, React Testing Library, ESLint.
-- **Backend:** Node.js 18+, Express 4, Jest, Supertest, dotenv.
-- **DevOps:** Jenkins, Docker, JUnit Reports, LCOV/HTML Coverage, Vercel (opcional).
-
-## Arquitectura
-- `frontend/`: SPA en React para autenticación, dashboard y módulos de gestión.
-- `backend/`: API REST en Express con estructura por capas (`routes → controllers → repositories/db/utils`).
-- Comunicación por HTTP entre frontend y backend usando `API_BASE_URL`.
-- CI/CD centralizado en `Jenkinsfile` para automatizar validaciones y build.
-
-## Endpoints core
-1. `POST /api/auth/login` — Autenticación inicial.
-2. `GET /api/auth/me` — Validación de sesión/token.
-3. `GET /api/dashboard/data` — Métricas principales del dashboard.
-4. `GET /api/products` — Listado de productos.
-5. `POST /api/products` — Alta de producto.
-6. `GET /api/customers` — Listado de clientes.
-7. `GET /api/sales` — Listado de ventas.
-8. `POST /api/sales` — Registro de venta.
-9. `GET /health` — Estado del servicio backend.
-
-## Cómo ejecutar el proyecto (local)
-### 1) Clonar
 ```bash
 git clone https://github.com/dtarqui/project_ci_cd.git
 cd project_ci_cd
 ```
 
-### 2) Backend
+2. Levantar backend (primero):
+
 ```bash
 cd backend
 npm install
 npm start
-# http://localhost:4000
 ```
 
-### 3) Frontend (nueva terminal)
+Backend disponible en `http://localhost:4000`.
+
+3. Levantar frontend (nueva terminal):
+
 ```bash
 cd frontend
 npm install
 npm start
-# http://localhost:3000
 ```
 
+Frontend disponible en `http://localhost:3000`.
+
 ## Variables de entorno
-### Frontend (`frontend/.env`, basado en `frontend/sample.env`)
+Backend (`backend/.env`, base: `backend/sample.env`):
+
+```env
+PORT=4000
+NODE_ENV=development
+USER_REPOSITORY=memory
+DATA_REPOSITORY=memory
+CORS_ALLOW_ORIGIN=*
+JWT_SECRET=change-this-secret-in-production
+JWT_EXPIRES_IN=1h
+JWT_ALGORITHM=HS256
+JWT_ISSUER=ci-cd-backend
+JWT_AUDIENCE=ci-cd-frontend
+```
+
+Frontend (`frontend/.env`, base: `frontend/sample.env`):
+
 ```env
 API_BASE_URL=http://localhost:4000
 ```
 
-### Backend (`backend/.env`, basado en `backend/sample.env`)
-```env
-PORT=4000
-NODE_ENV=development
-```
+Si `API_BASE_URL` no existe, el frontend usa `http://localhost:4000` en desarrollo.
 
-## Otros
-### Testing
-- Backend: `npm test`, `npm run test:watch`, `npm run test:coverage`, `npm run test:ci`.
-- Frontend: `npm test`, `npm run test:watch`, `npm run test:debug`, `npm run test:ci`.
-- Reportes de cobertura en `backend/coverage/` y `frontend/coverage/`.
+## Scripts principales
+Backend (`backend/package.json`):
+- `npm start`
+- `npm run dev`
+- `npm test`
+- `npm run test:watch`
+- `npm run test:coverage`
+- `npm run test:ci`
+- `npm run lint`
 
-### Docker (backend)
+Frontend (`frontend/package.json`):
+- `npm start`
+- `npm run build`
+- `npm test`
+- `npm run test:watch`
+- `npm run test:debug`
+- `npm run test:ci`
+- `npm run lint`
+
+## API y rutas clave
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/users/me`
+- `GET /api/dashboard/data`
+- CRUD: `/api/products`, `/api/customers`, `/api/sales`
+- `PUT /api/sales/:id/cancel`
+- `GET /health`
+
+Documentacion extendida de endpoints en `backend/ENDPOINTS_EJEMPLOS.md`.
+
+## CI/CD (Jenkins)
+El pipeline definido en `Jenkinsfile` incluye:
+- Checkout desde GitHub (`main`).
+- Instalacion de dependencias frontend/backend.
+- Lint frontend y backend.
+- Tests frontend y backend con publicacion JUnit + coverage HTML.
+- Validacion basica del backend (`/health`).
+- Build frontend (`webpack`).
+- Deploy opcional a Vercel (backend y frontend).
+- Archivado de artefactos.
+- Generacion automatica de metricas y reportes en `docs/metrics/`.
+
+## Estructura del repositorio
+- `backend/`: API y logica de negocio.
+- `frontend/`: aplicacion cliente.
+- `scripts/ci/`: scripts de metricas y reportes.
+- `docs/metrics/`: salida y plantillas para analisis CI/CD.
+- `Jenkinsfile`: pipeline principal.
+
+## Docker backend (opcional)
 ```bash
 cd backend
 docker build -t mi-tienda-backend:latest .
 docker run -p 4000:4000 -e PORT=4000 -e NODE_ENV=production mi-tienda-backend:latest
 ```
 
-### Estructura general del repositorio
-- `frontend/`: aplicación cliente.
-- `backend/`: API y lógica de negocio.
-- `Jenkinsfile`: pipeline CI/CD.
-
-### Licencia
-Este proyecto está bajo licencia MIT. Ver `LICENSE` para más detalle.
+## Licencia
+MIT. Ver `LICENSE`.

@@ -1,18 +1,45 @@
 # Endpoints del Backend
 
-Este documento centraliza ejemplos prácticos de **todos** los endpoints del backend.
+Esta guia resume ejemplos practicos de los endpoints activos del backend.
 
-## Base URL
+## Base URL local
 
 `http://localhost:4000`
 
-## Autenticación
+## Autenticacion
 
-### 1) Login
+### POST `/api/auth/register`
 
-**POST** `/api/auth/login`
+Body:
 
-Body (JSON):
+```json
+{
+  "username": "nuevo.usuario",
+  "password": "ClaveSegura123",
+  "name": "Nuevo Usuario",
+  "email": "nuevo@correo.com"
+}
+```
+
+Respuesta esperada (`201`):
+
+```json
+{
+  "success": true,
+  "user": {
+    "id": 4,
+    "username": "nuevo.usuario",
+    "name": "Nuevo Usuario",
+    "email": "nuevo@correo.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": "1h"
+}
+```
+
+### POST `/api/auth/login`
+
+Body:
 
 ```json
 {
@@ -21,7 +48,7 @@ Body (JSON):
 }
 ```
 
-Resultado esperado:
+Respuesta esperada (`200`):
 
 ```json
 {
@@ -29,46 +56,35 @@ Resultado esperado:
   "user": {
     "id": 1,
     "username": "admin",
-    "name": "Administrador"
+    "name": "Administrador",
+    "email": "admin@mitienda.local"
   },
-  "token": "mock-jwt-token-1",
-  "expiresIn": 3600
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "expiresIn": "1h"
 }
 ```
 
-Explicación: valida credenciales y devuelve token + datos de usuario (sin password).
+### POST `/api/auth/logout`
 
----
-
-### 2) Logout
-
-**POST** `/api/auth/logout`
-
-Resultado esperado:
+Respuesta esperada (`200`):
 
 ```json
 {
   "success": true,
-  "message": "Sesión cerrada correctamente",
-  "timestamp": "2026-02-27T00:00:00.000Z"
+  "message": "Sesion cerrada correctamente",
+  "timestamp": "2026-03-09T12:00:00.000Z"
 }
 ```
 
-Explicación: cierra sesión del lado del cliente (API responde confirmación).
+### GET `/api/auth/me`
 
----
-
-### 3) Usuario actual
-
-**GET** `/api/auth/me`
-
-Headers:
+Header:
 
 ```http
-Authorization: Bearer mock-jwt-token-1
+Authorization: Bearer <JWT_TOKEN>
 ```
 
-Resultado esperado:
+Respuesta esperada (`200`):
 
 ```json
 {
@@ -81,92 +97,85 @@ Resultado esperado:
 }
 ```
 
-Explicación: valida token y retorna el usuario autenticado.
+## Perfil de usuario (protegido)
 
----
+### GET `/api/users/me`
 
-## Productos (requiere token)
+Header:
 
-### 4) Listar productos
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
 
-**GET** `/api/products`
+### PUT `/api/users/me`
+
+Header:
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Body de ejemplo:
+
+```json
+{
+  "name": "Admin Actualizado",
+  "city": "La Paz",
+  "phone": "+59170000000"
+}
+```
+
+### DELETE `/api/users/me`
+
+Header:
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "currentPassword": "admin123"
+}
+```
+
+## Productos (protegido)
+
+### GET `/api/products`
 
 Query opcional:
-
-- `search` (por nombre)
-- `category` (categoría)
+- `search`
+- `category`
 - `sort` (`name`, `price`, `stock`, `sales`)
 
 Ejemplo:
 
-`GET /api/products?search=laptop&category=Electrónica&sort=price`
+`GET /api/products?search=laptop&category=Electronica&sort=price`
 
-Headers:
+### GET `/api/products/:id`
 
-```http
-Authorization: Bearer mock-jwt-token-1
-```
+Ejemplo: `GET /api/products/1`
 
-Resultado esperado: lista de productos filtrada y ordenada.
+### POST `/api/products`
 
----
-
-### 5) Obtener producto por ID
-
-**GET** `/api/products/:id`
-
-Ejemplo:
-
-`GET /api/products/1`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: producto específico por ID.
-
----
-
-### 6) Crear producto
-
-**POST** `/api/products`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
   "name": "Laptop Dell XPS",
-  "category": "Electrónica",
+  "category": "Electronica",
   "price": 999.99,
   "stock": 45
 }
 ```
 
-Resultado esperado: producto creado con ID, estado y fecha.
+### PUT `/api/products/:id`
 
----
-
-### 7) Actualizar producto
-
-**PUT** `/api/products/:id`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
@@ -175,37 +184,16 @@ Body (JSON):
 }
 ```
 
-Resultado esperado: producto actualizado.
+### DELETE `/api/products/:id`
 
----
+Ejemplo: `DELETE /api/products/10`
 
-### 8) Eliminar producto
+## Clientes (protegido)
 
-**DELETE** `/api/products/:id`
-
-Ejemplo:
-
-`DELETE /api/products/10`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: confirma eliminación y retorna el objeto eliminado.
-
----
-
-## Clientes (requiere token)
-
-### 9) Listar clientes
-
-**GET** `/api/customers`
+### GET `/api/customers`
 
 Query opcional:
-
-- `search` (nombre, email o teléfono)
+- `search`
 - `status` (`Activo`, `Inactivo`)
 - `sort` (`name`, `email`, `spending`, `purchases`, `registered`)
 
@@ -213,50 +201,17 @@ Ejemplo:
 
 `GET /api/customers?search=juan&status=Activo&sort=spending`
 
-Headers:
+### GET `/api/customers/:id`
 
-```http
-Authorization: Bearer mock-jwt-token-1
-```
+Ejemplo: `GET /api/customers/1`
 
-Resultado esperado: arreglo de clientes filtrado.
+### POST `/api/customers`
 
----
-
-### 10) Obtener cliente por ID
-
-**GET** `/api/customers/:id`
-
-Ejemplo:
-
-`GET /api/customers/1`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: cliente específico por ID.
-
----
-
-### 11) Crear cliente
-
-**POST** `/api/customers`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
-  "name": "Carlos Pérez",
+  "name": "Carlos Perez",
   "email": "carlos.perez@email.com",
   "phone": "+591 70000000",
   "address": "Av. Principal 123",
@@ -265,22 +220,9 @@ Body (JSON):
 }
 ```
 
-Resultado esperado: cliente creado con `id`, `status`, `registeredDate` y métricas iniciales.
+### PUT `/api/customers/:id`
 
----
-
-### 12) Actualizar cliente
-
-**PUT** `/api/customers/:id`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
@@ -290,83 +232,29 @@ Body (JSON):
 }
 ```
 
-Resultado esperado: cliente actualizado.
+### DELETE `/api/customers/:id`
 
----
+Ejemplo: `DELETE /api/customers/5`
 
-### 13) Eliminar cliente
+## Ventas (protegido)
 
-**DELETE** `/api/customers/:id`
-
-Ejemplo:
-
-`DELETE /api/customers/5`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: confirma eliminación y retorna cliente eliminado.
-
----
-
-## Ventas (requiere token)
-
-### 14) Listar ventas
-
-**GET** `/api/sales`
+### GET `/api/sales`
 
 Query opcional:
-
 - `status` (`Completada`, `Pendiente`, `Anulada`)
-- `customerId` (número)
+- `customerId`
 
 Ejemplo:
 
 `GET /api/sales?status=Pendiente&customerId=2`
 
-Headers:
+### GET `/api/sales/:id`
 
-```http
-Authorization: Bearer mock-jwt-token-1
-```
+Ejemplo: `GET /api/sales/1`
 
-Resultado esperado: arreglo de ventas filtrado.
+### POST `/api/sales`
 
----
-
-### 15) Obtener venta por ID
-
-**GET** `/api/sales/:id`
-
-Ejemplo:
-
-`GET /api/sales/1`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: venta específica por ID.
-
----
-
-### 16) Crear venta
-
-**POST** `/api/sales`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
@@ -382,84 +270,58 @@ Body (JSON):
 }
 ```
 
-Resultado esperado: venta creada con cálculo de `subtotal`, `tax`, `total` y timestamps.
+### PUT `/api/sales/:id`
 
----
-
-### 17) Actualizar venta
-
-**PUT** `/api/sales/:id`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-Content-Type: application/json
-```
-
-Body (JSON):
+Body:
 
 ```json
 {
   "status": "Pendiente",
   "paymentMethod": "Transferencia",
-  "notes": "Esperando confirmación"
+  "notes": "Esperando confirmacion"
 }
 ```
 
-Resultado esperado: venta actualizada.
+### PUT `/api/sales/:id/cancel`
 
----
+Ejemplo: `PUT /api/sales/2/cancel`
 
-### 18) Anular venta
+## Dashboard y health
 
-**PUT** `/api/sales/:id/cancel`
+### GET `/api/dashboard/data`
 
-Ejemplo:
-
-`PUT /api/sales/2/cancel`
-
-Headers:
+Header:
 
 ```http
-Authorization: Bearer mock-jwt-token-1
+Authorization: Bearer <JWT_TOKEN>
 ```
 
-Resultado esperado: venta con estado `Anulada`.
+Respuesta esperada: metricas agregadas de dashboard (cards, series y distribuciones).
 
----
+### GET `/health`
 
-## Dashboard y Health
-
-### 19) Datos del dashboard (requiere token)
-
-**GET** `/api/dashboard/data`
-
-Headers:
-
-```http
-Authorization: Bearer mock-jwt-token-1
-```
-
-Resultado esperado: métricas agregadas del dashboard (`dailySales`, `branchSales`, `salesTrend`, etc.) + `timestamp`.
-
----
-
-### 20) Health check
-
-**GET** `/health`
-
-Resultado esperado:
+Respuesta esperada:
 
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-02-27T00:00:00.000Z",
+  "timestamp": "2026-03-09T12:00:00.000Z",
   "uptime": 123.45,
   "environment": "development"
 }
 ```
 
-Explicación: confirma que el backend está activo.
+## Formato de error comun
 
----
+```json
+{
+  "error": "Mensaje de error",
+  "code": "ERROR_CODE"
+}
+```
+
+Errores frecuentes:
+- `401` token faltante/invalido.
+- `404` recurso no encontrado.
+- `409` usuario o email ya registrado.
+- `400` validacion de datos.

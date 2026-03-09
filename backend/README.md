@@ -1,128 +1,112 @@
 # Backend - Mi Tienda Online
 
-Backend REST construido con Node.js + Express para autenticación, dashboard y operaciones CRUD de productos, clientes y ventas.
+API REST en Node.js + Express para autenticacion JWT, dashboard y operaciones CRUD de productos, clientes, ventas y perfil de usuario.
 
-## 1. Estructura básica del backend
+## Estructura actual
 
 ```text
 backend/
-  app.js                        # exports para testing e integración
-  index.js                      # arranque del servidor
+  app.js
+  index.js
   src/
-    index.js                    # factory de la app (middlewares + rutas)
-    middleware/
-      auth.js                   # autenticación y manejo de errores
-    routes/
-      authRoutes.js             # endpoints de autenticación
-      productRoutes.js          # endpoints CRUD de productos
-      customerRoutes.js         # endpoints CRUD de clientes
-      salesRoutes.js            # endpoints CRUD de ventas
-      dashboardRoutes.js        # endpoint de métricas
+    index.js
+    config/
+      cors.js
     controllers/
-      authController.js         # lógica de autenticación
-      productController.js      # lógica de productos
-      customerController.js     # lógica de clientes
-      salesController.js        # lógica de ventas
-      dashboardController.js    # lógica de dashboard
-    repositories/
-      userRepository.js         # acceso a usuarios (memory/database)
+      authController.js
+      customerController.js
+      dashboardController.js
+      productController.js
+      salesController.js
+      userController.js
+    dao/
+      customerDao.js
+      productDao.js
+      saleDao.js
+      userDao.js
     db/
-      mockData.js               # datos mock (incluye usuarios)
+      dataStore.js
+      mockData.js
+    middleware/
+      auth.js
+    repositories/
+      customerRepository.js
+      dashboardRepository.js
+      productRepository.js
+      saleRepository.js
+      userRepository.js
+    routes/
+      authRoutes.js
+      customerRoutes.js
+      dashboardRoutes.js
+      productRoutes.js
+      salesRoutes.js
+      userRoutes.js
     utils/
-      helpers.js                # utilidades comunes
-      validators.js             # validaciones
-  __tests__/                    # pruebas automáticas con Jest
-  sample.env                    # variables de entorno de ejemplo
+      helpers.js
+      validators.js
+  __tests__/
+  sample.env
   package.json
-  README.md
 ```
 
-## 2. Explicación simple del flujo
+## Flujo
+- Las rutas reciben peticiones HTTP y aplican middleware de autenticacion cuando corresponde.
+- Los controladores validan datos de entrada y arman respuestas.
+- Los repositorios encapsulan acceso a datos (actualmente base en memoria/mock).
+- El middleware centraliza errores, autenticacion y respuestas 404.
 
-- `Route` recibe la petición HTTP y la dirige al controlador correcto.
-- `Controller` valida entrada y decide la operación a ejecutar.
-- `Repository/DB` obtiene o guarda datos (hoy en memoria, preparado para BD real).
-- `Middleware` protege rutas y centraliza errores.
+## Endpoints
 
-En este proyecto, la parte de usuarios ya está desacoplada con repositorio para facilitar migración de memoria a base de datos.
-
-## 3. Endpoints principales del backend
-
-### 3.1 Autenticación
-
+Autenticacion:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 
-### 3.2 Usuarios (perfil propio protegido)
-
+Perfil de usuario autenticado:
 - `GET /api/users/me`
 - `PUT /api/users/me`
 - `DELETE /api/users/me`
 
-Campos de perfil soportados para registro/actualización:
-
-- `name`
-- `email`
-- `phone` (celular/teléfono)
-- `address`
-- `city`
-- `state`
-- `country`
-- `postalCode`
-- `dateOfBirth`
-
-### 3.3 Productos (protegido)
-
+Productos (protegido):
 - `GET /api/products`
 - `POST /api/products`
 - `GET /api/products/:id`
 - `PUT /api/products/:id`
 - `DELETE /api/products/:id`
 
-### 3.4 Clientes (protegido)
-
+Clientes (protegido):
 - `GET /api/customers`
 - `POST /api/customers`
 - `GET /api/customers/:id`
 - `PUT /api/customers/:id`
 - `DELETE /api/customers/:id`
 
-### 3.5 Ventas (protegido)
-
+Ventas (protegido):
 - `GET /api/sales`
 - `POST /api/sales`
 - `GET /api/sales/:id`
 - `PUT /api/sales/:id`
 - `PUT /api/sales/:id/cancel`
 
-### 3.6 Dashboard y health check
-
-- `GET /api/dashboard/data`
+Dashboard y estado:
+- `GET /api/dashboard/data` (protegido)
 - `GET /health`
 
-## 4. Ejemplos de endpoints (estilo práctico)
+Ejemplos de uso en `ENDPOINTS_EJEMPLOS.md`.
 
-Documentación completa separada en:
-
-- [ENDPOINTS_EJEMPLOS.md](ENDPOINTS_EJEMPLOS.md)
-
-Incluye ejemplos prácticos de **todos los endpoints**:
-
-## 5. Ejecución rápida
-
+## Ejecucion
 ```bash
 cd backend
 npm install
 npm start
 ```
 
-Servidor por defecto: `http://localhost:4000`
+Servidor local: `http://localhost:4000`.
 
-## 6. Variables de entorno
-
-Usa `sample.env` como base:
+## Variables de entorno
+Base recomendada: `sample.env`.
 
 ```env
 PORT=4000
@@ -139,16 +123,17 @@ JWT_ISSUER=ci-cd-backend
 JWT_AUDIENCE=ci-cd-frontend
 ```
 
-Notas para producción en Vercel:
-- Debes configurar `JWT_SECRET` con al menos 32 caracteres.
-- `JWT_ALGORITHM` soporta `HS256`, `HS384` o `HS512` (recomendado `HS256`).
-- Si defines `JWT_ISSUER` y `JWT_AUDIENCE`, los tokens se validan con esos claims.
+## Scripts npm
+- `npm start` - ejecutar API.
+- `npm run dev` - ejecutar con nodemon.
+- `npm test` - pruebas Jest.
+- `npm run test:watch` - pruebas en modo watch.
+- `npm run test:coverage` - cobertura local.
+- `npm run test:ci` - pruebas CI con cobertura y reportes.
+- `npm run lint` - lint del backend.
+- `npm run lint:fix` - autofix lint.
 
-## 7. Testing
-
-```bash
-npm run test
-npm run test:coverage
-```
-
-Incluye pruebas de API, middleware, CRUD y cobertura extendida.
+## Notas
+- Las respuestas exitosas de CRUD usan estructura tipo `{ success, data, message?, timestamp? }`.
+- `/api/auth/me` valida token Bearer y devuelve `{ success, user }`.
+- Para produccion, define un `JWT_SECRET` robusto (32+ caracteres).
