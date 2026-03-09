@@ -451,8 +451,22 @@ pipeline {
                                                 esac
                                                 NAME="${line%%=*}"
                                                 VALUE="${line#*=}"
+                                                [ -z "$NAME" ] && continue
+
+                                                # Evitar subir variables vacías que rompen runtime (ej. JWT_SECRET="").
+                                                if [ -z "$VALUE" ]; then
+                                                    echo "Omitiendo variable vacía: $NAME" 1>&2
+                                                    continue
+                                                fi
+
                                                 printf "%s" "$VALUE" | vercel env add "$NAME" "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS
                                             done
+                                        fi
+
+                                        # Validar existencia de secreto JWT antes de construir/desplegar.
+                                        if ! vercel env ls "$BACKEND_VERCEL_ENV" --token $VERCEL_TOKEN $PROJECT_ARGS 2>/dev/null | grep -Eq "(^|[[:space:]])(JWT_SECRET|VERCEL_JWT_SECRET)([[:space:]]|$)"; then
+                                            echo "ERROR: JWT_SECRET/VERCEL_JWT_SECRET no configurado en Vercel para entorno $BACKEND_VERCEL_ENV" 1>&2
+                                            exit 1
                                         fi
 
                                         # Forzar configuración CORS abierta para despliegue backend
