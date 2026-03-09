@@ -1,11 +1,12 @@
 import axios from "axios";
 
-// Configurar base URL del backend
-// En PRODUCCIÓN: SIEMPRE usar rewrites relativos (/) para evitar CORS
-// En DESARROLLO: usar localhost directamente
-const API_BASE_URL = process.env.NODE_ENV === "production" 
-  ? "/" // Usar rewrites de Vercel - sin CORS
-  : (process.env.API_BASE_URL || "http://localhost:4000");
+const rawApiBaseUrl = process.env.API_BASE_URL;
+
+const API_BASE_URL = rawApiBaseUrl
+  ? rawApiBaseUrl.replace(/\/+$/, "")
+  : process.env.NODE_ENV === "production"
+    ? "/"
+    : "http://localhost:4000";
 
 // Configuración de axios - Compatible con rewrites de Vercel
 const api = axios.create({
