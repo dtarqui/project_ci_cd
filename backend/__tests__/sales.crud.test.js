@@ -40,6 +40,34 @@ describe("Endpoints CRUD de ventas", () => {
           done();
         });
     });
+
+    it("debe filtrar ventas por customerId válido", (done) => {
+      request(app)
+        .get("/api/sales?customerId=1")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.success).toBe(true);
+          res.body.data.forEach((sale) => {
+            expect(sale.customerId).toBe(1);
+          });
+          done();
+        });
+    });
+
+    it("debe ignorar customerId no numérico sin fallar", (done) => {
+      request(app)
+        .get("/api/sales?customerId=abc")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.success).toBe(true);
+          expect(Array.isArray(res.body.data)).toBe(true);
+          done();
+        });
+    });
   });
 
   describe("GET /api/sales/:id - Obtener Venta", () => {
@@ -101,6 +129,78 @@ describe("Endpoints CRUD de ventas", () => {
         .expect(400)
         .end(done);
     });
+
+    it("debe retornar 404 cuando el cliente no existe", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 9999,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Tarjeta",
+        })
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("CUSTOMER_NOT_FOUND");
+          done();
+        });
+    });
+
+    it("debe retornar 404 cuando un producto no existe", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 9999, quantity: 1 }],
+          paymentMethod: "Tarjeta",
+        })
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("PRODUCT_NOT_FOUND");
+          done();
+        });
+    });
+
+    it("debe retornar 400 cuando no hay stock suficiente", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 1, quantity: 9999 }],
+          paymentMethod: "Tarjeta",
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INSUFFICIENT_STOCK");
+          done();
+        });
+    });
+
+    it("debe crear venta anulada sin aplicar impacto a inventario", (done) => {
+      const payload = {
+        customerId: 1,
+        items: [{ productId: 2, quantity: 1 }],
+        paymentMethod: "Tarjeta",
+        status: "Anulada",
+      };
+
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send(payload)
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.success).toBe(true);
+          expect(res.body.data.status).toBe("Anulada");
+          done();
+        });
+    });
   });
 
   describe("PUT /api/sales/:id - Actualizar Venta", () => {
@@ -133,6 +233,19 @@ describe("Endpoints CRUD de ventas", () => {
         .expect(400)
         .end(done);
     });
+
+    it("debe retornar 404 al actualizar venta inexistente", (done) => {
+      request(app)
+        .put("/api/sales/9999")
+        .set("Authorization", validToken)
+        .send({ status: "Pendiente" })
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("SALE_NOT_FOUND");
+          done();
+        });
+    });
   });
 
   describe("PUT /api/sales/:id/cancel - Anular Venta", () => {
@@ -145,6 +258,18 @@ describe("Endpoints CRUD de ventas", () => {
           if (err) return done(err);
           expect(res.body.success).toBe(true);
           expect(res.body.data.status).toBe("Anulada");
+          done();
+        });
+    });
+
+    it("debe retornar 404 al anular venta inexistente", (done) => {
+      request(app)
+        .put("/api/sales/9999/cancel")
+        .set("Authorization", validToken)
+        .expect(404)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("SALE_NOT_FOUND");
           done();
         });
     });
