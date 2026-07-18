@@ -26,6 +26,8 @@ const CustomersSection = ({ user }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -83,6 +85,7 @@ const CustomersSection = ({ user }) => {
    */
   const handleSaveCustomer = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
 
     try {
       if (editingId) {
@@ -96,6 +99,8 @@ const CustomersSection = ({ user }) => {
     } catch (error) {
       console.error("Error saving customer:", handleApiError(error));
       alert("Error saving customer. Please check all fields.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -103,12 +108,16 @@ const CustomersSection = ({ user }) => {
    * Eliminar cliente
    */
   const handleDeleteCustomer = async (id) => {
+    setIsDeleting(true);
+
     try {
       await customerService.deleteCustomer(id);
       setCustomers(customers.filter((c) => c.id !== id));
       setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting customer:", handleApiError(error));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -357,13 +366,14 @@ const CustomersSection = ({ user }) => {
               </div>
 
               <div className="form-actions">
-                <Button type="submit">
+                <Button type="submit" loading={isSaving}>
                   {editingId ? "Actualizar" : "Crear"}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => setShowForm(false)}
+                  disabled={isSaving}
                 >
                   Cancelar
                 </Button>
@@ -383,10 +393,18 @@ const CustomersSection = ({ user }) => {
           Esta acción no se puede deshacer.
         </p>
         <div className="delete-confirm-actions">
-          <Button variant="danger" onClick={() => handleDeleteCustomer(deleteConfirm.id)}>
+          <Button
+            variant="danger"
+            loading={isDeleting}
+            onClick={() => handleDeleteCustomer(deleteConfirm.id)}
+          >
             Eliminar
           </Button>
-          <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>
+          <Button
+            variant="secondary"
+            onClick={() => setDeleteConfirm(null)}
+            disabled={isDeleting}
+          >
             Cancelar
           </Button>
         </div>

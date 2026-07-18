@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import Button from "./ui/Button";
 import "../styles/productForm.css";
 
 /**
@@ -215,21 +216,23 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
           )}
 
           <div className="form-actions">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               className="btn btn-secondary"
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               className="btn btn-primary"
-              disabled={isSubmitting}
+              loading={isSubmitting}
             >
               {isSubmitting ? "Guardando..." : "Guardar Producto"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

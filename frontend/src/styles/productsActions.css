@@ -193,7 +193,9 @@
   justify-content: center;
 }
 
-.btn-action {
+/* Compuesto con .ui-btn para no depender del orden de carga de CSS frente
+   a .ui-btn-ghost (misma especificidad si se escribe como clase suelta). */
+.ui-btn.btn-action {
   width: 40px;
   height: 40px;
   padding: 0;
@@ -204,25 +206,25 @@
   font-size: 16px;
 }
 
-.btn-action:hover:not(:disabled) {
+.ui-btn.btn-action:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(15, 23, 42, 0.1);
 }
 
-.btn-edit {
+.ui-btn.btn-edit {
   color: var(--color-primary);
 }
 
-.btn-edit:hover:not(:disabled) {
+.ui-btn.btn-edit:hover:not(:disabled) {
   background: var(--color-primary-soft);
   color: var(--color-primary-dark);
 }
 
-.btn-delete {
+.ui-btn.btn-delete {
   color: var(--color-danger);
 }
 
-.btn-delete:hover:not(:disabled) {
+.ui-btn.btn-delete:hover:not(:disabled) {
   background: var(--color-danger-bg);
   color: var(--color-danger-dark);
 }

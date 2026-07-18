@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { MdAdd, MdClose, MdDelete } from "react-icons/md";
+import Button from "./ui/Button";
 import "../styles/salesForm.css";
 
 const EMPTY_ITEM = { productId: "", quantity: 1 };
@@ -21,6 +22,7 @@ const SalesForm = ({
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
   const [formError, setFormError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -31,6 +33,7 @@ const SalesForm = ({
     setNotes("");
     setItems([{ ...EMPTY_ITEM }]);
     setFormError("");
+    setIsSubmitting(false);
   }, [isOpen]);
 
   const productMap = useMemo(() => {
@@ -118,10 +121,14 @@ const SalesForm = ({
       status,
     };
 
+    setIsSubmitting(true);
+
     try {
       await onSave(payload);
     } catch (saveError) {
       setFormError("No se pudo guardar la venta.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -322,20 +329,23 @@ const SalesForm = ({
           </div>
 
           <div className="sales-form-actions">
-            <button
+            <Button
               className="btn btn-primary"
               type="submit"
+              loading={isSubmitting}
               disabled={loading}
             >
               Guardar venta
-            </button>
-            <button
+            </Button>
+            <Button
               className="btn btn-secondary"
+              variant="secondary"
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -28,6 +28,7 @@ const ProductsSection = ({ user }) => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     items: products,
@@ -87,6 +88,8 @@ const ProductsSection = ({ user }) => {
    * Eliminar producto
    */
   const handleDeleteProduct = async (id) => {
+    setIsDeleting(true);
+
     try {
       await productService.deleteProduct(id);
       setProducts(products.filter((p) => p.id !== id));
@@ -94,6 +97,8 @@ const ProductsSection = ({ user }) => {
     } catch (err) {
       console.error("Error deleting product:", err);
       setError("No se pudo eliminar el producto");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -272,10 +277,18 @@ const ProductsSection = ({ user }) => {
           se puede deshacer.
         </p>
         <div className="delete-confirm-actions">
-          <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>
+          <Button
+            variant="secondary"
+            onClick={() => setDeleteConfirm(null)}
+            disabled={isDeleting}
+          >
             Cancelar
           </Button>
-          <Button variant="danger" onClick={() => handleDeleteProduct(deleteConfirm)}>
+          <Button
+            variant="danger"
+            loading={isDeleting}
+            onClick={() => handleDeleteProduct(deleteConfirm)}
+          >
             Eliminar
           </Button>
         </div>

@@ -8,6 +8,8 @@ import {
   MdErrorOutline,
 } from "react-icons/md";
 import { userService } from "../services/api";
+import Button from "./ui/Button";
+import Skeleton from "./ui/Skeleton";
 import "../styles/settings.css";
 
 const mapUserToProfileForm = (user = {}) => ({
@@ -28,6 +30,7 @@ const Settings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileSnapshot, setProfileSnapshot] = useState(null);
 
   // Profile Form State
@@ -76,6 +79,8 @@ const Settings = () => {
   };
 
   const handleSaveProfile = async () => {
+    setIsSaving(true);
+
     try {
       const payload = {
         name: profileData.name,
@@ -116,6 +121,8 @@ const Settings = () => {
         type: "error",
         message: error.response?.data?.error || "No se pudo guardar el perfil",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -142,7 +149,14 @@ const Settings = () => {
       </div>
 
       {loadingProfile ? (
-        <p className="section-description">Cargando perfil...</p>
+        <div className="profile-info" aria-busy="true">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div className="info-row" key={index}>
+              <Skeleton width="140px" height="14px" />
+              <Skeleton width="200px" height="14px" />
+            </div>
+          ))}
+        </div>
       ) : isEditing ? (
         <div className="form-group">
           <div className="form-row">
@@ -252,12 +266,23 @@ const Settings = () => {
           </div>
 
           <div className="form-actions">
-            <button className="btn-primary" onClick={handleSaveProfile}>
-              <MdSave /> Guardar Cambios
-            </button>
-            <button className="btn-secondary" onClick={handleCancelProfile}>
-              <MdCancel /> Cancelar
-            </button>
+            <Button
+              className="btn-primary"
+              onClick={handleSaveProfile}
+              loading={isSaving}
+              icon={<MdSave />}
+            >
+              Guardar Cambios
+            </Button>
+            <Button
+              className="btn-secondary"
+              variant="secondary"
+              onClick={handleCancelProfile}
+              disabled={isSaving}
+              icon={<MdCancel />}
+            >
+              Cancelar
+            </Button>
           </div>
         </div>
       ) : (

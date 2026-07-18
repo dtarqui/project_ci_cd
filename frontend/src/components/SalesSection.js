@@ -7,11 +7,13 @@ import {
   MdCheckCircle,
   MdPendingActions,
   MdRefresh,
+  MdVisibility,
 } from "react-icons/md";
 import { saleService, customerService, productService, handleApiError } from "../services/api";
 import { formatCurrency, formatDate } from "../utils/format";
 import SalesForm from "./SalesForm";
 import Skeleton from "./ui/Skeleton";
+import Spinner from "./ui/Spinner";
 import "../styles/sales.css";
 
 const SalesSection = () => {
@@ -26,6 +28,7 @@ const SalesSection = () => {
   const [formError, setFormError] = useState("");
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [cancelingSaleId, setCancelingSaleId] = useState(null);
 
   const loadSales = useCallback(async () => {
     try {
@@ -101,6 +104,8 @@ const SalesSection = () => {
   );
 
   const handleCancelSale = async (saleId) => {
+    setCancelingSaleId(saleId);
+
     try {
       const response = await saleService.cancelSale(saleId);
       setSales((prev) =>
@@ -109,6 +114,8 @@ const SalesSection = () => {
     } catch (err) {
       console.error("Error canceling sale:", handleApiError(err));
       setError(handleApiError(err));
+    } finally {
+      setCancelingSaleId(null);
     }
   };
 
@@ -286,16 +293,24 @@ const SalesSection = () => {
                     <span>{formatDate(sale.createdAt)}</span>
                   </div>
                   <div className="row-actions">
-                    <button className="ghost">Ver</button>
+                    <button className="ghost">
+                      <MdVisibility /> Ver
+                    </button>
                     {sale.status !== "Anulada" && (
                       <button
                         className="danger"
+                        disabled={cancelingSaleId === sale.id}
                         onClick={(event) => {
                           event.stopPropagation();
                           handleCancelSale(sale.id);
                         }}
                       >
-                        <MdCancel /> Anular
+                        {cancelingSaleId === sale.id ? (
+                          <Spinner size="sm" className="ui-btn-spinner" />
+                        ) : (
+                          <MdCancel />
+                        )}{" "}
+                        Anular
                       </button>
                     )}
                   </div>
