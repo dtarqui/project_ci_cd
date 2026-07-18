@@ -75,6 +75,7 @@ const register = async (req, res) => {
   const token = createAuthToken(safeUser.id, {
     username: safeUser.username,
     name: safeUser.name,
+    role: safeUser.role,
   });
 
   return res.status(201).json({
@@ -112,6 +113,7 @@ const login = async (req, res) => {
   const token = createAuthToken(user.id, {
     username: user.username,
     name: user.name,
+    role: user.role,
   });
 
   res.json({

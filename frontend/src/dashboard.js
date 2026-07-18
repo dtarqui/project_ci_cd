@@ -126,7 +126,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {activeSection !== "Dashboard" && (
-            <SectionContent type={activeSection} />
+            <SectionContent type={activeSection} user={user} />
           )}
         </main>
       </div>
@@ -139,6 +139,7 @@ Dashboard.propTypes = {
     id: PropTypes.number,
     name: PropTypes.string,
     username: PropTypes.string,
+    role: PropTypes.string,
   }),
   onLogout: PropTypes.func.isRequired,
 };

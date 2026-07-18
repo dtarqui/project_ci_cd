@@ -109,7 +109,7 @@ export default function App() {
         <Route
           path="/dashboard/*"
           element={
-            <ProtectedRoute isAuthenticated={!!user}>
+            <ProtectedRoute isAuthenticated={!!user} user={user}>
               <Dashboard user={user} onLogout={handleLogout} />
             </ProtectedRoute>
           }
@@ -118,7 +118,7 @@ export default function App() {
         <Route
           path="/:section"
           element={
-            <ProtectedRoute isAuthenticated={!!user}>
+            <ProtectedRoute isAuthenticated={!!user} user={user}>
               <Dashboard user={user} onLogout={handleLogout} />
             </ProtectedRoute>
           }

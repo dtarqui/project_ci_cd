@@ -28,6 +28,7 @@ const DashboardHeader = ({ user, onLogout }) => {
             <div className="user-dropdown">
               <div className="user-info">
                 {user?.name && <small className="user-name">{user.name}</small>}
+                {user?.role && <small className="user-role">{user.role}</small>}
               </div>
               <button onClick={handleLogout} className="logout-button">
                 Salir
@@ -45,6 +46,7 @@ DashboardHeader.propTypes = {
     id: PropTypes.number,
     name: PropTypes.string,
     username: PropTypes.string,
+    role: PropTypes.string,
   }),
   onLogout: PropTypes.func.isRequired,
 };

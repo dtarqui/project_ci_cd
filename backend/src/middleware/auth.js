@@ -43,7 +43,24 @@ const authenticateToken = (req, res, next) => {
     id: Number(payload.sub),
     username: payload.username,
     name: payload.name,
+    role: payload.role,
   };
+
+  next();
+};
+
+/**
+ * Middleware para restringir acceso por rol. Debe usarse después de
+ * authenticateToken, ya que depende de req.user.role.
+ * @param {...string} roles - Roles permitidos (ej. "admin")
+ */
+const requireRole = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({
+      error: "No tienes permisos para realizar esta acción",
+      code: "FORBIDDEN_ROLE",
+    });
+  }
 
   next();
 };
@@ -83,6 +100,7 @@ const errorHandler = (err, req, res, _next) => {
 
 module.exports = {
   authenticateToken,
+  requireRole,
   notFoundHandler,
   errorHandler,
 };

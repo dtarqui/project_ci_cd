@@ -1,0 +1,101 @@
+// Prisma schema - modo "database" (Postgres/Supabase).
+// El modo "memory" (default) no depende de este archivo en tiempo de ejecución.
+// Ver codigo/backend/src/db/prismaClient.js y README para activarlo.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  email         String?  @unique
+  passwordHash  String   @map("password_hash")
+  role          String   @default("vendedor")
+  name          String?
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  country       String?
+  postalCode    String?  @map("postal_code")
+  dateOfBirth   String?  @map("date_of_birth")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Customer {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  postalCode     String?   @map("postal_code")
+  status         String    @default("Activo")
+  registeredDate String?   @map("registered_date")
+  totalSpent     Float     @default(0) @map("total_spent")
+  purchases      Int       @default(0)
+  lastPurchase   String?   @map("last_purchase")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  sales          Sale[]
+
+  @@map("customers")
+}
+
+model Product {
+  id        Int        @id @default(autoincrement())
+  name      String
+  category  String?
+  price     Float
+  stock     Int        @default(0)
+  status    String     @default("En Stock")
+  lastSale  String?    @map("last_sale")
+  sales     Int        @default(0)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  saleItems SaleItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id            Int        @id @default(autoincrement())
+  customerId    Int        @map("customer_id")
+  customer      Customer   @relation(fields: [customerId], references: [id])
+  customerName  String     @map("customer_name")
+  subtotal      Float
+  tax           Float      @default(0)
+  discount      Float      @default(0)
+  total         Float
+  status        String     @default("Completada")
+  paymentMethod String?    @map("payment_method")
+  notes         String?
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  items         SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  saleId    Int     @map("sale_id")
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId Int     @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  quantity  Int
+  price     Float
+  total     Float
+
+  @@map("sale_items")
+}

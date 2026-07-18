@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd } from "react-icons/md";
 import { dashboardService } from "../services/api";
 import ProductForm from "./ProductForm";
 import "../styles/productsActions.css";
 
-const ProductsSection = () => {
+const ProductsSection = ({ user }) => {
+  const canDelete = user?.role === "admin";
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -233,14 +235,16 @@ const ProductsSection = () => {
                     >
                       <MdEdit size={18} />
                     </button>
-                    <button
-                      className="btn-action btn-delete"
-                      onClick={() => setDeleteConfirm(product.id)}
-                      title="Eliminar producto"
-                      aria-label={`Eliminar ${product.name}`}
-                    >
-                      <MdDelete size={18} />
-                    </button>
+                    {canDelete && (
+                      <button
+                        className="btn-action btn-delete"
+                        onClick={() => setDeleteConfirm(product.id)}
+                        title="Eliminar producto"
+                        aria-label={`Eliminar ${product.name}`}
+                      >
+                        <MdDelete size={18} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -291,6 +295,10 @@ const ProductsSection = () => {
   );
 };
 
-ProductsSection.propTypes = {};
+ProductsSection.propTypes = {
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
+};
 
 export default ProductsSection;

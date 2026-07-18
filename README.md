@@ -47,8 +47,7 @@ Backend (`backend/.env`, base: `backend/sample.env`):
 ```env
 PORT=4000
 NODE_ENV=development
-USER_REPOSITORY=memory
-DATA_REPOSITORY=memory
+REPOSITORY_MODE=memory
 CORS_ALLOW_ORIGIN=*
 JWT_SECRET=change-this-secret-in-production
 JWT_EXPIRES_IN=1h
@@ -56,6 +55,51 @@ JWT_ALGORITHM=HS256
 JWT_ISSUER=ci-cd-backend
 JWT_AUDIENCE=ci-cd-frontend
 ```
+
+## Modo base de datos (Prisma + Supabase)
+Un solo switch, `REPOSITORY_MODE`, controla toda la capa de datos (users,
+customers, products, sales, dashboard):
+- `REPOSITORY_MODE=memory` (default) — datos en RAM, sin BD. Es lo que usan
+  el desarrollo rápido y los tests automatizados (no requiere `DATABASE_URL`).
+- `REPOSITORY_MODE=database` — Postgres real vía Supabase (Prisma).
+
+Para activar el modo `database`:
+
+1. Crear un proyecto en [Supabase](https://supabase.com) y copiar el
+   connection string (Project Settings > Database > Connection string).
+   Usa el **Session pooler** (no la conexión directa) si tu red no tiene
+   salida IPv6 — la conexión directa de Supabase es IPv6-only.
+2. En `backend/.env`, definir:
+
+   ```env
+   REPOSITORY_MODE=database
+   DATABASE_URL=postgresql://postgres.xxxxxxxx:password@aws-0-<region>.pooler.supabase.com:5432/postgres
+   ```
+
+3. Aplicar el schema (`backend/prisma/schema.prisma`, con las 5 entidades
+   `users`, `customers`, `products`, `sales`, `sale_items`):
+
+   ```bash
+   cd backend
+   npm run prisma:migrate
+   npm run db:seed
+   ```
+
+4. `npm start` (o `docker compose up --build` dentro de `backend/`) — el
+   backend ahora persiste en Postgres en vez de memoria.
+
+Para desplegar el backend en Vercel con BD real, `REPOSITORY_MODE` y
+`DATABASE_URL` pueden inyectarse igual que `JWT_SECRET` usando la variable
+`BACKEND_ENV_VARS` del `Jenkinsfile`, sin modificar el pipeline.
+
+## Roles de usuario
+Cada usuario tiene un `role`: `admin` o `vendedor` (default). Ambos roles
+pueden iniciar sesión y usar el dashboard/productos/clientes/ventas; solo
+`admin` puede eliminar productos y clientes (`DELETE /api/products/:id`,
+`DELETE /api/customers/:id` responden 403 `FORBIDDEN_ROLE` para `vendedor`).
+El frontend oculta el botón de eliminar cuando el usuario autenticado no es
+`admin`. Usuarios demo: `admin/admin123` (admin), `demo/demo123` y
+`test/test123` (vendedor).
 
 Frontend (`frontend/.env`, base: `frontend/sample.env`):
 

@@ -6,6 +6,9 @@
 const crypto = require("crypto");
 const { UserDao } = require("../dao/userDao");
 const { getUsers, resetDataStore } = require("../db/dataStore");
+const { getPrismaClient } = require("../db/prismaClient");
+
+const DEFAULT_ROLE = "vendedor";
 
 const HASH_PREFIX = "scrypt";
 const SCRYPT_KEYLEN = 64;
@@ -18,6 +21,7 @@ const normalizeSeedUser = (user) => {
   return {
     ...user,
     passwordHash: user.password ? hashPassword(user.password) : "",
+    role: user.role || DEFAULT_ROLE,
     phone: user.phone || null,
     address: user.address || null,
     city: user.city || null,
@@ -119,6 +123,7 @@ class InMemoryUserRepository {
       id: nextId,
       ...UserDao.normalizeRegistration(userData),
       passwordHash: hashPassword(userData.password),
+      role: userData.role || DEFAULT_ROLE,
       createdAt: now,
       updatedAt: now,
     };
@@ -174,20 +179,92 @@ class InMemoryUserRepository {
   }
 }
 
-// Placeholder para migración futura a base de datos.
-// Implementar mismos métodos: findByCredentials y findById.
 class DatabaseUserRepository {
-  async findByCredentials(_username, _password) {
-    throw new Error("DatabaseUserRepository not implemented yet");
+  async findByCredentials(username, password) {
+    const user = await this.findByUsername(username);
+
+    if (!user || !verifyPassword(password, user.passwordHash)) {
+      return null;
+    }
+
+    return user;
   }
 
-  async findById(_id) {
-    throw new Error("DatabaseUserRepository not implemented yet");
+  async findById(id) {
+    return getPrismaClient().user.findUnique({ where: { id } });
+  }
+
+  async findByUsername(username) {
+    return getPrismaClient().user.findFirst({
+      where: { username: { equals: username, mode: "insensitive" } },
+    });
+  }
+
+  async findByEmail(email) {
+    if (!email) {
+      return null;
+    }
+
+    return getPrismaClient().user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+    });
+  }
+
+  async createUser(userData) {
+    const normalized = UserDao.normalizeRegistration(userData);
+
+    return getPrismaClient().user.create({
+      data: {
+        username: normalized.username,
+        email: normalized.email,
+        passwordHash: hashPassword(userData.password),
+        role: userData.role || DEFAULT_ROLE,
+        name: normalized.name,
+        phone: normalized.phone,
+        address: normalized.address,
+        city: normalized.city,
+        state: normalized.state,
+        country: normalized.country,
+        postalCode: normalized.postalCode,
+        dateOfBirth: normalized.dateOfBirth,
+      },
+    });
+  }
+
+  async updateUser(id, updates) {
+    const data = { ...updates };
+
+    if (updates.password) {
+      data.passwordHash = hashPassword(updates.password);
+    }
+    delete data.password;
+
+    try {
+      return await getPrismaClient().user.update({ where: { id }, data });
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  async deleteUser(id) {
+    try {
+      return await getPrismaClient().user.delete({ where: { id } });
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  sanitizeUser(user) {
+    return sanitizeUser(user);
+  }
+
+  verifyPassword(password, storedHash) {
+    return verifyPassword(password, storedHash);
   }
 }
 
 const createUserRepository = () => {
-  const provider = process.env.USER_REPOSITORY || "memory";
+  const provider = process.env.REPOSITORY_MODE || "memory";
 
   if (provider === "database") {
     return new DatabaseUserRepository();

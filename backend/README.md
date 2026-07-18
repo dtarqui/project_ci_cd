@@ -8,6 +8,9 @@ API REST en Node.js + Express para autenticacion JWT, dashboard y operaciones CR
 backend/
   app.js
   index.js
+  prisma/
+    schema.prisma
+    seed.js
   src/
     index.js
     config/
@@ -27,6 +30,7 @@ backend/
     db/
       dataStore.js
       mockData.js
+      prismaClient.js
     middleware/
       auth.js
     repositories/
@@ -51,10 +55,15 @@ backend/
 ```
 
 ## Flujo
-- Las rutas reciben peticiones HTTP y aplican middleware de autenticacion cuando corresponde.
+- Las rutas reciben peticiones HTTP y aplican middleware de autenticacion (y de rol, cuando corresponde).
 - Los controladores validan datos de entrada y arman respuestas.
-- Los repositorios encapsulan acceso a datos (actualmente base en memoria/mock).
-- El middleware centraliza errores, autenticacion y respuestas 404.
+- Los repositorios encapsulan acceso a datos: cada uno tiene una implementacion `InMemory*` (default, `mockData.js`) y una `Database*` (Postgres/Supabase via Prisma, `prisma/schema.prisma`), seleccionada por el switch unico `REPOSITORY_MODE`. Ver README raiz, seccion "Modo base de datos".
+- El middleware centraliza errores, autenticacion, autorizacion por rol (`requireRole`) y respuestas 404.
+
+## Roles
+Cada usuario tiene `role`: `admin` o `vendedor` (default). `requireRole("admin")`
+protege `DELETE /api/products/:id` y `DELETE /api/customers/:id`; el resto de
+operaciones (lectura, creacion, actualizacion) estan disponibles para ambos roles.
 
 ## Endpoints
 
@@ -111,8 +120,7 @@ Base recomendada: `sample.env`.
 ```env
 PORT=4000
 NODE_ENV=development
-USER_REPOSITORY=memory
-DATA_REPOSITORY=memory
+REPOSITORY_MODE=memory
 CORS_ALLOW_ORIGIN=*
 CORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD
 CORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization
@@ -132,6 +140,9 @@ JWT_AUDIENCE=ci-cd-frontend
 - `npm run test:ci` - pruebas CI con cobertura y reportes.
 - `npm run lint` - lint del backend.
 - `npm run lint:fix` - autofix lint.
+- `npm run prisma:generate` - regenerar el cliente Prisma (tambien corre automaticamente en `postinstall`).
+- `npm run prisma:migrate` - aplicar migraciones al `DATABASE_URL` configurado.
+- `npm run db:seed` - poblar la BD con los mismos datos demo que el modo memoria.
 
 ## Notas
 - Las respuestas exitosas de CRUD usan estructura tipo `{ success, data, message?, timestamp? }`.

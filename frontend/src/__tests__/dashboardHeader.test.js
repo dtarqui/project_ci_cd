@@ -65,4 +65,19 @@ describe("Componente DashboardHeader", () => {
     render(<DashboardHeader onLogout={mockOnLogout} />);
     expect(screen.getByText("Mi Tienda")).toBeInTheDocument();
   });
+
+  it("debe mostrar el rol del usuario cuando se abre el menú", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardHeader
+        user={{ ...mockUser, role: "admin" }}
+        onLogout={mockOnLogout}
+      />
+    );
+
+    const accountButton = screen.getByRole("button", { name: /abrir menú de cuenta/i });
+    await user.click(accountButton);
+
+    expect(screen.getByText("admin")).toBeInTheDocument();
+  });
 });

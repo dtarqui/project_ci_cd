@@ -5,15 +5,15 @@ import ProductsSection from "./ProductsSection";
 import CustomersSection from "./CustomersSection";
 import SalesSection from "./SalesSection";
 
-const SectionContent = ({ type }) => {
+const SectionContent = ({ type, user }) => {
   // Si es Productos, mostrar el componente ProductsSection
   if (type === "Productos") {
-    return <ProductsSection />;
+    return <ProductsSection user={user} />;
   }
 
   // Si es Clientes, mostrar el componente CustomersSection
   if (type === "Clientes") {
-    return <CustomersSection />;
+    return <CustomersSection user={user} />;
   }
 
   // Si es Ventas, mostrar el componente SalesSection
@@ -31,6 +31,9 @@ const SectionContent = ({ type }) => {
 
 SectionContent.propTypes = {
   type: PropTypes.string.isRequired,
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
 };
 
 export default SectionContent;

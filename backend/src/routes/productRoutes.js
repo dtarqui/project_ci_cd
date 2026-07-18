@@ -11,7 +11,7 @@ const {
   updateProduct,
   deleteProduct,
 } = require("../controllers/productController");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireRole } = require("../middleware/auth");
 
 /**
  * POST /api/products - Crear producto
@@ -34,8 +34,8 @@ router.get("/:id", authenticateToken, getProduct);
 router.put("/:id", authenticateToken, updateProduct);
 
 /**
- * DELETE /api/products/:id - Eliminar producto
+ * DELETE /api/products/:id - Eliminar producto (solo admin)
  */
-router.delete("/:id", authenticateToken, deleteProduct);
+router.delete("/:id", authenticateToken, requireRole("admin"), deleteProduct);
 
 module.exports = router;

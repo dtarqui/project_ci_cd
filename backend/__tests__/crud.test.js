@@ -9,7 +9,7 @@ describe("Endpoints CRUD de productos", () => {
     app = createApp();
   });
 
-  const validToken = `Bearer ${createAuthToken(1, { username: "admin" })}`;
+  const validToken = `Bearer ${createAuthToken(1, { username: "admin", role: "admin" })}`;
 
   describe("GET /api/products - Listar Productos", () => {
     it("debe obtener lista de todos los productos", (done) => {
@@ -324,6 +324,20 @@ describe("Endpoints CRUD de productos", () => {
         .set("Authorization", validToken)
         .expect(404)
         .end(done);
+    });
+
+    it("debe retornar 403 cuando el usuario no es admin", (done) => {
+      const vendedorToken = `Bearer ${createAuthToken(2, { username: "demo", role: "vendedor" })}`;
+
+      request(app)
+        .delete("/api/products/4")
+        .set("Authorization", vendedorToken)
+        .expect(403)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("FORBIDDEN_ROLE");
+          done();
+        });
     });
   });
 });

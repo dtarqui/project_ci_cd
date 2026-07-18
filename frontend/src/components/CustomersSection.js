@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd } from "react-icons/md";
 import { dashboardService, handleApiError } from "../services/api";
 import "../styles/customersActions.css";
 
-const CustomersSection = () => {
+const CustomersSection = ({ user }) => {
+  const canDelete = user?.role === "admin";
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -229,13 +231,15 @@ const CustomersSection = () => {
                       >
                         <MdEdit />
                       </button>
-                      <button
-                        className="btn-action btn-delete"
-                        onClick={() => setDeleteConfirm(customer)}
-                        title="Eliminar"
-                      >
-                        <MdDelete />
-                      </button>
+                      {canDelete && (
+                        <button
+                          className="btn-action btn-delete"
+                          onClick={() => setDeleteConfirm(customer)}
+                          title="Eliminar"
+                        >
+                          <MdDelete />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -394,6 +398,12 @@ const CustomersSection = () => {
       )}
     </div>
   );
+};
+
+CustomersSection.propTypes = {
+  user: PropTypes.shape({
+    role: PropTypes.string,
+  }),
 };
 
 export default CustomersSection;

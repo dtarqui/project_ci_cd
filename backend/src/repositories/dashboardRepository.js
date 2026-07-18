@@ -4,6 +4,8 @@
  */
 
 const { getMockData } = require("../db/dataStore");
+const { getPrismaClient } = require("../db/prismaClient");
+const { mapSaleFromDb } = require("./saleRepository");
 
 class InMemoryDashboardRepository {
   async getSourceData() {
@@ -32,12 +34,27 @@ class InMemoryDashboardRepository {
 
 class DatabaseDashboardRepository {
   async getSourceData() {
-    throw new Error("DatabaseDashboardRepository not implemented yet");
+    const prisma = getPrismaClient();
+    const [products, customers, sales] = await Promise.all([
+      prisma.product.findMany(),
+      prisma.customer.findMany(),
+      prisma.sale.findMany({ include: { items: true } }),
+    ]);
+
+    return {
+      products,
+      customers,
+      sales: sales.map(mapSaleFromDb),
+      // dashboardController recalcula todas estas métricas a partir de
+      // products/customers/sales (buildDynamicDashboardData), así que no
+      // hace falta duplicar agregados estáticos aquí.
+      baseDashboard: {},
+    };
   }
 }
 
 const createDashboardRepository = () => {
-  const provider = process.env.DATA_REPOSITORY || "memory";
+  const provider = process.env.REPOSITORY_MODE || "memory";
 
   if (provider === "database") {
     return new DatabaseDashboardRepository();

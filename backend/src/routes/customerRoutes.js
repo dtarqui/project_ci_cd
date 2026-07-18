@@ -11,7 +11,7 @@ const {
   updateCustomer,
   deleteCustomer,
 } = require("../controllers/customerController");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireRole } = require("../middleware/auth");
 
 /**
  * @route POST /api/customers
@@ -44,8 +44,8 @@ router.put("/:id", authenticateToken, updateCustomer);
 /**
  * @route DELETE /api/customers/:id
  * @description Eliminar un cliente
- * @access Protected
+ * @access Protected (solo admin)
  */
-router.delete("/:id", authenticateToken, deleteCustomer);
+router.delete("/:id", authenticateToken, requireRole("admin"), deleteCustomer);
 
 module.exports = router;
