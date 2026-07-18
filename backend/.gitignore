@@ -1,1 +1,10 @@
+node_modules
+coverage
+dist
+build
 junit.xml
+.env
+.env.*
+npm-debug.log*
+.npm
+docker-compose.override.yml
