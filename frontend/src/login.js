@@ -272,15 +272,6 @@ export default function Login({ onLogin, mode }) {
             )}
           </div>
         </form>
-
-        {/* <div className="login-footer">
-          <p>Usuarios de prueba:</p>
-          <ul>
-            <li><strong>admin</strong> / admin123</li>
-            <li><strong>demo</strong> / demo123</li>
-            <li><strong>test</strong> / test123</li>
-          </ul>
-        </div> */}
       </div>
     </div>
   );

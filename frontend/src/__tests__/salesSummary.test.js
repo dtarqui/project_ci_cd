@@ -36,6 +36,6 @@ describe("Componente SalesSummary", () => {
 
   it("debe renderizar ticket promedio", () => {
     render(<SalesSummary data={mockData} />);
-    expect(screen.getByText("$22.35")).toBeInTheDocument();
+    expect(screen.getByText("Bs 22,35")).toBeInTheDocument();
   });
 });

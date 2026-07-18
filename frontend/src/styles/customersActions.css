@@ -1,4 +1,4 @@
-/* CustomersSection Actions Styles - Identical to Products */
+/* CustomersSection Actions Styles */
 
 .customers-section {
   width: 100%;
@@ -31,34 +31,11 @@
 }
 
 .btn-create-customer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-primary-dark) 100%
-  );
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
-  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
 }
 
-.btn-create-customer:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.35);
-}
-
-.btn-create-customer:active {
-  transform: translateY(0);
+.btn-create-customer:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
 }
 
 /* Filters */
@@ -110,17 +87,17 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-soft);
 }
 
 .filter-input::placeholder {
-  color: #999;
+  color: var(--color-muted);
 }
 
 /* Table */
 
 .customers-table-wrapper {
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   margin-bottom: 16px;
@@ -131,7 +108,7 @@
 .customers-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -142,7 +119,7 @@
     var(--color-primary) 0%,
     var(--color-primary-dark) 100%
   );
-  color: white;
+  color: #fff;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -159,7 +136,7 @@
 }
 
 .customers-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   transition: background-color 0.15s ease;
 }
 
@@ -173,36 +150,8 @@
 
 .customers-table tbody td {
   padding: 12px;
-  color: #333;
+  color: var(--color-text);
   font-size: 13px;
-}
-
-/* Status Badge */
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-}
-
-.status-activo {
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
-}
-
-.status-inactivo {
-  background-color: var(--color-danger-bg);
-  color: var(--color-danger);
-}
-
-.status-pendiente {
-  background-color: var(--color-warning-bg);
-  color: var(--color-warning);
 }
 
 /* Customer Actions */
@@ -214,75 +163,44 @@
 }
 
 .btn-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 40px;
   height: 40px;
   padding: 0;
-  border: none;
-  border-radius: 8px;
-  background-color: #f3f5f8;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-row-alt);
+  color: var(--color-text);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
   font-size: 16px;
 }
 
-.btn-action:hover {
+.btn-action:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-action:active {
-  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.1);
 }
 
 .btn-edit {
-  color: #0066cc;
+  color: var(--color-primary);
 }
 
-.btn-edit:hover {
-  background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%);
-  color: #0052a3;
+.btn-edit:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .btn-delete {
-  color: #d32f2f;
+  color: var(--color-danger);
 }
 
-.btn-delete:hover {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #b71c1c;
-}
-
-/* Empty State */
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  background-color: #f9fafb;
-  border-radius: 8px;
-  border: 2px dashed #d0d0d0;
-  flex: 1;
-}
-
-.empty-state p {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  color: #666;
+.btn-delete:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
 }
 
 .empty-state .btn-create-customer {
   margin-top: 16px;
 }
 
-/* Form Modal */
+/* Form Modal (creación/edición) */
 
 .customer-form-overlay {
   position: fixed;
@@ -290,27 +208,27 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: customerFormFadeIn 0.2s ease-out;
 }
 
 .customer-form-modal {
   background-color: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   width: 90%;
   max-width: 520px;
   padding: 0;
-  animation: slideUp 0.3s ease-out;
+  animation: customerFormSlideUp 0.25s ease-out;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-@keyframes fadeIn {
+@keyframes customerFormFadeIn {
   from {
     opacity: 0;
   }
@@ -319,7 +237,7 @@
   }
 }
 
-@keyframes slideUp {
+@keyframes customerFormSlideUp {
   from {
     transform: translateY(20px);
     opacity: 0;
@@ -387,101 +305,19 @@
   padding-top: 20px;
 }
 
-/* Buttons */
-
-.btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.form-actions .ui-btn {
   flex: 1;
-  letter-spacing: 0.3px;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-surface);
-  box-shadow: 0 4px 12px var(--color-primary-soft);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--color-primary-soft);
-}
-
-.btn-secondary {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-row);
-  border-color: var(--color-primary);
-}
-
-/* Delete Confirmation Modal */
-
-.delete-confirm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.delete-confirm-modal {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 420px;
-  padding: 28px;
-  animation: slideUp 0.3s ease-out;
-}
-
-.delete-confirm-modal h3 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #d32f2f;
-}
-
-.delete-confirm-modal p {
-  margin: 0 0 28px 0;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.6;
-}
+/* Delete confirmation actions row (panel itself is components/ui/Modal.js) */
 
 .delete-confirm-actions {
   display: flex;
   gap: 12px;
 }
 
-.btn-danger {
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35);
+.delete-confirm-actions .ui-btn {
+  flex: 1;
 }
 
 /* Responsive Design */
@@ -515,10 +351,6 @@
 
   .delete-confirm-actions {
     flex-direction: column-reverse;
-  }
-
-  .btn {
-    width: 100%;
   }
 
   .customers-table {
@@ -575,15 +407,6 @@
 
   .customers-table tbody td {
     padding: 8px 4px;
-  }
-
-  .delete-confirm-modal {
-    width: 90%;
-    padding: 20px;
-  }
-
-  .delete-confirm-modal h3 {
-    font-size: 16px;
   }
 
   .btn-action {

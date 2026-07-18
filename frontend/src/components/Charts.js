@@ -1,8 +1,32 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+// Colores de marca (reflejan las variables CSS de styles.css). Recharts
+// necesita valores literales, no puede resolver var() en todos los casos.
+const BRAND_PRIMARY = "#4F46E5";
+const BRAND_ACCENT = "#0D9488";
+
+// Paleta categórica validada (skill dataviz): orden fijo, nunca se cicla ni
+// se reordena por rango. Los primeros 4-5 slots ya pasan CVD/contraste.
+const CATEGORICAL = ["#2a78d6", "#008300", "#e87ba4", "#eda100", "#1baf7a"];
+
+const AXIS_TICK = { fill: "var(--color-muted)", fontSize: 12 };
+const GRID_STROKE = "var(--color-border)";
 
 const ChartCard = ({ title, children, isWide = false }) => (
   <div className={`chart-card ${isWide ? "chart-wide" : ""}`}>
@@ -20,25 +44,21 @@ ChartCard.propTypes = {
 const ProductSalesChart = ({ data }) => (
   <ChartCard title="Productos vendidos">
     <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="product" angle={-45} textAnchor="end" height={80} />
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+        <XAxis dataKey="product" angle={-45} textAnchor="end" height={80} tick={AXIS_TICK} />
         <YAxis
+          tick={AXIS_TICK}
           label={{
-            value: "Productos vendidos",
+            value: "Unidades vendidas",
             angle: -90,
             position: "insideLeft",
+            fill: "var(--color-muted)",
           }}
         />
         <Tooltip />
-        <Line
-          type="monotone"
-          dataKey="quantity"
-          stroke="#8884d8"
-          strokeWidth={2}
-          dot={{ fill: "#8884d8", strokeWidth: 2 }}
-        />
-      </LineChart>
+        <Bar dataKey="quantity" name="Unidades" fill={BRAND_ACCENT} radius={[4, 4, 0, 0]} />
+      </BarChart>
     </ResponsiveContainer>
   </ChartCard>
 );
@@ -47,17 +67,19 @@ const DailySalesChart = ({ data }) => (
   <ChartCard title="Ventas en día">
     <ResponsiveContainer width="100%" height={250}>
       <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="day" />
+        <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+        <XAxis dataKey="day" tick={AXIS_TICK} />
         <YAxis
+          tick={AXIS_TICK}
           label={{
-            value: "Y Axis Label",
+            value: "Ventas",
             angle: -90,
             position: "insideLeft",
+            fill: "var(--color-muted)",
           }}
         />
         <Tooltip />
-        <Bar dataKey="sales" fill="#8884d8" />
+        <Bar dataKey="sales" name="Ventas" fill={BRAND_PRIMARY} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   </ChartCard>
@@ -70,89 +92,103 @@ const BranchSalesChart = ({ data }) => (
         <Pie
           data={data}
           cx="50%"
-          cy="50%"
+          cy="45%"
           innerRadius={60}
-          outerRadius={100}
-          paddingAngle={5}
+          outerRadius={95}
+          paddingAngle={4}
           dataKey="value"
         >
           {data?.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell key={`cell-${index}`} fill={CATEGORICAL[index % CATEGORICAL.length]} />
           ))}
         </Pie>
         <Tooltip />
+        <Legend verticalAlign="bottom" height={32} />
       </PieChart>
     </ResponsiveContainer>
   </ChartCard>
 );
 
-const CategoryChart = ({ data, fallbackData }) => (
-  <ChartCard title="Distribución por Categoría">
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={data || fallbackData}
-          cx="50%"
-          cy="50%"
-          outerRadius={100}
-          fill="#8884d8"
-          dataKey="value"
-          label={({ name, value }) => `${name}: ${value}%`}
-        >
-          {(data || fallbackData || []).map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  </ChartCard>
-);
+const CategoryChart = ({ data, fallbackData }) => {
+  const chartData = data || fallbackData;
 
-const MonthlyTrendChart = ({ data, fallbackData }) => (
-  <ChartCard title="Tendencia de Ventas Mensuales" isWide={true}>
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data || fallbackData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" />
-        <YAxis
-          yAxisId="left"
-          label={{
-            value: "Ventas",
-            angle: -90,
-            position: "insideLeft",
-          }}
-        />
-        <YAxis
-          yAxisId="right"
-          orientation="right"
-          label={{
-            value: "Revenue (K)",
-            angle: 90,
-            position: "insideRight",
-          }}
-        />
-        <Tooltip />
-        <Line
-          yAxisId="left"
-          type="monotone"
-          dataKey="sales"
-          stroke="#8884d8"
-          strokeWidth={3}
-          dot={{ fill: "#8884d8", strokeWidth: 2, r: 5 }}
-        />
-        <Line
-          yAxisId="right"
-          type="monotone"
-          dataKey="revenue"
-          stroke="#82ca9d"
-          strokeWidth={3}
-          dot={{ fill: "#82ca9d", strokeWidth: 2, r: 5 }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  </ChartCard>
-);
+  return (
+    <ChartCard title="Distribución por Categoría">
+      <ResponsiveContainer width="100%" height={250}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="45%"
+            outerRadius={90}
+            dataKey="value"
+            label={({ value }) => `${value}%`}
+          >
+            {(chartData || []).map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={CATEGORICAL[index % CATEGORICAL.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend verticalAlign="bottom" height={32} />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartCard>
+  );
+};
+
+/**
+ * Ventas (unidades) e ingresos (Bs) tienen escalas distintas — en vez de un
+ * eje Y doble (confuso: dos escalas superpuestas en el mismo plano), se
+ * muestran como dos mini-líneas de un solo eje cada una, lado a lado.
+ */
+const MonthlyTrendChart = ({ data, fallbackData }) => {
+  const chartData = data || fallbackData;
+
+  return (
+    <ChartCard title="Tendencia de Ventas Mensuales" isWide={true}>
+      <div className="chart-split">
+        <div className="chart-split-item">
+          <p className="chart-split-label">Unidades vendidas</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+              <XAxis dataKey="month" tick={AXIS_TICK} />
+              <YAxis tick={AXIS_TICK} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                name="Unidades"
+                stroke={BRAND_ACCENT}
+                strokeWidth={2}
+                dot={{ fill: BRAND_ACCENT, strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="chart-split-item">
+          <p className="chart-split-label">Ingresos (Bs.)</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+              <XAxis dataKey="month" tick={AXIS_TICK} />
+              <YAxis tick={AXIS_TICK} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                name="Ingresos"
+                stroke={BRAND_PRIMARY}
+                strokeWidth={2}
+                dot={{ fill: BRAND_PRIMARY, strokeWidth: 2, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </ChartCard>
+  );
+};
 
 const TopProductsChart = ({ data }) => (
   <ChartCard title="Top 5 Productos">

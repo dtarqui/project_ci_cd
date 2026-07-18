@@ -4,9 +4,9 @@ import userEvent from "@testing-library/user-event";
 import CustomersSection from "../components/CustomersSection";
 import * as apiService from "../services/api";
 
-// Mock dashboardService
+// Mock customerService
 jest.mock("../services/api", () => ({
-  dashboardService: {
+  customerService: {
     getCustomers: jest.fn(),
     createCustomer: jest.fn(),
     updateCustomer: jest.fn(),
@@ -51,7 +51,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.setItem("token", "test_token");
-    apiService.dashboardService.getCustomers.mockResolvedValue({
+    apiService.customerService.getCustomers.mockResolvedValue({
       success: true,
       data: mockCustomers,
       count: 2,
@@ -112,7 +112,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Búsqueda y Filtros", () => {
     it("debe buscar clientes por nombre", async () => {
-      apiService.dashboardService.getCustomers.mockResolvedValue({
+      apiService.customerService.getCustomers.mockResolvedValue({
         success: true,
         data: [mockCustomers[0]],
         count: 1,
@@ -126,14 +126,14 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.type(searchInput, "Juan");
 
       await waitFor(() => {
-        expect(apiService.dashboardService.getCustomers).toHaveBeenCalledWith(
+        expect(apiService.customerService.getCustomers).toHaveBeenCalledWith(
           expect.stringContaining("search=Juan")
         );
       });
     });
 
     it("debe filtrar clientes por estado", async () => {
-      apiService.dashboardService.getCustomers.mockResolvedValue({
+      apiService.customerService.getCustomers.mockResolvedValue({
         success: true,
         data: mockCustomers,
         count: 2,
@@ -147,7 +147,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         fireEvent.change(statusSelect, { target: { value: "Activo" } });
 
         await waitFor(() => {
-          const calls = apiService.dashboardService.getCustomers.mock.calls;
+          const calls = apiService.customerService.getCustomers.mock.calls;
           const hasActivoCall = calls.some(call => call[0]?.includes("status=Activo"));
           expect(hasActivoCall).toBe(true);
         });
@@ -155,7 +155,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe ordenar clientes por nombre", async () => {
-      apiService.dashboardService.getCustomers.mockResolvedValue({
+      apiService.customerService.getCustomers.mockResolvedValue({
         success: true,
         data: mockCustomers,
         count: 2,
@@ -168,7 +168,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         fireEvent.change(sortSelects[0], { target: { value: "email" } });
 
         await waitFor(() => {
-          const calls = apiService.dashboardService.getCustomers.mock.calls;
+          const calls = apiService.customerService.getCustomers.mock.calls;
           const hasEmailCall = calls.some(call => call[0]?.includes("sort=email"));
           expect(hasEmailCall).toBe(true);
         });
@@ -210,7 +210,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe crear un nuevo cliente", async () => {
-      apiService.dashboardService.createCustomer.mockResolvedValue({
+      apiService.customerService.createCustomer.mockResolvedValue({
         success: true,
         data: { id: 3, ...mockCustomers[0] },
       });
@@ -238,7 +238,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.createCustomer).toHaveBeenCalledWith(
+        expect(apiService.customerService.createCustomer).toHaveBeenCalledWith(
           expect.objectContaining({
             name: "Test Customer",
             email: "test@example.com",
@@ -285,7 +285,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe actualizar un cliente", async () => {
-      apiService.dashboardService.updateCustomer.mockResolvedValue({
+      apiService.customerService.updateCustomer.mockResolvedValue({
         success: true,
         data: { ...mockCustomers[0], name: "Updated" },
       });
@@ -307,7 +307,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(updateButton);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.updateCustomer).toHaveBeenCalledWith(
+        expect(apiService.customerService.updateCustomer).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             name: "Updated Name",
@@ -361,7 +361,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe eliminar un cliente", async () => {
-      apiService.dashboardService.deleteCustomer.mockResolvedValue({
+      apiService.customerService.deleteCustomer.mockResolvedValue({
         success: true,
         data: mockCustomers[0],
       });
@@ -386,7 +386,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(confirmDeleteButton);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.deleteCustomer).toHaveBeenCalledWith(1);
+        expect(apiService.customerService.deleteCustomer).toHaveBeenCalledWith(1);
       });
     });
 
@@ -403,7 +403,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Estados de Carga", () => {
     it("debe mostrar mensaje cuando no hay clientes", async () => {
-      apiService.dashboardService.getCustomers.mockResolvedValue({
+      apiService.customerService.getCustomers.mockResolvedValue({
         success: true,
         data: [],
         count: 0,
@@ -418,7 +418,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe manejar errores en la recuperación de datos", async () => {
-      apiService.dashboardService.getCustomers.mockRejectedValue(new Error("API Error"));
+      apiService.customerService.getCustomers.mockRejectedValue(new Error("API Error"));
 
       render(<CustomersSection user={adminUser} />);
 
@@ -514,7 +514,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Manejo de Errores en Operaciones", () => {
     it("debe manejar error al crear cliente", async () => {
-      apiService.dashboardService.createCustomer.mockRejectedValue(
+      apiService.customerService.createCustomer.mockRejectedValue(
         new Error("Create failed")
       );
 
@@ -543,14 +543,14 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.createCustomer).toHaveBeenCalled();
+        expect(apiService.customerService.createCustomer).toHaveBeenCalled();
       });
 
       alertSpy.mockRestore();
     });
 
     it("debe manejar error al actualizar cliente", async () => {
-      apiService.dashboardService.updateCustomer.mockRejectedValue(
+      apiService.customerService.updateCustomer.mockRejectedValue(
         new Error("Update failed")
       );
 
@@ -573,7 +573,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(updateButton);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.updateCustomer).toHaveBeenCalled();
+        expect(apiService.customerService.updateCustomer).toHaveBeenCalled();
       });
 
       alertSpy.mockRestore();

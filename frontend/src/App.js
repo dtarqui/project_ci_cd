@@ -5,6 +5,7 @@ import Dashboard from "./dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { authService } from "./services/api";
 import "./styles.css";
+import "./components/ui/ui.css";
 
 export default function App() {
   const [user, setUser] = useState(null);

@@ -1,14 +1,26 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd } from "react-icons/md";
-import { dashboardService } from "../services/api";
+import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdInventory2 } from "react-icons/md";
+import { productService } from "../services/api";
+import useEntityList from "../hooks/useEntityList";
 import ProductForm from "./ProductForm";
+import Button from "./ui/Button";
+import Badge from "./ui/Badge";
+import Modal from "./ui/Modal";
+import EmptyState from "./ui/EmptyState";
+import { SkeletonTableRows } from "./ui/Skeleton";
 import "../styles/productsActions.css";
+
+const STATUS_TONE = {
+  "En Stock": "success",
+  "Bajo Stock": "warning",
+  "Sin Stock": "danger",
+};
+
+const TABLE_COLUMNS = 8;
 
 const ProductsSection = ({ user }) => {
   const canDelete = user?.role === "admin";
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -17,28 +29,16 @@ const ProductsSection = ({ user }) => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const loadProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (selectedCategory) params.append("category", selectedCategory);
-      params.append("sort", sortBy);
-
-      const response = await dashboardService.getProducts(params.toString());
-
-      setProducts(response.data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Error loading products:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, selectedCategory, sortBy]);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  const {
+    items: products,
+    setItems: setProducts,
+    loading,
+    reload: loadProducts,
+  } = useEntityList(productService.getProducts, {
+    search: searchTerm,
+    category: selectedCategory,
+    sort: sortBy,
+  });
 
   /**
    * Abrir formulario para crear nuevo producto
@@ -63,7 +63,7 @@ const ProductsSection = ({ user }) => {
     try {
       if (editingProduct) {
         // Actualizar producto existente
-        const response = await dashboardService.updateProduct(
+        const response = await productService.updateProduct(
           editingProduct.id,
           productData,
         );
@@ -72,7 +72,7 @@ const ProductsSection = ({ user }) => {
         );
       } else {
         // Crear nuevo producto
-        const response = await dashboardService.createProduct(productData);
+        const response = await productService.createProduct(productData);
         setProducts([...products, response.data]);
       }
       setFormOpen(false);
@@ -88,7 +88,7 @@ const ProductsSection = ({ user }) => {
    */
   const handleDeleteProduct = async (id) => {
     try {
-      await dashboardService.deleteProduct(id);
+      await productService.deleteProduct(id);
       setProducts(products.filter((p) => p.id !== id));
       setDeleteConfirm(null);
     } catch (err) {
@@ -99,19 +99,6 @@ const ProductsSection = ({ user }) => {
 
   const categories = [...new Set(products.map((p) => p.category))].sort();
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "En Stock":
-        return "green";
-      case "Bajo Stock":
-        return "orange";
-      case "Sin Stock":
-        return "red";
-      default:
-        return "gray";
-    }
-  };
-
   if (error) {
     return (
       <div className="products-section">
@@ -120,6 +107,21 @@ const ProductsSection = ({ user }) => {
       </div>
     );
   }
+
+  const tableHead = (
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Estado</th>
+        <th>Ventas</th>
+        <th>Última Venta</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+  );
 
   return (
     <div className="products-section">
@@ -130,14 +132,14 @@ const ProductsSection = ({ user }) => {
             Administra tu catálogo de productos ({products.length} artículos)
           </p>
         </div>
-        <button
+        <Button
           className="btn-create-product"
           onClick={handleCreateProduct}
           title="Crear nuevo producto"
+          icon={<MdAdd size={20} />}
         >
-          <MdAdd size={20} />
           Nuevo Producto
-        </button>
+        </Button>
       </div>
 
       <div className="products-filters">
@@ -181,33 +183,32 @@ const ProductsSection = ({ user }) => {
       </div>
 
       {loading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Cargando productos...</p>
+        <div className="products-table-container">
+          <table className="products-table">
+            {tableHead}
+            <tbody>
+              <SkeletonTableRows rows={5} columns={TABLE_COLUMNS} />
+            </tbody>
+          </table>
         </div>
       ) : products.length === 0 ? (
-        <div className="empty-state">
-          <p>No hay productos que coincidan con los filtros</p>
-          <button className="btn-create-product" onClick={handleCreateProduct}>
-            <MdAdd size={20} />
-            Crear Primer Producto
-          </button>
-        </div>
+        <EmptyState
+          icon={<MdInventory2 />}
+          description="No hay productos que coincidan con los filtros"
+          action={
+            <Button
+              className="btn-create-product"
+              onClick={handleCreateProduct}
+              icon={<MdAdd size={20} />}
+            >
+              Crear Primer Producto
+            </Button>
+          }
+        />
       ) : (
         <div className="products-table-container">
           <table className="products-table">
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Estado</th>
-                <th>Ventas</th>
-                <th>Última Venta</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
+            {tableHead}
             <tbody>
               {products.map((product) => (
                 <tr key={product.id}>
@@ -216,34 +217,32 @@ const ProductsSection = ({ user }) => {
                   <td className="product-price">${product.price.toFixed(2)}</td>
                   <td className="product-stock">{product.stock} unidades</td>
                   <td>
-                    <span
-                      className={`status-badge status-${getStatusColor(
-                        product.status,
-                      )}`}
-                    >
+                    <Badge tone={STATUS_TONE[product.status] || "neutral"}>
                       {product.status}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="product-sales">{product.sales}</td>
                   <td>{product.lastSale}</td>
                   <td className="product-actions">
-                    <button
+                    <Button
+                      variant="ghost"
                       className="btn-action btn-edit"
                       onClick={() => handleEditProduct(product)}
                       title="Editar producto"
                       aria-label={`Editar ${product.name}`}
                     >
                       <MdEdit size={18} />
-                    </button>
+                    </Button>
                     {canDelete && (
-                      <button
+                      <Button
+                        variant="ghost"
                         className="btn-action btn-delete"
                         onClick={() => setDeleteConfirm(product.id)}
                         title="Eliminar producto"
                         aria-label={`Eliminar ${product.name}`}
                       >
                         <MdDelete size={18} />
-                      </button>
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -266,31 +265,21 @@ const ProductsSection = ({ user }) => {
       />
 
       {/* Modal de Confirmación de Eliminación */}
-      {deleteConfirm && (
-        <div className="delete-confirm-overlay">
-          <div className="delete-confirm-modal">
-            <h3>Confirmar Eliminación</h3>
-            <p>
-              ¿Estás seguro de que deseas eliminar este producto? Esta acción no
-              se puede deshacer.
-            </p>
-            <div className="delete-confirm-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => handleDeleteProduct(deleteConfirm)}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
+      <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
+        <h3 className="ui-modal-danger-title">Confirmar Eliminación</h3>
+        <p>
+          ¿Estás seguro de que deseas eliminar este producto? Esta acción no
+          se puede deshacer.
+        </p>
+        <div className="delete-confirm-actions">
+          <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => handleDeleteProduct(deleteConfirm)}>
+            Eliminar
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

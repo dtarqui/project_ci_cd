@@ -120,7 +120,9 @@ export default function Dashboard({ user, onLogout }) {
         <main className="dashboard-main">
           {activeSection === "Dashboard" && (
             <>
+              <h2 className="dashboard-section-title">Resumen</h2>
               <SalesSummary data={dashboardData} />
+              <h2 className="dashboard-section-title">Análisis de ventas</h2>
               <DashboardOverview data={dashboardData} />
             </>
           )}

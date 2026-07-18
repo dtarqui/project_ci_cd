@@ -1,13 +1,25 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd } from "react-icons/md";
-import { dashboardService, handleApiError } from "../services/api";
+import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdPeopleOutline } from "react-icons/md";
+import { customerService, handleApiError } from "../services/api";
+import useEntityList from "../hooks/useEntityList";
+import Button from "./ui/Button";
+import Badge from "./ui/Badge";
+import Modal from "./ui/Modal";
+import EmptyState from "./ui/EmptyState";
+import { SkeletonTableRows } from "./ui/Skeleton";
 import "../styles/customersActions.css";
+
+const STATUS_TONE = {
+  activo: "success",
+  inactivo: "danger",
+  pendiente: "warning",
+};
+
+const TABLE_COLUMNS = 9;
 
 const CustomersSection = ({ user }) => {
   const canDelete = user?.role === "admin";
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [sortBy, setSortBy] = useState("name");
@@ -23,27 +35,16 @@ const CustomersSection = ({ user }) => {
     postalCode: "",
   });
 
-  const loadCustomers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (selectedStatus) params.append("status", selectedStatus);
-      params.append("sort", sortBy);
-
-      const response = await dashboardService.getCustomers(params.toString());
-      setCustomers(response.data || []);
-    } catch (error) {
-      console.error("Error loading customers:", handleApiError(error));
-      setCustomers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, selectedStatus, sortBy]);
-
-  useEffect(() => {
-    loadCustomers();
-  }, [loadCustomers]);
+  const {
+    items: customers,
+    setItems: setCustomers,
+    loading,
+    reload: loadCustomers,
+  } = useEntityList(customerService.getCustomers, {
+    search: searchTerm,
+    status: selectedStatus,
+    sort: sortBy,
+  });
 
   /**
    * Abrir formulario para crear nuevo cliente
@@ -85,9 +86,9 @@ const CustomersSection = ({ user }) => {
 
     try {
       if (editingId) {
-        await dashboardService.updateCustomer(editingId, formData);
+        await customerService.updateCustomer(editingId, formData);
       } else {
-        await dashboardService.createCustomer(formData);
+        await customerService.createCustomer(formData);
       }
 
       setShowForm(false);
@@ -103,13 +104,29 @@ const CustomersSection = ({ user }) => {
    */
   const handleDeleteCustomer = async (id) => {
     try {
-      await dashboardService.deleteCustomer(id);
+      await customerService.deleteCustomer(id);
       setCustomers(customers.filter((c) => c.id !== id));
       setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting customer:", handleApiError(error));
     }
   };
+
+  const tableHead = (
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Ciudad</th>
+        <th>Estado</th>
+        <th>Gasto Total</th>
+        <th>Compras</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+  );
 
   return (
     <div className="customers-section">
@@ -118,12 +135,9 @@ const CustomersSection = ({ user }) => {
           <h2>Gestión de Clientes</h2>
           <p>{customers.length} cliente(s) registrado(s)</p>
         </div>
-        <button
-          className="btn-create-customer"
-          onClick={handleCreateCustomer}
-        >
-          <MdAdd /> Nuevo Cliente
-        </button>
+        <Button className="btn-create-customer" onClick={handleCreateCustomer} icon={<MdAdd />}>
+          Nuevo Cliente
+        </Button>
       </div>
 
       <div className="customer-filters">
@@ -178,33 +192,30 @@ const CustomersSection = ({ user }) => {
       </div>
 
       {loading ? (
-        <div className="empty-state">
-          <p>Cargando clientes...</p>
+        <div className="customers-table-wrapper">
+          <table className="customers-table">
+            {tableHead}
+            <tbody>
+              <SkeletonTableRows rows={5} columns={TABLE_COLUMNS} />
+            </tbody>
+          </table>
         </div>
       ) : customers.length === 0 ? (
-        <div className="empty-state">
-          <p>No hay clientes para mostrar</p>
-          {searchTerm && " Intenta cambiar los términos de búsqueda."}
-          <button className="btn-create-customer" onClick={handleCreateCustomer}>
-            <MdAdd /> Nuevo Cliente
-          </button>
-        </div>
+        <EmptyState
+          icon={<MdPeopleOutline />}
+          description={`No hay clientes para mostrar${
+            searchTerm ? " Intenta cambiar los términos de búsqueda." : ""
+          }`}
+          action={
+            <Button className="btn-create-customer" onClick={handleCreateCustomer} icon={<MdAdd />}>
+              Nuevo Cliente
+            </Button>
+          }
+        />
       ) : (
         <div className="customers-table-wrapper">
           <table className="customers-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>Ciudad</th>
-                <th>Estado</th>
-                <th>Gasto Total</th>
-                <th>Compras</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
+            {tableHead}
             <tbody>
               {customers.map((customer) => (
                 <tr key={customer.id}>
@@ -214,31 +225,31 @@ const CustomersSection = ({ user }) => {
                   <td>{customer.phone}</td>
                   <td>{customer.city}</td>
                   <td>
-                    <span
-                      className={`status-badge status-${customer.status.toLowerCase()}`}
-                    >
+                    <Badge tone={STATUS_TONE[customer.status.toLowerCase()] || "neutral"}>
                       {customer.status}
-                    </span>
+                    </Badge>
                   </td>
                   <td>${customer.totalSpent.toFixed(2)}</td>
                   <td>{customer.purchases}</td>
                   <td>
                     <div className="customer-actions">
-                      <button
+                      <Button
+                        variant="ghost"
                         className="btn-action btn-edit"
                         onClick={() => handleEditCustomer(customer)}
                         title="Editar"
                       >
                         <MdEdit />
-                      </button>
+                      </Button>
                       {canDelete && (
-                        <button
+                        <Button
+                          variant="ghost"
                           className="btn-action btn-delete"
                           onClick={() => setDeleteConfirm(customer)}
                           title="Eliminar"
                         >
                           <MdDelete />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -346,56 +357,40 @@ const CustomersSection = ({ user }) => {
               </div>
 
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
+                <Button type="submit">
                   {editingId ? "Actualizar" : "Crear"}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="btn btn-secondary"
+                  variant="secondary"
                   onClick={() => setShowForm(false)}
                 >
                   Cancelar
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {deleteConfirm && (
-        <div
-          className="delete-confirm-overlay"
-          onClick={() => setDeleteConfirm(null)}
-        >
-          <div
-            className="delete-confirm-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>Eliminar Cliente</h3>
-            <p>
-              ¿Estás seguro de que deseas eliminar a{" "}
-              <strong>{deleteConfirm.name}</strong>?
-            </p>
-            <p style={{ fontSize: "12px", color: "#d32f2f", margin: "12px 0" }}>
-              Esta acción no se puede deshacer.
-            </p>
-            <div className="delete-confirm-actions">
-              <button
-                className="btn btn-danger"
-                onClick={() => handleDeleteCustomer(deleteConfirm.id)}
-              >
-                Eliminar
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+      <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
+        <h3 className="ui-modal-danger-title">Eliminar Cliente</h3>
+        <p>
+          ¿Estás seguro de que deseas eliminar a{" "}
+          <strong>{deleteConfirm?.name}</strong>?
+        </p>
+        <p className="delete-confirm-warning">
+          Esta acción no se puede deshacer.
+        </p>
+        <div className="delete-confirm-actions">
+          <Button variant="danger" onClick={() => handleDeleteCustomer(deleteConfirm.id)}>
+            Eliminar
+          </Button>
+          <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>
+            Cancelar
+          </Button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

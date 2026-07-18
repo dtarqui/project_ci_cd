@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SalesSection from "../components/SalesSection";
-import { dashboardService } from "../services/api";
+import { saleService, customerService, productService } from "../services/api";
 
 jest.mock("../components/SalesForm", () => {
   const MockSalesForm = (props) => {
@@ -20,12 +20,16 @@ jest.mock("../components/SalesForm", () => {
 });
 
 jest.mock("../services/api", () => ({
-  dashboardService: {
+  saleService: {
     getSales: jest.fn(),
     cancelSale: jest.fn(),
-    getCustomers: jest.fn(),
-    getProducts: jest.fn(),
     createSale: jest.fn(),
+  },
+  customerService: {
+    getCustomers: jest.fn(),
+  },
+  productService: {
+    getProducts: jest.fn(),
   },
   handleApiError: jest.fn((error) => error?.message || "Error"),
 }));
@@ -62,13 +66,13 @@ describe("Componente SalesSection", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    dashboardService.getSales.mockResolvedValue({ data: mockSales });
-    dashboardService.cancelSale.mockResolvedValue({
+    saleService.getSales.mockResolvedValue({ data: mockSales });
+    saleService.cancelSale.mockResolvedValue({
       data: { ...mockSales[0], status: "Anulada" },
     });
-    dashboardService.getCustomers.mockResolvedValue({ data: [] });
-    dashboardService.getProducts.mockResolvedValue({ data: [] });
-    dashboardService.createSale.mockResolvedValue({});
+    customerService.getCustomers.mockResolvedValue({ data: [] });
+    productService.getProducts.mockResolvedValue({ data: [] });
+    saleService.createSale.mockResolvedValue({});
   });
 
   it("debe renderizar el header", async () => {
@@ -119,7 +123,7 @@ describe("Componente SalesSection", () => {
     await user.click(screen.getByRole("button", { name: /pendientes/i }));
 
     await waitFor(() => {
-      const calls = dashboardService.getSales.mock.calls;
+      const calls = saleService.getSales.mock.calls;
       const hasStatusCall = calls.some((call) =>
         String(call[0]).includes("status=Pendiente")
       );
@@ -156,7 +160,7 @@ describe("Componente SalesSection", () => {
     await user.click(cancelButtons[0]);
 
     await waitFor(() => {
-      expect(dashboardService.cancelSale).toHaveBeenCalledWith(1);
+      expect(saleService.cancelSale).toHaveBeenCalledWith(1);
     });
   });
 
@@ -168,8 +172,8 @@ describe("Componente SalesSection", () => {
     await user.click(newSaleButton);
 
     await waitFor(() => {
-      expect(dashboardService.getCustomers).toHaveBeenCalled();
-      expect(dashboardService.getProducts).toHaveBeenCalled();
+      expect(customerService.getCustomers).toHaveBeenCalled();
+      expect(productService.getProducts).toHaveBeenCalled();
       expect(screen.getByTestId("sales-form")).toBeInTheDocument();
     });
   });
@@ -185,8 +189,8 @@ describe("Componente SalesSection", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(dashboardService.createSale).toHaveBeenCalled();
-      expect(dashboardService.getSales).toHaveBeenCalled();
+      expect(saleService.createSale).toHaveBeenCalled();
+      expect(saleService.getSales).toHaveBeenCalled();
     });
   });
 });

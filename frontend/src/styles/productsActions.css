@@ -31,34 +31,11 @@
 }
 
 .btn-create-product {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-primary-dark) 100%
-  );
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
-  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
 }
 
-.btn-create-product:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 102, 204, 0.35);
-}
-
-.btn-create-product:active {
-  transform: translateY(0);
+.btn-create-product:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
 }
 
 /* Filters */
@@ -79,11 +56,11 @@
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background-color: white;
+  background-color: var(--color-surface);
 }
 
 .search-icon {
-  color: #999;
+  color: var(--color-muted);
   flex-shrink: 0;
 }
 
@@ -98,7 +75,7 @@
 }
 
 .search-input::placeholder {
-  color: #999;
+  color: var(--color-muted);
 }
 
 .sort-box {
@@ -122,20 +99,20 @@
   font-size: 13px;
   font-family: inherit;
   transition: border-color 0.2s ease;
-  background-color: white;
+  background-color: var(--color-surface);
   cursor: pointer;
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-soft);
 }
 
 /* Table */
 
 .products-table-container {
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   margin-bottom: 16px;
@@ -146,7 +123,7 @@
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--color-surface);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -157,7 +134,7 @@
     var(--color-primary) 0%,
     var(--color-primary-dark) 100%
   );
-  color: white;
+  color: #fff;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -174,7 +151,7 @@
 }
 
 .products-table tbody tr {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
   transition: background-color 0.15s ease;
 }
 
@@ -188,7 +165,7 @@
 
 .products-table tbody td {
   padding: 12px;
-  color: #333;
+  color: var(--color-text);
   font-size: 13px;
 }
 
@@ -201,44 +178,11 @@
 }
 
 .product-stock {
-  color: #666;
+  color: var(--color-muted);
 }
 
 .product-sales {
   font-weight: 600;
-}
-
-/* Status Badge */
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-}
-
-.status-green {
-  background-color: #d4f4dd;
-  color: #0b6623;
-}
-
-.status-orange {
-  background-color: #fff4e0;
-  color: #cc7000;
-}
-
-.status-red {
-  background-color: #ffe0e6;
-  color: #c41e3a;
-}
-
-.status-gray {
-  background-color: #f0f0f0;
-  color: #666;
 }
 
 /* Product Actions */
@@ -250,206 +194,52 @@
 }
 
 .btn-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 40px;
   height: 40px;
   padding: 0;
-  border: none;
-  border-radius: 8px;
-  background-color: #f3f5f8;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-row-alt);
+  color: var(--color-text);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
   font-size: 16px;
 }
 
-.btn-action:hover {
+.btn-action:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.btn-action:active {
-  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.1);
 }
 
 .btn-edit {
-  color: #0066cc;
+  color: var(--color-primary);
 }
 
-.btn-edit:hover {
-  background: linear-gradient(135deg, #e8f4ff 0%, #d4e8ff 100%);
-  color: #0052a3;
+.btn-edit:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .btn-delete {
-  color: #d32f2f;
+  color: var(--color-danger);
 }
 
-.btn-delete:hover {
-  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-  color: #b71c1c;
+.btn-delete:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
 }
 
-/* Delete Confirmation Modal */
-
-.delete-confirm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.delete-confirm-modal {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 420px;
-  padding: 28px;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.delete-confirm-modal h3 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #d32f2f;
-}
-
-.delete-confirm-modal p {
-  margin: 0 0 28px 0;
-  font-size: 14px;
-  color: #555;
-  line-height: 1.6;
-}
+/* Delete confirmation actions row (panel itself is components/ui/Modal.js) */
 
 .delete-confirm-actions {
   display: flex;
   gap: 12px;
 }
 
-.btn {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.delete-confirm-actions .ui-btn {
   flex: 1;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #f3f5f8;
-  color: #1a1a1a;
-  border: 1px solid #ddd;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #e8eef5;
-  border-color: #0066cc;
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25);
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35);
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  text-align: center;
-  background-color: #f9fafb;
-  border-radius: 8px;
-  border: 2px dashed #d0d0d0;
-  flex: 1;
-}
-
-.empty-state p {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  color: #666;
 }
 
 .empty-state .btn-create-product {
   margin-top: 16px;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  flex: 1;
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #0066cc;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-state p {
-  color: #666;
-  font-size: 14px;
 }
 
 /* Responsive Design */
@@ -487,10 +277,6 @@
 
   .delete-confirm-actions {
     flex-direction: column-reverse;
-  }
-
-  .btn {
-    width: 100%;
   }
 
   .products-table {
@@ -547,15 +333,6 @@
 
   .products-table tbody td {
     padding: 8px 4px;
-  }
-
-  .delete-confirm-modal {
-    width: 90%;
-    padding: 20px;
-  }
-
-  .delete-confirm-modal h3 {
-    font-size: 16px;
   }
 
   .btn-action {

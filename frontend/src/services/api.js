@@ -37,7 +37,7 @@ api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {    
+  (error) => {
     if (error.response?.status === 401) {
       // Token expirado o inválido
       // Solo limpiar localStorage, dejar que el componente maneje el error
@@ -86,13 +86,16 @@ export const userService = {
   },
 };
 
-// Servicios del dashboard
+// Datos agregados del dashboard (métricas, gráficos)
 export const dashboardService = {
   getData: async () => {
     const response = await api.get("/api/dashboard/data");
     return response.data;
   },
+};
 
+// CRUD de productos
+export const productService = {
   getProducts: async (params = "") => {
     const response = await api.get(`/api/products${params ? "?" + params : ""}`);
     // El backend retorna { success, data: [], count, timestamp }
@@ -119,8 +122,10 @@ export const dashboardService = {
     const response = await api.delete(`/api/products/${id}`);
     return response.data;
   },
+};
 
-  // Métodos para clientes
+// CRUD de clientes
+export const customerService = {
   getCustomers: async (params = "") => {
     const response = await api.get(`/api/customers${params ? "?" + params : ""}`);
     return response.data;
@@ -145,8 +150,10 @@ export const dashboardService = {
     const response = await api.delete(`/api/customers/${id}`);
     return response.data;
   },
+};
 
-  // Métodos para ventas
+// CRUD de ventas
+export const saleService = {
   getSales: async (params = "") => {
     const response = await api.get(`/api/sales${params ? "?" + params : ""}`);
     return response.data;

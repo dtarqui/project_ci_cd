@@ -34,7 +34,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    apiService.dashboardService.getProducts.mockResolvedValue({
+    apiService.productService.getProducts.mockResolvedValue({
       data: mockProducts,
     });
   });
@@ -78,7 +78,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Crear Producto", () => {
     it("debe mostrar estado de carga", () => {
-      apiService.dashboardService.getProducts.mockImplementation(
+      apiService.productService.getProducts.mockImplementation(
         () =>
           new Promise((resolve) =>
             setTimeout(() => resolve({ data: mockProducts }), 100)
@@ -91,7 +91,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar estado vacío cuando no hay productos", async () => {
-      apiService.dashboardService.getProducts.mockResolvedValue({
+      apiService.productService.getProducts.mockResolvedValue({
         data: [],
       });
 
@@ -107,7 +107,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Datos de Ejemplo", () => {
     it("debe mostrar mensaje de error cuando falla la API", async () => {
-      apiService.dashboardService.getProducts.mockRejectedValue(
+      apiService.productService.getProducts.mockRejectedValue(
         new Error("API Error")
       );
 
@@ -121,19 +121,19 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Métodos CRUD", () => {
     it("debe tener método createProduct disponible", () => {
-      expect(apiService.dashboardService.createProduct).toBeDefined();
+      expect(apiService.productService.createProduct).toBeDefined();
     });
 
     it("debe tener método updateProduct disponible", () => {
-      expect(apiService.dashboardService.updateProduct).toBeDefined();
+      expect(apiService.productService.updateProduct).toBeDefined();
     });
 
     it("debe tener método deleteProduct disponible", () => {
-      expect(apiService.dashboardService.deleteProduct).toBeDefined();
+      expect(apiService.productService.deleteProduct).toBeDefined();
     });
 
     it("debe tener método getProduct disponible", () => {
-      expect(apiService.dashboardService.getProduct).toBeDefined();
+      expect(apiService.productService.getProduct).toBeDefined();
     });
   });
 
@@ -142,7 +142,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       render(<ProductsSection user={adminUser} />);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.getProducts).toHaveBeenCalled();
+        expect(apiService.productService.getProducts).toHaveBeenCalled();
       });
     });
 
@@ -229,7 +229,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe llamar createProduct cuando guarda un producto nuevo", async () => {
-      apiService.dashboardService.createProduct.mockResolvedValue({
+      apiService.productService.createProduct.mockResolvedValue({
         data: {
           id: 3,
           name: "Novo Produto",
@@ -259,11 +259,11 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         expect(screen.getByText(/crear nuevo producto/i)).toBeInTheDocument();
       });
 
-      expect(apiService.dashboardService.createProduct).toBeDefined();
+      expect(apiService.productService.createProduct).toBeDefined();
     });
 
     it("debe llamar updateProduct cuando edita un producto existente", async () => {
-      apiService.dashboardService.updateProduct.mockResolvedValue({
+      apiService.productService.updateProduct.mockResolvedValue({
         data: mockProducts[0],
       });
 
@@ -280,7 +280,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         expect(screen.getByText(/editar producto/i)).toBeInTheDocument();
       });
 
-      expect(apiService.dashboardService.updateProduct).toBeDefined();
+      expect(apiService.productService.updateProduct).toBeDefined();
     });
 
     it("debe mostrar confirmación de eliminación", async () => {
@@ -301,7 +301,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe llamar deleteProduct cuando confirma la eliminación", async () => {
-      apiService.dashboardService.deleteProduct.mockResolvedValue({});
+      apiService.productService.deleteProduct.mockResolvedValue({});
 
       render(<ProductsSection user={adminUser} />);
 
@@ -323,7 +323,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       // Hacer clic en el último (del modal de confirmación)
       await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
 
-      expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
+      expect(apiService.productService.deleteProduct).toHaveBeenCalled();
     });
 
     it("debe cerrar el modal de confirmación al cancelar", async () => {
@@ -353,7 +353,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar error cuando falla la eliminación", async () => {
-      apiService.dashboardService.deleteProduct.mockRejectedValue(
+      apiService.productService.deleteProduct.mockRejectedValue(
         new Error("Delete failed")
       );
 
@@ -375,7 +375,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       const allDeleteButtons = screen.getAllByRole("button", { name: /eliminar/i });
       await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
 
-      expect(apiService.dashboardService.deleteProduct).toHaveBeenCalled();
+      expect(apiService.productService.deleteProduct).toHaveBeenCalled();
     });
   });
 
@@ -429,16 +429,16 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       render(<ProductsSection user={adminUser} />);
 
       await waitFor(() => {
-        expect(apiService.dashboardService.getProducts).toHaveBeenCalled();
+        expect(apiService.productService.getProducts).toHaveBeenCalled();
       });
 
-      const initialCalls = apiService.dashboardService.getProducts.mock.calls.length;
+      const initialCalls = apiService.productService.getProducts.mock.calls.length;
 
       const searchInput = screen.getByPlaceholderText(/buscar productos/i);
       await userEvent.type(searchInput, "Test");
 
       await waitFor(() => {
-        expect(apiService.dashboardService.getProducts.mock.calls.length).toBeGreaterThan(initialCalls);
+        expect(apiService.productService.getProducts.mock.calls.length).toBeGreaterThan(initialCalls);
       });
     });
   });
@@ -459,7 +459,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         { ...mockProducts[1], status: "Bajo Stock" },
       ];
 
-      apiService.dashboardService.getProducts.mockResolvedValue({
+      apiService.productService.getProducts.mockResolvedValue({
         data: productsWithDifferentStatuses,
       });
 
@@ -590,7 +590,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Manejo de Errores en Operaciones", () => {
     it("debe manejar error al crear producto", async () => {
-      apiService.dashboardService.createProduct.mockRejectedValue(
+      apiService.productService.createProduct.mockRejectedValue(
         new Error("Create failed")
       );
 
@@ -603,11 +603,11 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       });
 
       // La funcionalidad debe estar disponible
-      expect(apiService.dashboardService.createProduct).toBeDefined();
+      expect(apiService.productService.createProduct).toBeDefined();
     });
 
     it("debe manejar error al actualizar producto", async () => {
-      apiService.dashboardService.updateProduct.mockRejectedValue(
+      apiService.productService.updateProduct.mockRejectedValue(
         new Error("Update failed")
       );
 
@@ -617,7 +617,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
       });
 
-      expect(apiService.dashboardService.updateProduct).toBeDefined();
+      expect(apiService.productService.updateProduct).toBeDefined();
     });
   });
 });

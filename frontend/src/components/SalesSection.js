@@ -8,8 +8,10 @@ import {
   MdPendingActions,
   MdRefresh,
 } from "react-icons/md";
-import { dashboardService, handleApiError } from "../services/api";
+import { saleService, customerService, productService, handleApiError } from "../services/api";
+import { formatCurrency, formatDate } from "../utils/format";
 import SalesForm from "./SalesForm";
+import Skeleton from "./ui/Skeleton";
 import "../styles/sales.css";
 
 const SalesSection = () => {
@@ -31,7 +33,7 @@ const SalesSection = () => {
       const params = new URLSearchParams();
       if (selectedStatus) params.append("status", selectedStatus);
 
-      const response = await dashboardService.getSales(params.toString());
+      const response = await saleService.getSales(params.toString());
       setSales(response.data || []);
       setError(null);
     } catch (err) {
@@ -50,8 +52,8 @@ const SalesSection = () => {
     try {
       setFormLoading(true);
       const [customersResponse, productsResponse] = await Promise.all([
-        dashboardService.getCustomers(),
-        dashboardService.getProducts(),
+        customerService.getCustomers(),
+        productService.getProducts(),
       ]);
       setCustomers(customersResponse.data || []);
       setProducts(productsResponse.data || []);
@@ -98,26 +100,9 @@ const SalesSection = () => {
     [filteredSales, selectedSaleId],
   );
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("es-BO", {
-      style: "currency",
-      currency: "BOB",
-      minimumFractionDigits: 2,
-    }).format(value || 0);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString("es-BO", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    });
-  };
-
   const handleCancelSale = async (saleId) => {
     try {
-      const response = await dashboardService.cancelSale(saleId);
+      const response = await saleService.cancelSale(saleId);
       setSales((prev) =>
         prev.map((sale) => (sale.id === saleId ? response.data : sale)),
       );
@@ -139,7 +124,7 @@ const SalesSection = () => {
 
   const handleCreateSale = async (saleData) => {
     try {
-      await dashboardService.createSale(saleData);
+      await saleService.createSale(saleData);
       await loadSales();
       setFormOpen(false);
       setFormError("");
@@ -250,7 +235,26 @@ const SalesSection = () => {
           </header>
 
           {loading ? (
-            <div className="sales-state">Cargando ventas...</div>
+            <div className="sales-list" aria-busy="true">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div className="sales-row sales-row-skeleton" key={index}>
+                  <div>
+                    <Skeleton width="60px" height="14px" />
+                    <Skeleton width="120px" height="12px" style={{ marginTop: 8 }} />
+                  </div>
+                  <div>
+                    <Skeleton width="80px" height="14px" />
+                    <Skeleton width="60px" height="12px" style={{ marginTop: 8 }} />
+                  </div>
+                  <div>
+                    <Skeleton width="90px" height="20px" radius="var(--radius-pill)" />
+                  </div>
+                  <div>
+                    <Skeleton width="70px" height="28px" radius="var(--radius-pill)" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : error ? (
             <div className="sales-state error">{error}</div>
           ) : filteredSales.length === 0 ? (

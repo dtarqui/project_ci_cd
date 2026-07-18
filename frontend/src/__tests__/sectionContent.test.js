@@ -3,8 +3,10 @@ import { render, screen } from "@testing-library/react";
 import SectionContent from "../components/SectionContent";
 
 jest.mock("../services/api", () => ({
-  dashboardService: {
+  productService: {
     getProducts: jest.fn(() => Promise.resolve({ data: [] })),
+  },
+  customerService: {
     getCustomers: jest.fn(() => Promise.resolve({ data: [] })),
   },
 }));
