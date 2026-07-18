@@ -72,6 +72,26 @@ const getNextProductId = (products) => {
 };
 
 /**
+ * Filtra una lista de objetos por coincidencia parcial (case-insensitive)
+ * de un término en cualquiera de los campos indicados.
+ * @param {Array<Object>} items - Lista a filtrar
+ * @param {Array<string>} fields - Campos a comparar contra el término
+ * @param {string} term - Término de búsqueda (si está vacío, no filtra)
+ * @returns {Array<Object>} Lista filtrada
+ */
+const filterByText = (items, fields, term) => {
+  if (!term) {
+    return items;
+  }
+
+  const normalizedTerm = term.toLowerCase();
+
+  return items.filter((item) =>
+    fields.some((field) => (item[field] || "").toLowerCase().includes(normalizedTerm))
+  );
+};
+
+/**
  * Extrae el token del header de autorización
  * @param {string} authHeader - Header Authorization
  * @returns {string|null} Token sin "Bearer "
@@ -152,6 +172,7 @@ const isValidToken = (token) => {
 module.exports = {
   calculateProductStatus,
   getNextProductId,
+  filterByText,
   extractToken,
   createAuthToken,
   verifyAuthToken,

@@ -6,6 +6,7 @@ const { validateSaleCreate, validateSaleUpdate } = require("../utils/validators"
 const { createSaleRepository } = require("../repositories/saleRepository");
 const { createProductRepository } = require("../repositories/productRepository");
 const { createCustomerRepository } = require("../repositories/customerRepository");
+const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const TAX_RATE = 0.13;
 const saleRepository = createSaleRepository();
@@ -33,8 +34,7 @@ const getSales = async (req, res) => {
     }
   }
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: sales,
     count: sales.length,
     timestamp: new Date().toISOString(),
@@ -49,17 +49,13 @@ const getSale = async (req, res) => {
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Venta no encontrada",
       code: "SALE_NOT_FOUND",
     });
   }
 
-  res.json({
-    success: true,
-    data: sale,
-    timestamp: new Date().toISOString(),
-  });
+  sendSuccess(res, { data: sale, timestamp: new Date().toISOString() });
 };
 
 /**
@@ -69,7 +65,7 @@ const createSale = async (req, res) => {
   const validation = validateSaleCreate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -81,7 +77,7 @@ const createSale = async (req, res) => {
   const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Cliente no encontrado",
       code: "CUSTOMER_NOT_FOUND",
     });
@@ -100,14 +96,14 @@ const createSale = async (req, res) => {
     const product = await productRepository.findById(productId);
 
     if (!product) {
-      return res.status(404).json({
+      return sendError(res, 404, {
         error: "Producto no encontrado",
         code: "PRODUCT_NOT_FOUND",
       });
     }
 
     if (requestedQty > product.stock) {
-      return res.status(400).json({
+      return sendError(res, 400, {
         error: `Stock insuficiente para ${product.name}`,
         code: "INSUFFICIENT_STOCK",
         data: {
@@ -123,7 +119,7 @@ const createSale = async (req, res) => {
     const product = await productRepository.findById(item.productId);
 
     if (!product) {
-      return res.status(404).json({
+      return sendError(res, 404, {
         error: "Producto no encontrado",
         code: "PRODUCT_NOT_FOUND",
       });
@@ -172,12 +168,15 @@ const createSale = async (req, res) => {
     });
   }
 
-  res.status(201).json({
-    success: true,
-    data: newSale,
-    message: "Venta registrada exitosamente",
-    timestamp: now,
-  });
+  sendSuccess(
+    res,
+    {
+      data: newSale,
+      message: "Venta registrada exitosamente",
+      timestamp: now,
+    },
+    201
+  );
 };
 
 /**
@@ -188,7 +187,7 @@ const updateSale = async (req, res) => {
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Venta no encontrada",
       code: "SALE_NOT_FOUND",
     });
@@ -197,7 +196,7 @@ const updateSale = async (req, res) => {
   const validation = validateSaleUpdate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -205,8 +204,7 @@ const updateSale = async (req, res) => {
 
   const updatedSale = await saleRepository.update(saleId, req.body);
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: updatedSale,
     message: "Venta actualizada exitosamente",
     timestamp: updatedSale.updatedAt,
@@ -221,7 +219,7 @@ const cancelSale = async (req, res) => {
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Venta no encontrada",
       code: "SALE_NOT_FOUND",
     });
@@ -229,8 +227,7 @@ const cancelSale = async (req, res) => {
 
   const canceledSale = await saleRepository.update(saleId, { status: "Anulada" });
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: canceledSale,
     message: "Venta anulada exitosamente",
     timestamp: canceledSale.updatedAt,

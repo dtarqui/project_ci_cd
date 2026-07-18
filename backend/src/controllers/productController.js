@@ -7,6 +7,8 @@ const {
   validateProductUpdate,
 } = require("../utils/validators");
 const { createProductRepository } = require("../repositories/productRepository");
+const { filterByText } = require("../utils/helpers");
+const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const productRepository = createProductRepository();
 
@@ -17,7 +19,7 @@ const createProduct = async (req, res) => {
   const validation = validateProductCreate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -25,12 +27,15 @@ const createProduct = async (req, res) => {
 
   const newProduct = await productRepository.create(req.body);
 
-  res.status(201).json({
-    success: true,
-    data: newProduct,
-    message: "Producto creado exitosamente",
-    timestamp: new Date().toISOString(),
-  });
+  sendSuccess(
+    res,
+    {
+      data: newProduct,
+      message: "Producto creado exitosamente",
+      timestamp: new Date().toISOString(),
+    },
+    201
+  );
 };
 
 /**
@@ -41,19 +46,8 @@ const getProducts = async (req, res) => {
 
   let products = await productRepository.list();
 
-  // Filtrar por búsqueda
-  if (search) {
-    products = products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-
-  // Filtrar por categoría
-  if (category) {
-    products = products.filter((p) =>
-      p.category.toLowerCase().includes(category.toLowerCase())
-    );
-  }
+  products = filterByText(products, ["name"], search);
+  products = filterByText(products, ["category"], category);
 
   // Ordenar
   switch (sort) {
@@ -70,8 +64,7 @@ const getProducts = async (req, res) => {
       products.sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: products,
     count: products.length,
     timestamp: new Date().toISOString(),
@@ -86,17 +79,13 @@ const getProduct = async (req, res) => {
   const product = await productRepository.findById(productId);
 
   if (!product) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Producto no encontrado",
       code: "PRODUCT_NOT_FOUND",
     });
   }
 
-  res.json({
-    success: true,
-    data: product,
-    timestamp: new Date().toISOString(),
-  });
+  sendSuccess(res, { data: product, timestamp: new Date().toISOString() });
 };
 
 /**
@@ -107,7 +96,7 @@ const updateProduct = async (req, res) => {
   const product = await productRepository.findById(productId);
 
   if (!product) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Producto no encontrado",
       code: "PRODUCT_NOT_FOUND",
     });
@@ -116,7 +105,7 @@ const updateProduct = async (req, res) => {
   const validation = validateProductUpdate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -124,8 +113,7 @@ const updateProduct = async (req, res) => {
 
   const updatedProduct = await productRepository.update(productId, req.body);
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: updatedProduct,
     message: "Producto actualizado exitosamente",
     timestamp: new Date().toISOString(),
@@ -140,14 +128,13 @@ const deleteProduct = async (req, res) => {
   const deletedProduct = await productRepository.delete(productId);
 
   if (!deletedProduct) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Producto no encontrado",
       code: "PRODUCT_NOT_FOUND",
     });
   }
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: deletedProduct,
     message: "Producto eliminado exitosamente",
     timestamp: new Date().toISOString(),

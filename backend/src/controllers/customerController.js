@@ -7,6 +7,8 @@ const {
   validateCustomerUpdate,
 } = require("../utils/validators");
 const { createCustomerRepository } = require("../repositories/customerRepository");
+const { filterByText } = require("../utils/helpers");
+const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const customerRepository = createCustomerRepository();
 
@@ -17,7 +19,7 @@ const createCustomer = async (req, res) => {
   const validation = validateCustomerCreate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -25,12 +27,15 @@ const createCustomer = async (req, res) => {
 
   const newCustomer = await customerRepository.create(req.body);
 
-  res.status(201).json({
-    success: true,
-    data: newCustomer,
-    message: "Cliente creado exitosamente",
-    timestamp: new Date().toISOString(),
-  });
+  sendSuccess(
+    res,
+    {
+      data: newCustomer,
+      message: "Cliente creado exitosamente",
+      timestamp: new Date().toISOString(),
+    },
+    201
+  );
 };
 
 /**
@@ -41,17 +46,9 @@ const getCustomers = async (req, res) => {
 
   let customers = await customerRepository.list();
 
-  // Filtrar por búsqueda
-  if (search) {
-    customers = customers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.email.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.includes(search),
-    );
-  }
+  customers = filterByText(customers, ["name", "email", "phone"], search);
 
-  // Filtrar por estado
+  // Filtrar por estado (coincidencia exacta, no parcial)
   if (status) {
     customers = customers.filter(
       (c) => c.status.toLowerCase() === status.toLowerCase(),
@@ -78,8 +75,7 @@ const getCustomers = async (req, res) => {
       customers.sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: customers,
     count: customers.length,
     timestamp: new Date().toISOString(),
@@ -94,17 +90,13 @@ const getCustomer = async (req, res) => {
   const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Cliente no encontrado",
       code: "CUSTOMER_NOT_FOUND",
     });
   }
 
-  res.json({
-    success: true,
-    data: customer,
-    timestamp: new Date().toISOString(),
-  });
+  sendSuccess(res, { data: customer, timestamp: new Date().toISOString() });
 };
 
 /**
@@ -115,7 +107,7 @@ const updateCustomer = async (req, res) => {
   const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Cliente no encontrado",
       code: "CUSTOMER_NOT_FOUND",
     });
@@ -124,7 +116,7 @@ const updateCustomer = async (req, res) => {
   const validation = validateCustomerUpdate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -132,8 +124,7 @@ const updateCustomer = async (req, res) => {
 
   const updatedCustomer = await customerRepository.update(customerId, req.body);
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: updatedCustomer,
     message: "Cliente actualizado exitosamente",
     timestamp: new Date().toISOString(),
@@ -148,14 +139,13 @@ const deleteCustomer = async (req, res) => {
   const deletedCustomer = await customerRepository.delete(customerId);
 
   if (!deletedCustomer) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Cliente no encontrado",
       code: "CUSTOMER_NOT_FOUND",
     });
   }
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     data: deletedCustomer,
     message: "Cliente eliminado exitosamente",
     timestamp: new Date().toISOString(),

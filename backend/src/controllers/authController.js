@@ -10,6 +10,7 @@ const {
 const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
 const { UserDao } = require("../dao/userDao");
+const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const userRepository = createUserRepository();
 
@@ -21,7 +22,7 @@ const register = async (req, res) => {
   const validation = validateUserRegistration(normalizedPayload);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -43,7 +44,7 @@ const register = async (req, res) => {
 
   const existingByUsername = await userRepository.findByUsername(username);
   if (existingByUsername) {
-    return res.status(409).json({
+    return sendError(res, 409, {
       error: "username ya registrado",
       code: "USERNAME_TAKEN",
     });
@@ -51,7 +52,7 @@ const register = async (req, res) => {
 
   const existingByEmail = await userRepository.findByEmail(email);
   if (existingByEmail) {
-    return res.status(409).json({
+    return sendError(res, 409, {
       error: "email ya registrado",
       code: "EMAIL_TAKEN",
     });
@@ -78,12 +79,15 @@ const register = async (req, res) => {
     role: safeUser.role,
   });
 
-  return res.status(201).json({
-    success: true,
-    user: safeUser,
-    token,
-    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
-  });
+  return sendSuccess(
+    res,
+    {
+      user: safeUser,
+      token,
+      expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+    },
+    201
+  );
 };
 
 /**
@@ -93,7 +97,7 @@ const login = async (req, res) => {
   const validation = validateLoginCredentials(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -103,7 +107,7 @@ const login = async (req, res) => {
   const user = await userRepository.findByCredentials(username, password);
 
   if (!user) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Credenciales inválidas",
       code: "INVALID_CREDENTIALS",
     });
@@ -116,8 +120,7 @@ const login = async (req, res) => {
     role: user.role,
   });
 
-  res.json({
-    success: true,
+  sendSuccess(res, {
     user: userWithoutPassword,
     token,
     expiresIn: process.env.JWT_EXPIRES_IN || "1h",
@@ -128,8 +131,7 @@ const login = async (req, res) => {
  * Maneja el logout de usuarios
  */
 const logout = (req, res) => {
-  res.json({
-    success: true,
+  sendSuccess(res, {
     message: "Sesión cerrada correctamente",
     timestamp: new Date().toISOString(),
   });
@@ -142,14 +144,14 @@ const getMe = async (req, res) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Token requerido",
       code: "MISSING_TOKEN",
     });
   }
 
   if (!authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Token requerido",
       code: "MISSING_TOKEN",
     });
@@ -160,7 +162,7 @@ const getMe = async (req, res) => {
   const payload = verifyAuthToken(token);
 
   if (!payload) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Token inválido",
       code: "INVALID_TOKEN",
     });
@@ -169,7 +171,7 @@ const getMe = async (req, res) => {
   const userId = Number(payload.sub);
 
   if (!Number.isFinite(userId) || userId <= 0) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Token inválido",
       code: "INVALID_TOKEN",
     });
@@ -178,17 +180,14 @@ const getMe = async (req, res) => {
   const user = await userRepository.findById(userId);
 
   if (!user) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Token inválido",
       code: "INVALID_TOKEN",
     });
   }
 
   const userWithoutPassword = userRepository.sanitizeUser(user);
-  res.json({
-    success: true,
-    user: userWithoutPassword,
-  });
+  sendSuccess(res, { user: userWithoutPassword });
 };
 
 module.exports = {

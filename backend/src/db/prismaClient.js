@@ -16,4 +16,12 @@ const getPrismaClient = () => {
   return prismaClient;
 };
 
-module.exports = { getPrismaClient };
+/**
+ * True solo para el error de Prisma "registro no encontrado" (P2025), que
+ * los repositorios traducen a `null` (404 de negocio). Cualquier otro error
+ * (conexión caída, constraint violado, etc.) debe relanzarse para no
+ * disfrazar fallas reales de infraestructura como "no encontrado".
+ */
+const isRecordNotFoundError = (error) => error?.code === "P2025";
+
+module.exports = { getPrismaClient, isRecordNotFoundError };

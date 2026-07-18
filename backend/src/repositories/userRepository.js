@@ -6,7 +6,7 @@
 const crypto = require("crypto");
 const { UserDao } = require("../dao/userDao");
 const { getUsers, resetDataStore } = require("../db/dataStore");
-const { getPrismaClient } = require("../db/prismaClient");
+const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 
 const DEFAULT_ROLE = "vendedor";
 
@@ -241,16 +241,18 @@ class DatabaseUserRepository {
 
     try {
       return await getPrismaClient().user.update({ where: { id }, data });
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
     }
   }
 
   async deleteUser(id) {
     try {
       return await getPrismaClient().user.delete({ where: { id } });
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
     }
   }
 

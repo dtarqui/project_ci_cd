@@ -5,7 +5,7 @@
 
 const { CustomerDao } = require("../dao/customerDao");
 const { getMockData } = require("../db/dataStore");
-const { getPrismaClient } = require("../db/prismaClient");
+const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 
 class InMemoryCustomerRepository {
   async list() {
@@ -115,16 +115,18 @@ class DatabaseCustomerRepository {
 
     try {
       return await getPrismaClient().customer.update({ where: { id }, data });
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
     }
   }
 
   async delete(id) {
     try {
       return await getPrismaClient().customer.delete({ where: { id } });
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
     }
   }
 

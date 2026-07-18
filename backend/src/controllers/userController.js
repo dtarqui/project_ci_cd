@@ -4,6 +4,7 @@
 
 const { validateUserUpdate } = require("../utils/validators");
 const { createUserRepository } = require("../repositories/userRepository");
+const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const userRepository = createUserRepository();
 
@@ -12,23 +13,20 @@ const getMyProfile = async (req, res) => {
   const user = await userRepository.findById(userId);
 
   if (!user) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Usuario no encontrado",
       code: "USER_NOT_FOUND",
     });
   }
 
-  return res.json({
-    success: true,
-    user: userRepository.sanitizeUser(user),
-  });
+  return sendSuccess(res, { user: userRepository.sanitizeUser(user) });
 };
 
 const updateMyProfile = async (req, res) => {
   const validation = validateUserUpdate(req.body);
 
   if (!validation.isValid) {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: validation.error,
       code: validation.code,
     });
@@ -38,7 +36,7 @@ const updateMyProfile = async (req, res) => {
   const currentUser = await userRepository.findById(userId);
 
   if (!currentUser) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Usuario no encontrado",
       code: "USER_NOT_FOUND",
     });
@@ -47,7 +45,7 @@ const updateMyProfile = async (req, res) => {
   if (req.body.email && req.body.email.toLowerCase() !== (currentUser.email || "").toLowerCase()) {
     const existingByEmail = await userRepository.findByEmail(req.body.email);
     if (existingByEmail && existingByEmail.id !== userId) {
-      return res.status(409).json({
+      return sendError(res, 409, {
         error: "email ya registrado",
         code: "EMAIL_TAKEN",
       });
@@ -61,7 +59,7 @@ const updateMyProfile = async (req, res) => {
     );
 
     if (!isCurrentPasswordValid) {
-      return res.status(401).json({
+      return sendError(res, 401, {
         error: "Contraseña actual inválida",
         code: "INVALID_CURRENT_PASSWORD",
       });
@@ -83,17 +81,14 @@ const updateMyProfile = async (req, res) => {
 
   const updatedUser = await userRepository.updateUser(userId, updates);
 
-  return res.json({
-    success: true,
-    user: userRepository.sanitizeUser(updatedUser),
-  });
+  return sendSuccess(res, { user: userRepository.sanitizeUser(updatedUser) });
 };
 
 const deleteMyProfile = async (req, res) => {
   const { currentPassword } = req.body || {};
 
   if (!currentPassword || typeof currentPassword !== "string") {
-    return res.status(400).json({
+    return sendError(res, 400, {
       error: "currentPassword requerido",
       code: "MISSING_CURRENT_PASSWORD",
     });
@@ -103,7 +98,7 @@ const deleteMyProfile = async (req, res) => {
   const currentUser = await userRepository.findById(userId);
 
   if (!currentUser) {
-    return res.status(404).json({
+    return sendError(res, 404, {
       error: "Usuario no encontrado",
       code: "USER_NOT_FOUND",
     });
@@ -115,7 +110,7 @@ const deleteMyProfile = async (req, res) => {
   );
 
   if (!isCurrentPasswordValid) {
-    return res.status(401).json({
+    return sendError(res, 401, {
       error: "Contraseña actual inválida",
       code: "INVALID_CURRENT_PASSWORD",
     });
@@ -123,10 +118,7 @@ const deleteMyProfile = async (req, res) => {
 
   await userRepository.deleteUser(userId);
 
-  return res.json({
-    success: true,
-    message: "Usuario eliminado correctamente",
-  });
+  return sendSuccess(res, { message: "Usuario eliminado correctamente" });
 };
 
 module.exports = {

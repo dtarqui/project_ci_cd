@@ -12,30 +12,31 @@ const {
   cancelSale,
 } = require("../controllers/salesController");
 const { authenticateToken } = require("../middleware/auth");
+const { asyncHandler } = require("../utils/asyncHandler");
 
 /**
  * GET /api/sales - Listar ventas
  */
-router.get("/", authenticateToken, getSales);
+router.get("/", authenticateToken, asyncHandler(getSales));
 
 /**
  * GET /api/sales/:id - Obtener una venta
  */
-router.get("/:id", authenticateToken, getSale);
+router.get("/:id", authenticateToken, asyncHandler(getSale));
 
 /**
  * POST /api/sales - Crear venta
  */
-router.post("/", authenticateToken, createSale);
+router.post("/", authenticateToken, asyncHandler(createSale));
 
 /**
  * PUT /api/sales/:id - Actualizar venta
  */
-router.put("/:id", authenticateToken, updateSale);
+router.put("/:id", authenticateToken, asyncHandler(updateSale));
 
 /**
  * PUT /api/sales/:id/cancel - Anular venta
  */
-router.put("/:id/cancel", authenticateToken, cancelSale);
+router.put("/:id/cancel", authenticateToken, asyncHandler(cancelSale));
 
 module.exports = router;

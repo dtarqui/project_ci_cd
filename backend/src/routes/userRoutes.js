@@ -4,6 +4,7 @@
 
 const express = require("express");
 const { authenticateToken } = require("../middleware/auth");
+const { asyncHandler } = require("../utils/asyncHandler");
 const {
   getMyProfile,
   updateMyProfile,
@@ -12,8 +13,8 @@ const {
 
 const router = express.Router();
 
-router.get("/me", authenticateToken, getMyProfile);
-router.put("/me", authenticateToken, updateMyProfile);
-router.delete("/me", authenticateToken, deleteMyProfile);
+router.get("/me", authenticateToken, asyncHandler(getMyProfile));
+router.put("/me", authenticateToken, asyncHandler(updateMyProfile));
+router.delete("/me", authenticateToken, asyncHandler(deleteMyProfile));
 
 module.exports = router;

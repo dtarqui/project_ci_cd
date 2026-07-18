@@ -5,7 +5,7 @@
 
 const { SaleDao } = require("../dao/saleDao");
 const { getMockData } = require("../db/dataStore");
-const { getPrismaClient } = require("../db/prismaClient");
+const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 
 // Aplana la relación SaleItem[] de Prisma a la misma forma que usa el
 // frontend/InMemorySaleRepository: { productId, name, quantity, price, total }.
@@ -136,8 +136,9 @@ class DatabaseSaleRepository {
       });
 
       return mapSaleFromDb(sale);
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
     }
   }
 }
