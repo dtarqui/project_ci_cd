@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   MdSearch,
   MdReceiptLong,
@@ -10,16 +10,21 @@ import {
   MdVisibility,
 } from "react-icons/md";
 import { saleService, customerService, productService, handleApiError } from "../services/api";
+import useEntityList from "../hooks/useEntityList";
 import { formatCurrency, formatDate } from "../utils/format";
 import SalesForm from "./SalesForm";
+import Badge from "./ui/Badge";
 import Skeleton from "./ui/Skeleton";
 import Spinner from "./ui/Spinner";
 import "../styles/sales.css";
 
+const SALE_STATUS_TONE = {
+  Completada: "success",
+  Pendiente: "warning",
+  Anulada: "danger",
+};
+
 const SalesSection = () => {
-  const [sales, setSales] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSaleId, setSelectedSaleId] = useState(null);
@@ -29,27 +34,17 @@ const SalesSection = () => {
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [cancelingSaleId, setCancelingSaleId] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
-  const loadSales = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (selectedStatus) params.append("status", selectedStatus);
+  const {
+    items: sales,
+    setItems: setSales,
+    loading,
+    error: loadError,
+    reload: loadSales,
+  } = useEntityList(saleService.getSales, { status: selectedStatus });
 
-      const response = await saleService.getSales(params.toString());
-      setSales(response.data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Error loading sales:", handleApiError(err));
-      setError(handleApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedStatus]);
-
-  useEffect(() => {
-    loadSales();
-  }, [loadSales]);
+  const error = loadError ? handleApiError(loadError) : actionError;
 
   const loadFormOptions = useCallback(async () => {
     try {
@@ -112,8 +107,7 @@ const SalesSection = () => {
         prev.map((sale) => (sale.id === saleId ? response.data : sale)),
       );
     } catch (err) {
-      console.error("Error canceling sale:", handleApiError(err));
-      setError(handleApiError(err));
+      setActionError(handleApiError(err));
     } finally {
       setCancelingSaleId(null);
     }
@@ -287,9 +281,9 @@ const SalesSection = () => {
                     <span>{sale.items.length} items</span>
                   </div>
                   <div>
-                    <span className={`pill ${sale.status.toLowerCase()}`}>
+                    <Badge tone={SALE_STATUS_TONE[sale.status] || "neutral"}>
                       {sale.status}
-                    </span>
+                    </Badge>
                     <span>{formatDate(sale.createdAt)}</span>
                   </div>
                   <div className="row-actions">
@@ -343,9 +337,9 @@ const SalesSection = () => {
                 </div>
                 <div>
                   <p>Estado</p>
-                  <span className={`pill ${selectedSale.status.toLowerCase()}`}>
+                  <Badge tone={SALE_STATUS_TONE[selectedSale.status] || "neutral"}>
                     {selectedSale.status}
-                  </span>
+                  </Badge>
                 </div>
               </div>
               <div className="detail-items">

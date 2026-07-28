@@ -3,6 +3,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CustomersSection from "../components/CustomersSection";
 import * as apiService from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 // Mock customerService
 jest.mock("../services/api", () => ({
@@ -13,6 +14,10 @@ jest.mock("../services/api", () => ({
     deleteCustomer: jest.fn(),
   },
   handleApiError: jest.fn((error) => error?.message || "Error"),
+}));
+
+jest.mock("../context/AuthContext", () => ({
+  useAuth: jest.fn(),
 }));
 
 describe("Componente CustomersSection - Operaciones CRUD", () => {
@@ -50,6 +55,10 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuth.mockReturnValue({ user: adminUser });
+    apiService.handleApiError.mockImplementation(
+      (error) => error?.message || "Error"
+    );
     localStorage.setItem("token", "test_token");
     apiService.customerService.getCustomers.mockResolvedValue({
       success: true,
@@ -64,7 +73,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Renderizado", () => {
     it("debe renderizar el header con título", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Gestión de Clientes")).toBeInTheDocument();
@@ -72,7 +81,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar cantidad de clientes", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText(/2 cliente\(s\) registrado\(s\)/i)).toBeInTheDocument();
@@ -80,7 +89,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe renderizar tabla con clientes", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -89,7 +98,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar botón de nuevo cliente", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(
@@ -99,7 +108,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe renderizar controles de búsqueda y filtros", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(
@@ -118,7 +127,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         count: 1,
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const searchInput = await screen.findByPlaceholderText(
         /Nombre, email o teléfono/i
@@ -139,7 +148,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         count: 2,
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const statusSelects = screen.getAllByDisplayValue("");
       const statusSelect = statusSelects.find(sel => sel.id === "status" || sel.parentElement?.textContent.includes("Estado"));
@@ -161,7 +170,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         count: 2,
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const sortSelects = screen.getAllByDisplayValue("Nombre");
       if (sortSelects.length > 0) {
@@ -178,7 +187,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Crear Cliente", () => {
     it("debe abrir formulario al hacer click en 'Nuevo Cliente'", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const addButton = await screen.findByRole("button", {
         name: /Nuevo Cliente/i,
@@ -192,7 +201,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar todos los campos del formulario", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const addButton = await screen.findByRole("button", {
         name: /Nuevo Cliente/i,
@@ -215,7 +224,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         data: { id: 3, ...mockCustomers[0] },
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const addButton = await screen.findByRole("button", {
         name: /Nuevo Cliente/i,
@@ -251,7 +260,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Editar Cliente", () => {
     it("debe abrir formulario de edición al hacer click en editar", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -267,7 +276,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe cargar datos del cliente en el formulario", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -290,7 +299,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         data: { ...mockCustomers[0], name: "Updated" },
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -319,7 +328,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Eliminar Cliente", () => {
     it("debe mostrar modal de confirmación al hacer click en eliminar", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -337,7 +346,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe cancelar eliminación", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -366,7 +375,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         data: mockCustomers[0],
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -391,7 +400,8 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("no debe mostrar el botón de eliminar para un usuario vendedor", async () => {
-      render(<CustomersSection user={{ role: "vendedor" }} />);
+      useAuth.mockReturnValue({ user: { role: "vendedor" } });
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -409,7 +419,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         count: 0,
       });
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         const emptyState = screen.getByText(/No hay clientes para mostrar/i);
@@ -420,7 +430,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     it("debe manejar errores en la recuperación de datos", async () => {
       apiService.customerService.getCustomers.mockRejectedValue(new Error("API Error"));
 
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         const rows = screen.queryAllByRole("row");
@@ -431,7 +441,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Cerrar Formulario", () => {
     it("debe cerrar formulario al hacer click en cancelar durante creación", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const addButton = await screen.findByRole("button", {
         name: /Nuevo Cliente/i,
@@ -452,7 +462,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe cerrar formulario al hacer click en cancelar durante edición", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -477,7 +487,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
   describe("Información de Compras", () => {
     it("debe mostrar información de clientes", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -486,7 +496,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar emails de clientes", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText(/juan.garcia@email.com/i)).toBeInTheDocument();
@@ -494,7 +504,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar la tabla de clientes", async () => {
-      const { container } = render(<CustomersSection user={adminUser} />);
+      const { container } = render(<CustomersSection />);
 
       await waitFor(() => {
         const table = container.querySelector("table");
@@ -503,7 +513,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar información de estado", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         const statusBadges = screen.getAllByText("Activo");
@@ -518,9 +528,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         new Error("Create failed")
       );
 
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       const addButton = await screen.findByRole("button", {
         name: /Nuevo Cliente/i,
@@ -537,16 +545,15 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.clear(emailInput);
       await userEvent.type(emailInput, "test@test.com");
       await userEvent.clear(phoneInput);
-      await userEvent.type(phoneInput, "123");
+      await userEvent.type(phoneInput, "1234567890");
 
       const submitButton = screen.getByRole("button", { name: /Crear/i });
       await userEvent.click(submitButton);
 
       await waitFor(() => {
         expect(apiService.customerService.createCustomer).toHaveBeenCalled();
+        expect(screen.getByText("Create failed")).toBeInTheDocument();
       });
-
-      alertSpy.mockRestore();
     });
 
     it("debe manejar error al actualizar cliente", async () => {
@@ -554,9 +561,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
         new Error("Update failed")
       );
 
-      const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
-
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Juan García")).toBeInTheDocument();
@@ -574,15 +579,14 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
       await waitFor(() => {
         expect(apiService.customerService.updateCustomer).toHaveBeenCalled();
+        expect(screen.getByText("Update failed")).toBeInTheDocument();
       });
-
-      alertSpy.mockRestore();
     });
   });
 
   describe("Estados y Badges", () => {
     it("debe mostrar badge de estado Activo", async () => {
-      render(<CustomersSection user={adminUser} />);
+      render(<CustomersSection />);
 
       await waitFor(() => {
         const statusBadges = screen.getAllByText("Activo");
@@ -591,7 +595,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
     });
 
     it("debe aplicar clase correcta al badge de estado", async () => {
-      const { container } = render(<CustomersSection user={adminUser} />);
+      const { container } = render(<CustomersSection />);
 
       await waitFor(() => {
         const badges = container.querySelectorAll(".status-badge");

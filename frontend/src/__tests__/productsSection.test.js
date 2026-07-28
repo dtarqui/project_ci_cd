@@ -3,9 +3,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ProductsSection from "../components/ProductsSection";
 import * as apiService from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { formatCurrency } from "../utils/format";
 
 // Mock de los servicios
 jest.mock("../services/api");
+jest.mock("../context/AuthContext", () => ({
+  useAuth: jest.fn(),
+}));
 
 describe("Componente ProductsSection - Operaciones CRUD", () => {
   const adminUser = { role: "admin" };
@@ -34,6 +39,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuth.mockReturnValue({ user: adminUser });
     apiService.productService.getProducts.mockResolvedValue({
       data: mockProducts,
     });
@@ -41,7 +47,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Renderizado", () => {
     it("debe renderizar el header con título", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Gestión de Productos")).toBeInTheDocument();
@@ -49,7 +55,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar cantidad de productos", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText(/2 artículos/i)).toBeInTheDocument();
@@ -57,7 +63,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe renderizar tabla con productos", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -66,7 +72,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar botón de crear nuevo producto", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -85,9 +91,9 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
           )
       );
 
-      render(<ProductsSection user={adminUser} />);
+      const { container } = render(<ProductsSection />);
 
-      expect(screen.getByText(/cargando productos/i)).toBeInTheDocument();
+      expect(container.querySelectorAll(".ui-skeleton-row").length).toBeGreaterThan(0);
     });
 
     it("debe mostrar estado vacío cuando no hay productos", async () => {
@@ -95,7 +101,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         data: [],
       });
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -111,7 +117,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         new Error("API Error")
       );
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Gestión de Productos")).toBeInTheDocument();
@@ -139,7 +145,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Filtrado y Búsqueda", () => {
     it("debe llamar getProducts cuando se carga", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(apiService.productService.getProducts).toHaveBeenCalled();
@@ -147,7 +153,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe tener input de búsqueda", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -157,7 +163,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe tener selector de categorías", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -169,7 +175,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Estructura de Tabla", () => {
     it("debe mostrar columnas correctas", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Producto")).toBeInTheDocument();
@@ -184,7 +190,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar estado de producto", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         const statusElements = screen.getAllByText("En Stock");
@@ -195,7 +201,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Operaciones CRUD", () => {
     it("debe abrir el formulario de creación al hacer clic en nuevo producto", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -214,7 +220,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe abrir el formulario para editar al hacer clic en editar", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -242,7 +248,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         },
       });
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -267,7 +273,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         data: mockProducts[0],
       });
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -284,7 +290,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar confirmación de eliminación", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -303,7 +309,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     it("debe llamar deleteProduct cuando confirma la eliminación", async () => {
       apiService.productService.deleteProduct.mockResolvedValue({});
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -327,7 +333,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe cerrar el modal de confirmación al cancelar", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -357,7 +363,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         new Error("Delete failed")
       );
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -381,7 +387,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Filtros y Ordenamiento", () => {
     it("debe permitir cambiar el término de búsqueda", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByPlaceholderText(/buscar productos/i)).toBeInTheDocument();
@@ -394,7 +400,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe permitir cambiar la categoría", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByDisplayValue("Todas las categorías")).toBeInTheDocument();
@@ -407,7 +413,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe permitir cambiar el orden", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         const sortSelects = screen.getAllByRole("combobox");
@@ -426,7 +432,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe recargar productos cuando cambian los filtros", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(apiService.productService.getProducts).toHaveBeenCalled();
@@ -445,7 +451,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Estados y Colores", () => {
     it("debe mostrar badge de estado En Stock", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         const statusBadges = screen.getAllByText("En Stock");
@@ -463,7 +469,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         data: productsWithDifferentStatuses,
       });
 
-      const { container } = render(<ProductsSection user={adminUser} />);
+      const { container } = render(<ProductsSection />);
 
       await waitFor(() => {
         const badges = container.querySelectorAll(".status-badge");
@@ -474,15 +480,22 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Información de Productos", () => {
     it("debe mostrar precio formateado", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
+
+      const normalizeSpaces = (text) => text.replace(/\s+/g, " ").trim();
+      const expectedPrice = normalizeSpaces(formatCurrency(999.99));
 
       await waitFor(() => {
-        expect(screen.getByText("$999.99")).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            (_, node) => normalizeSpaces(node.textContent) === expectedPrice
+          )
+        ).toBeInTheDocument();
       });
     });
 
     it("debe mostrar cantidad de stock con unidades", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("45 unidades")).toBeInTheDocument();
@@ -490,7 +503,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar fecha de última venta", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("2026-02-04")).toBeInTheDocument();
@@ -498,7 +511,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe mostrar número de ventas", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("156")).toBeInTheDocument();
@@ -508,7 +521,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Modal de ProductForm", () => {
     it("debe pasar categorías al formulario", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -526,7 +539,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe cerrar el formulario cuando se cancela", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -552,7 +565,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
 
   describe("Acciones de Botones", () => {
     it("debe tener iconos en los botones de acción", async () => {
-      const { container } = render(<ProductsSection user={adminUser} />);
+      const { container } = render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -566,7 +579,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("debe tener aria-labels en botones de acción", async () => {
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -577,7 +590,8 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     });
 
     it("no debe mostrar el botón de eliminar para un usuario vendedor", async () => {
-      render(<ProductsSection user={{ role: "vendedor" }} />);
+      useAuth.mockReturnValue({ user: { role: "vendedor" } });
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
@@ -594,7 +608,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         new Error("Create failed")
       );
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(
@@ -611,7 +625,7 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
         new Error("Update failed")
       );
 
-      render(<ProductsSection user={adminUser} />);
+      render(<ProductsSection />);
 
       await waitFor(() => {
         expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();

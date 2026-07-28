@@ -9,6 +9,10 @@ jest.mock("../services/api", () => ({
   customerService: {
     getCustomers: jest.fn(() => Promise.resolve({ data: [] })),
   },
+  userService: {
+    getMyProfile: jest.fn(() => Promise.resolve({ user: {} })),
+  },
+  handleApiError: jest.fn((error) => error?.message || "Error"),
 }));
 
 jest.mock("../components/CustomersSection", () => {

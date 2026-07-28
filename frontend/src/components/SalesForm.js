@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import { MdAdd, MdClose, MdDelete } from "react-icons/md";
 import Button from "./ui/Button";
+import { formatCurrency } from "../utils/format";
 import "../styles/salesForm.css";
 
 const EMPTY_ITEM = { productId: "", quantity: 1 };
@@ -253,13 +254,7 @@ const SalesForm = ({
 
                   <div className="sales-line-total">
                     <span>Total</span>
-                    <strong>
-                      {lineTotal.toLocaleString("es-BO", {
-                        style: "currency",
-                        currency: "BOB",
-                        minimumFractionDigits: 2,
-                      })}
-                    </strong>
+                    <strong>{formatCurrency(lineTotal)}</strong>
                   </div>
 
                   <button
@@ -278,43 +273,19 @@ const SalesForm = ({
           <div className="sales-summary">
             <div>
               <span>Subtotal</span>
-              <strong>
-                {summary.subtotal.toLocaleString("es-BO", {
-                  style: "currency",
-                  currency: "BOB",
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
+              <strong>{formatCurrency(summary.subtotal)}</strong>
             </div>
             <div>
               <span>Impuesto (13%)</span>
-              <strong>
-                {summary.tax.toLocaleString("es-BO", {
-                  style: "currency",
-                  currency: "BOB",
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
+              <strong>{formatCurrency(summary.tax)}</strong>
             </div>
             <div>
               <span>Descuento</span>
-              <strong>
-                {summary.discount.toLocaleString("es-BO", {
-                  style: "currency",
-                  currency: "BOB",
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
+              <strong>{formatCurrency(summary.discount)}</strong>
             </div>
             <div className="sales-summary-total">
               <span>Total</span>
-              <strong>
-                {summary.total.toLocaleString("es-BO", {
-                  style: "currency",
-                  currency: "BOB",
-                  minimumFractionDigits: 2,
-                })}
-              </strong>
+              <strong>{formatCurrency(summary.total)}</strong>
             </div>
           </div>
 

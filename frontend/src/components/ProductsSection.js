@@ -1,17 +1,18 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdInventory2 } from "react-icons/md";
-import { productService } from "../services/api";
+import { productService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
+import { useAuth } from "../context/AuthContext";
 import ProductForm from "./ProductForm";
 import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import Modal from "./ui/Modal";
 import EmptyState from "./ui/EmptyState";
 import { SkeletonTableRows } from "./ui/Skeleton";
+import { formatCurrency } from "../utils/format";
 import "../styles/productsActions.css";
 
-const STATUS_TONE = {
+const PRODUCT_STATUS_TONE = {
   "En Stock": "success",
   "Bajo Stock": "warning",
   "Sin Stock": "danger",
@@ -19,7 +20,8 @@ const STATUS_TONE = {
 
 const TABLE_COLUMNS = 8;
 
-const ProductsSection = ({ user }) => {
+const ProductsSection = () => {
+  const { user } = useAuth();
   const canDelete = user?.role === "admin";
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,7 +36,6 @@ const ProductsSection = ({ user }) => {
     items: products,
     setItems: setProducts,
     loading,
-    reload: loadProducts,
   } = useEntityList(productService.getProducts, {
     search: searchTerm,
     category: selectedCategory,
@@ -79,8 +80,7 @@ const ProductsSection = ({ user }) => {
       setFormOpen(false);
       setEditingProduct(null);
     } catch (err) {
-      console.error("Error saving product:", err);
-      throw err;
+      throw new Error(handleApiError(err));
     }
   };
 
@@ -219,10 +219,10 @@ const ProductsSection = ({ user }) => {
                 <tr key={product.id}>
                   <td className="product-name">{product.name}</td>
                   <td>{product.category}</td>
-                  <td className="product-price">${product.price.toFixed(2)}</td>
+                  <td className="product-price">{formatCurrency(product.price)}</td>
                   <td className="product-stock">{product.stock} unidades</td>
                   <td>
-                    <Badge tone={STATUS_TONE[product.status] || "neutral"}>
+                    <Badge tone={PRODUCT_STATUS_TONE[product.status] || "neutral"}>
                       {product.status}
                     </Badge>
                   </td>
@@ -295,12 +295,6 @@ const ProductsSection = ({ user }) => {
       </Modal>
     </div>
   );
-};
-
-ProductsSection.propTypes = {
-  user: PropTypes.shape({
-    role: PropTypes.string,
-  }),
 };
 
 export default ProductsSection;

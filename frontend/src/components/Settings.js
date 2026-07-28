@@ -7,7 +7,7 @@ import {
   MdCheckCircle,
   MdErrorOutline,
 } from "react-icons/md";
-import { userService } from "../services/api";
+import { userService, handleApiError } from "../services/api";
 import Button from "./ui/Button";
 import Skeleton from "./ui/Skeleton";
 import "../styles/settings.css";
@@ -59,7 +59,7 @@ const Settings = () => {
     } catch (error) {
       setSaveStatus({
         type: "error",
-        message: error.response?.data?.error || "No se pudo cargar tu perfil",
+        message: handleApiError(error),
       });
     } finally {
       setLoadingProfile(false);
@@ -119,7 +119,7 @@ const Settings = () => {
     } catch (error) {
       setSaveStatus({
         type: "error",
-        message: error.response?.data?.error || "No se pudo guardar el perfil",
+        message: handleApiError(error),
       });
     } finally {
       setIsSaving(false);

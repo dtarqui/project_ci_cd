@@ -1,16 +1,18 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdPeopleOutline } from "react-icons/md";
 import { customerService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
+import { useAuth } from "../context/AuthContext";
+import CustomerForm from "./CustomerForm";
 import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import Modal from "./ui/Modal";
 import EmptyState from "./ui/EmptyState";
 import { SkeletonTableRows } from "./ui/Skeleton";
+import { formatCurrency } from "../utils/format";
 import "../styles/customersActions.css";
 
-const STATUS_TONE = {
+const CUSTOMER_STATUS_TONE = {
   activo: "success",
   inactivo: "danger",
   pendiente: "warning",
@@ -18,24 +20,16 @@ const STATUS_TONE = {
 
 const TABLE_COLUMNS = 9;
 
-const CustomersSection = ({ user }) => {
+const CustomersSection = () => {
+  const { user } = useAuth();
   const canDelete = user?.role === "admin";
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [sortBy, setSortBy] = useState("name");
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    postalCode: "",
-  });
 
   const {
     items: customers,
@@ -48,65 +42,31 @@ const CustomersSection = ({ user }) => {
     sort: sortBy,
   });
 
-  /**
-   * Abrir formulario para crear nuevo cliente
-   */
   const handleCreateCustomer = () => {
-    setEditingId(null);
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
-      postalCode: "",
-    });
-    setShowForm(true);
+    setEditingCustomer(null);
+    setFormOpen(true);
   };
 
-  /**
-   * Abrir formulario para editar un cliente
-   */
   const handleEditCustomer = (customer) => {
-    setEditingId(customer.id);
-    setFormData({
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address,
-      city: customer.city,
-      postalCode: customer.postalCode,
-    });
-    setShowForm(true);
+    setEditingCustomer(customer);
+    setFormOpen(true);
   };
 
-  /**
-   * Guardar cliente (crear o actualizar)
-   */
-  const handleSaveCustomer = async (e) => {
-    e.preventDefault();
-    setIsSaving(true);
-
+  const handleSaveCustomer = async (customerData) => {
     try {
-      if (editingId) {
-        await customerService.updateCustomer(editingId, formData);
+      if (editingCustomer) {
+        await customerService.updateCustomer(editingCustomer.id, customerData);
       } else {
-        await customerService.createCustomer(formData);
+        await customerService.createCustomer(customerData);
       }
-
-      setShowForm(false);
+      setFormOpen(false);
+      setEditingCustomer(null);
       loadCustomers();
-    } catch (error) {
-      console.error("Error saving customer:", handleApiError(error));
-      alert("Error saving customer. Please check all fields.");
-    } finally {
-      setIsSaving(false);
+    } catch (err) {
+      throw new Error(handleApiError(err));
     }
   };
 
-  /**
-   * Eliminar cliente
-   */
   const handleDeleteCustomer = async (id) => {
     setIsDeleting(true);
 
@@ -234,11 +194,11 @@ const CustomersSection = ({ user }) => {
                   <td>{customer.phone}</td>
                   <td>{customer.city}</td>
                   <td>
-                    <Badge tone={STATUS_TONE[customer.status.toLowerCase()] || "neutral"}>
+                    <Badge tone={CUSTOMER_STATUS_TONE[customer.status.toLowerCase()] || "neutral"}>
                       {customer.status}
                     </Badge>
                   </td>
-                  <td>${customer.totalSpent.toFixed(2)}</td>
+                  <td>{formatCurrency(customer.totalSpent)}</td>
                   <td>{customer.purchases}</td>
                   <td>
                     <div className="customer-actions">
@@ -269,119 +229,15 @@ const CustomersSection = ({ user }) => {
         </div>
       )}
 
-      {showForm && (
-        <div className="customer-form-overlay" onClick={() => setShowForm(false)}>
-          <div
-            className="customer-form-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3>{editingId ? "Editar Cliente" : "Nuevo Cliente"}</h3>
-            <form onSubmit={handleSaveCustomer}>
-              <div className="form-group">
-                <label htmlFor="name">Nombre *</label>
-                <input
-                  id="name"
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  placeholder="Juan García"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email *</label>
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  placeholder="juan@example.com"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="phone">Teléfono *</label>
-                <input
-                  id="phone"
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="1234567890"
-                  minLength="10"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="address">Dirección</label>
-                <input
-                  id="address"
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="Calle Principal 123"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="city">Ciudad</label>
-                <input
-                  id="city"
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
-                  }
-                  placeholder="Madrid"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="postalCode">Código Postal</label>
-                <input
-                  id="postalCode"
-                  type="text"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, postalCode: e.target.value })
-                  }
-                  placeholder="28001"
-                />
-              </div>
-
-              <div className="form-actions">
-                <Button type="submit" loading={isSaving}>
-                  {editingId ? "Actualizar" : "Crear"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowForm(false)}
-                  disabled={isSaving}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CustomerForm
+        customer={editingCustomer}
+        isOpen={formOpen}
+        onClose={() => {
+          setFormOpen(false);
+          setEditingCustomer(null);
+        }}
+        onSubmit={handleSaveCustomer}
+      />
 
       <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
         <h3 className="ui-modal-danger-title">Eliminar Cliente</h3>
@@ -411,12 +267,6 @@ const CustomersSection = ({ user }) => {
       </Modal>
     </div>
   );
-};
-
-CustomersSection.propTypes = {
-  user: PropTypes.shape({
-    role: PropTypes.string,
-  }),
 };
 
 export default CustomersSection;

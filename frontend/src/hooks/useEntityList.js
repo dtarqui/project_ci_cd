@@ -11,11 +11,13 @@ import { useState, useEffect, useCallback } from "react";
 const useEntityList = (fetchFn, filters) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filtersKey = JSON.stringify(filters);
 
   const load = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
@@ -26,6 +28,7 @@ const useEntityList = (fetchFn, filters) => {
     } catch (err) {
       console.error("Error loading list:", err);
       setItems([]);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -37,7 +40,7 @@ const useEntityList = (fetchFn, filters) => {
     load();
   }, [load]);
 
-  return { items, setItems, loading, reload: load };
+  return { items, setItems, loading, error, reload: load };
 };
 
 export default useEntityList;

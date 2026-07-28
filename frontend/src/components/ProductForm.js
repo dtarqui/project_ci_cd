@@ -176,7 +176,7 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="price">Precio (USD) *</label>
+              <label htmlFor="price">Precio (Bs) *</label>
               <input
                 type="number"
                 id="price"

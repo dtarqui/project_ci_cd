@@ -18,10 +18,10 @@ module.exports = {
   reporters: ["default", ["jest-junit", { outputDirectory: ".", outputName: "junit.xml" }]],
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 75,
+      functions: 82,
+      lines: 87,
+      statements: 87,
     },
   },
   moduleNameMapper: {

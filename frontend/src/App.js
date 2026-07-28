@@ -1,75 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./login";
 import Dashboard from "./dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { authService } from "./services/api";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./styles.css";
 import "./components/ui/ui.css";
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const hydrateSession = async () => {
-      const savedToken = localStorage.getItem("token");
-
-      if (!savedToken) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await authService.getMe();
-        if (response?.user?.id) {
-          setUser(response.user);
-          localStorage.setItem("user", JSON.stringify(response.user));
-        } else {
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
-        }
-      } catch (_error) {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Verificar si hay una sesión guardada
-    hydrateSession();
-
-    // Escuchar evento de no autorizado (401)
-    const handleUnauthorized = () => {
-      setUser(null);
-    };
-
-    const handleUserUpdated = (event) => {
-      if (event?.detail?.id) {
-        setUser(event.detail);
-      }
-    };
-
-    window.addEventListener("unauthorized", handleUnauthorized);
-    window.addEventListener("user-updated", handleUserUpdated);
-    return () => {
-      window.removeEventListener("unauthorized", handleUnauthorized);
-      window.removeEventListener("user-updated", handleUserUpdated);
-    };
-  }, []);
-
-  const handleLogin = (userData, token) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-  };
+function AppRoutes() {
+  const { user, loading, login, logout } = useAuth();
 
   if (loading) {
     return (
@@ -90,7 +29,7 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Login onLogin={handleLogin} mode="login" />
+              <Login onLogin={login} mode="login" />
             )
           }
         />
@@ -101,7 +40,7 @@ export default function App() {
             user ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <Login onLogin={handleLogin} mode="register" />
+              <Login onLogin={login} mode="register" />
             )
           }
         />
@@ -111,7 +50,7 @@ export default function App() {
           path="/dashboard/*"
           element={
             <ProtectedRoute isAuthenticated={!!user} user={user}>
-              <Dashboard user={user} onLogout={handleLogout} />
+              <Dashboard user={user} onLogout={logout} />
             </ProtectedRoute>
           }
         />
@@ -120,7 +59,7 @@ export default function App() {
           path="/:section"
           element={
             <ProtectedRoute isAuthenticated={!!user} user={user}>
-              <Dashboard user={user} onLogout={handleLogout} />
+              <Dashboard user={user} onLogout={logout} />
             </ProtectedRoute>
           }
         />
@@ -141,5 +80,13 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }

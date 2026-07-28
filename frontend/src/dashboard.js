@@ -128,7 +128,7 @@ export default function Dashboard({ user, onLogout }) {
           )}
 
           {activeSection !== "Dashboard" && (
-            <SectionContent type={activeSection} user={user} />
+            <SectionContent type={activeSection} />
           )}
         </main>
       </div>

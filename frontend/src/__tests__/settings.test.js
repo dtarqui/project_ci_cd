@@ -1,13 +1,20 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Settings from "../components/Settings";
-import { userService } from "../services/api";
+import { userService, handleApiError } from "../services/api";
 
 jest.mock("../services/api", () => ({
   userService: {
     getMyProfile: jest.fn(),
     updateMyProfile: jest.fn(),
   },
+  handleApiError: jest.fn(
+    (error) =>
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      error.message ||
+      "Error inesperado. Por favor intenta nuevamente."
+  ),
 }));
 
 const mockProfileUser = {
@@ -29,6 +36,13 @@ const mockProfileResponse = { user: mockProfileUser };
 describe("Componente Settings", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    handleApiError.mockImplementation(
+      (error) =>
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Error inesperado. Por favor intenta nuevamente."
+    );
     userService.getMyProfile.mockResolvedValue(mockProfileResponse);
     userService.updateMyProfile.mockResolvedValue(mockProfileResponse);
   });
