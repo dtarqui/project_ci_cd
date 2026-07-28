@@ -42,7 +42,7 @@ describe("Endpoints CRUD de productos", () => {
 
     it("debe filtrar productos por categoría", (done) => {
       request(app)
-        .get("/api/products?category=Electrónica")
+        .get(`/api/products?category=${encodeURIComponent("Electrónica")}`)
         .set("Authorization", validToken)
         .expect(200)
         .end((err, res) => {

@@ -341,7 +341,7 @@ const validateUserUpdate = (body) => {
  * @returns {Object} { isValid: boolean, error?: string, code?: string }
  */
 const validateCustomerCreate = (body) => {
-  const { name, email, phone, _address, _city, _postalCode } = body;
+  const { name, email, phone, address, city, postalCode } = body;
 
   if (!name || !email || !phone) {
     return {
@@ -364,6 +364,30 @@ const validateCustomerCreate = (body) => {
       isValid: false,
       error: "El teléfono debe tener al menos 10 caracteres",
       code: "INVALID_PHONE",
+    };
+  }
+
+  if (address !== undefined && (typeof address !== "string" || address.length > 180)) {
+    return {
+      isValid: false,
+      error: "La dirección debe ser texto de hasta 180 caracteres",
+      code: "INVALID_ADDRESS",
+    };
+  }
+
+  if (city !== undefined && (typeof city !== "string" || city.length > 80)) {
+    return {
+      isValid: false,
+      error: "La ciudad debe ser texto de hasta 80 caracteres",
+      code: "INVALID_CITY",
+    };
+  }
+
+  if (postalCode !== undefined && (typeof postalCode !== "string" || postalCode.length > 20)) {
+    return {
+      isValid: false,
+      error: "El código postal debe ser texto de hasta 20 caracteres",
+      code: "INVALID_POSTAL_CODE",
     };
   }
 

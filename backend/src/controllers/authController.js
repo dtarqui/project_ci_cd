@@ -9,7 +9,7 @@ const {
 } = require("../utils/validators");
 const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
-const { UserDao } = require("../dao/userDao");
+const { UserDao } = require("../mappers/userDao");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
 
 const userRepository = createUserRepository();

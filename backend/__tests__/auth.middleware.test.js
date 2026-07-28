@@ -1,4 +1,4 @@
-const { authenticateToken, errorHandler, notFoundHandler } = require("../src/middleware/auth");
+const { authenticateToken, requireRole, errorHandler, notFoundHandler } = require("../src/middleware/auth");
 const { createAuthToken } = require("../src/utils/helpers");
 
 describe("Pruebas de middleware de auth - Cobertura extendida", () => {
@@ -78,6 +78,55 @@ describe("Pruebas de middleware de auth - Cobertura extendida", () => {
       // Token con espacios extras - la implementación no hace trim
       req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
       authenticateToken(req, res, next);
+      expect(next).toHaveBeenCalled();
+    });
+  });
+
+  describe("requireRole", () => {
+    let res, next;
+
+    beforeEach(() => {
+      res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      next = jest.fn();
+    });
+
+    it("debe llamar next() cuando req.user.role está en la lista de roles permitidos", () => {
+      const req = { user: { role: "admin" } };
+      requireRole("admin", "supervisor")(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it("debe retornar 403 cuando req.user.role no está permitido", () => {
+      const req = { user: { role: "vendedor" } };
+      requireRole("admin")(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: "No tienes permisos para realizar esta acción",
+          code: "FORBIDDEN_ROLE",
+        })
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("debe retornar 403 cuando no hay req.user", () => {
+      const req = {};
+      requireRole("admin")(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it("debe permitir múltiples roles válidos", () => {
+      const req = { user: { role: "supervisor" } };
+      requireRole("admin", "supervisor")(req, res, next);
+
       expect(next).toHaveBeenCalled();
     });
   });

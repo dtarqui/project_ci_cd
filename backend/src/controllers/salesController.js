@@ -7,8 +7,8 @@ const { createSaleRepository } = require("../repositories/saleRepository");
 const { createProductRepository } = require("../repositories/productRepository");
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const { buildSaleFromRequest } = require("../services/salesService");
 
-const TAX_RATE = 0.13;
 const saleRepository = createSaleRepository();
 const productRepository = createProductRepository();
 const customerRepository = createCustomerRepository();
@@ -28,7 +28,7 @@ const getSales = async (req, res) => {
   }
 
   if (customerId) {
-    const parsedCustomerId = parseInt(customerId);
+    const parsedCustomerId = parseInt(customerId, 10);
     if (!Number.isNaN(parsedCustomerId)) {
       sales = sales.filter((sale) => sale.customerId === parsedCustomerId);
     }
@@ -45,7 +45,7 @@ const getSales = async (req, res) => {
  * Obtiene una venta específica por ID
  */
 const getSale = async (req, res) => {
-  const saleId = parseInt(req.params.id);
+  const saleId = parseInt(req.params.id, 10);
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
@@ -71,109 +71,26 @@ const createSale = async (req, res) => {
     });
   }
 
-  const { customerId, items, discount = 0, paymentMethod, notes, status } =
-    req.body;
-
-  const customer = await customerRepository.findById(customerId);
-
-  if (!customer) {
-    return sendError(res, 404, {
-      error: "Cliente no encontrado",
-      code: "CUSTOMER_NOT_FOUND",
-    });
-  }
-
-  let subtotal = 0;
-  const saleItems = [];
-  const requestedByProduct = new Map();
-
-  for (const item of items) {
-    const requestedQty = requestedByProduct.get(item.productId) || 0;
-    requestedByProduct.set(item.productId, requestedQty + item.quantity);
-  }
-
-  for (const [productId, requestedQty] of requestedByProduct.entries()) {
-    const product = await productRepository.findById(productId);
-
-    if (!product) {
-      return sendError(res, 404, {
-        error: "Producto no encontrado",
-        code: "PRODUCT_NOT_FOUND",
-      });
-    }
-
-    if (requestedQty > product.stock) {
-      return sendError(res, 400, {
-        error: `Stock insuficiente para ${product.name}`,
-        code: "INSUFFICIENT_STOCK",
-        data: {
-          productId: product.id,
-          availableStock: product.stock,
-          requestedQuantity: requestedQty,
-        },
-      });
-    }
-  }
-
-  for (const item of items) {
-    const product = await productRepository.findById(item.productId);
-
-    if (!product) {
-      return sendError(res, 404, {
-        error: "Producto no encontrado",
-        code: "PRODUCT_NOT_FOUND",
-      });
-    }
-
-    const lineTotal = parseFloat((product.price * item.quantity).toFixed(2));
-    subtotal += lineTotal;
-
-    saleItems.push({
-      productId: product.id,
-      name: product.name,
-      quantity: item.quantity,
-      price: product.price,
-      total: lineTotal,
-    });
-  }
-
-  subtotal = parseFloat(subtotal.toFixed(2));
-  const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
-  const total = parseFloat((subtotal + tax - discount).toFixed(2));
-
-  const now = new Date().toISOString();
-  const saleDate = now.split("T")[0];
-  const finalStatus = status || "Completada";
-  const newSale = await saleRepository.create({
-    customerId: customer.id,
-    customerName: customer.name,
-    items: saleItems,
-    subtotal,
-    tax,
-    discount,
-    total: total < 0 ? 0 : total,
-    status: finalStatus,
-    paymentMethod,
-    notes: notes || "",
+  const result = await buildSaleFromRequest(req.body, {
+    productRepository,
+    customerRepository,
+    saleRepository,
   });
 
-  // Actualiza inventario y métricas del cliente solo para ventas activas.
-  if (finalStatus.toLowerCase() !== "anulada") {
-    await productRepository.applySaleImpact(saleItems, saleDate);
-
-    await customerRepository.updateStats(customer.id, {
-      totalSpentDelta: newSale.total,
-      purchasesDelta: 1,
-      lastPurchase: saleDate,
+  if (result.error) {
+    return sendError(res, result.status, {
+      error: result.error,
+      code: result.code,
+      ...(result.data ? { data: result.data } : {}),
     });
   }
 
   sendSuccess(
     res,
     {
-      data: newSale,
+      data: result.sale,
       message: "Venta registrada exitosamente",
-      timestamp: now,
+      timestamp: result.timestamp,
     },
     201
   );
@@ -183,7 +100,7 @@ const createSale = async (req, res) => {
  * Actualiza una venta existente
  */
 const updateSale = async (req, res) => {
-  const saleId = parseInt(req.params.id);
+  const saleId = parseInt(req.params.id, 10);
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {
@@ -215,7 +132,7 @@ const updateSale = async (req, res) => {
  * Anula una venta
  */
 const cancelSale = async (req, res) => {
-  const saleId = parseInt(req.params.id);
+  const saleId = parseInt(req.params.id, 10);
   const sale = await saleRepository.findById(saleId);
 
   if (!sale) {

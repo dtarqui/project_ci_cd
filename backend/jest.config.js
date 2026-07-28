@@ -10,7 +10,6 @@ module.exports = {
     "!index.js",
     "!api/**",
     "!src/config/**",
-    "!src/repositories/**",
     "!**/*.test.js",
     "!**/*.spec.js",
   ],

@@ -3,9 +3,10 @@
  * Capa de acceso a datos de clientes (memory/database).
  */
 
-const { CustomerDao } = require("../dao/customerDao");
+const { CustomerDao } = require("../mappers/customerDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
+const { createRepository } = require("./factory");
 
 class InMemoryCustomerRepository {
   async list() {
@@ -150,15 +151,8 @@ class DatabaseCustomerRepository {
   }
 }
 
-const createCustomerRepository = () => {
-  const provider = process.env.REPOSITORY_MODE || "memory";
-
-  if (provider === "database") {
-    return new DatabaseCustomerRepository();
-  }
-
-  return new InMemoryCustomerRepository();
-};
+const createCustomerRepository = () =>
+  createRepository(InMemoryCustomerRepository, DatabaseCustomerRepository);
 
 module.exports = {
   InMemoryCustomerRepository,

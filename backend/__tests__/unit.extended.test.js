@@ -1,10 +1,8 @@
 const {
   calculateProductStatus,
-  getNextProductId,
   extractToken,
   createAuthToken,
   verifyAuthToken,
-  isValidToken,
 } = require("../src/utils/helpers");
 const {
   validateProductCreate,
@@ -37,22 +35,6 @@ describe("Pruebas unitarias - Cobertura extendida", () => {
     });
   });
 
-  describe("Helpers - obtener siguiente ID de producto", () => {
-    it("debe retornar ID siguiente", () => {
-      const products = [{ id: 1 }, { id: 2 }, { id: 5 }];
-      expect(getNextProductId(products)).toBe(6);
-    });
-
-    it("debe retornar 1 para array vacío", () => {
-      expect(getNextProductId([])).toBe(1);
-    });
-
-    it("debe manejar IDs grandes", () => {
-      const products = [{ id: 100 }, { id: 200 }];
-      expect(getNextProductId(products)).toBe(201);
-    });
-  });
-
   describe("Helpers - extraer token", () => {
     it("debe extraer token válido de header Bearer", () => {
       const token = extractToken("Bearer my-secret-token");
@@ -82,24 +64,19 @@ describe("Pruebas unitarias - Cobertura extendida", () => {
   });
 
   describe("Helpers - token válido", () => {
-    it("debe validar JWT firmado", () => {
-      const token = createAuthToken(1, { username: "admin" });
-      expect(isValidToken(token)).toBe(true);
-    });
-
     it("debe decodificar payload válido de JWT", () => {
       const token = createAuthToken(2, { username: "demo" });
       const payload = verifyAuthToken(token);
       expect(payload).toMatchObject({ sub: 2, username: "demo" });
     });
 
-    it("debe retornar false para token inválido", () => {
-      expect(isValidToken("invalid-token")).toBe(false);
-      expect(isValidToken("wrong")).toBe(false);
+    it("debe retornar null para token inválido", () => {
+      expect(verifyAuthToken("invalid-token")).toBeNull();
+      expect(verifyAuthToken("wrong")).toBeNull();
     });
 
-    it("debe retornar false para token vacío", () => {
-      expect(isValidToken("")).toBe(false);
+    it("debe retornar null para token vacío", () => {
+      expect(verifyAuthToken("")).toBeNull();
     });
   });
 

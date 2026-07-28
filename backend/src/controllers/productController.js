@@ -9,8 +9,16 @@ const {
 const { createProductRepository } = require("../repositories/productRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const { applySort } = require("../utils/queryHelpers");
 
 const productRepository = createProductRepository();
+
+const PRODUCT_SORTS = {
+  price: (a, b) => a.price - b.price,
+  stock: (a, b) => b.stock - a.stock,
+  sales: (a, b) => b.sales - a.sales,
+  default: (a, b) => a.name.localeCompare(b.name),
+};
 
 /**
  * Crea un nuevo producto
@@ -50,19 +58,7 @@ const getProducts = async (req, res) => {
   products = filterByText(products, ["category"], category);
 
   // Ordenar
-  switch (sort) {
-    case "price":
-      products.sort((a, b) => a.price - b.price);
-      break;
-    case "stock":
-      products.sort((a, b) => b.stock - a.stock);
-      break;
-    case "sales":
-      products.sort((a, b) => b.sales - a.sales);
-      break;
-    default:
-      products.sort((a, b) => a.name.localeCompare(b.name));
-  }
+  products = applySort(products, PRODUCT_SORTS, sort);
 
   sendSuccess(res, {
     data: products,
@@ -75,7 +71,7 @@ const getProducts = async (req, res) => {
  * Obtiene un producto específico por ID
  */
 const getProduct = async (req, res) => {
-  const productId = parseInt(req.params.id);
+  const productId = parseInt(req.params.id, 10);
   const product = await productRepository.findById(productId);
 
   if (!product) {
@@ -92,7 +88,7 @@ const getProduct = async (req, res) => {
  * Actualiza un producto existente
  */
 const updateProduct = async (req, res) => {
-  const productId = parseInt(req.params.id);
+  const productId = parseInt(req.params.id, 10);
   const product = await productRepository.findById(productId);
 
   if (!product) {
@@ -124,7 +120,7 @@ const updateProduct = async (req, res) => {
  * Elimina un producto
  */
 const deleteProduct = async (req, res) => {
-  const productId = parseInt(req.params.id);
+  const productId = parseInt(req.params.id, 10);
   const deletedProduct = await productRepository.delete(productId);
 
   if (!deletedProduct) {

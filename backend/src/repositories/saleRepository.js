@@ -3,9 +3,10 @@
  * Capa de acceso a datos de ventas (memory/database).
  */
 
-const { SaleDao } = require("../dao/saleDao");
+const { SaleDao } = require("../mappers/saleDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
+const { createRepository } = require("./factory");
 
 // Aplana la relación SaleItem[] de Prisma a la misma forma que usa el
 // frontend/InMemorySaleRepository: { productId, name, quantity, price, total }.
@@ -143,15 +144,8 @@ class DatabaseSaleRepository {
   }
 }
 
-const createSaleRepository = () => {
-  const provider = process.env.REPOSITORY_MODE || "memory";
-
-  if (provider === "database") {
-    return new DatabaseSaleRepository();
-  }
-
-  return new InMemorySaleRepository();
-};
+const createSaleRepository = () =>
+  createRepository(InMemorySaleRepository, DatabaseSaleRepository);
 
 module.exports = {
   InMemorySaleRepository,

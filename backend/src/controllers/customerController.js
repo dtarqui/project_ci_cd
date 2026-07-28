@@ -9,8 +9,17 @@ const {
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const { applySort } = require("../utils/queryHelpers");
 
 const customerRepository = createCustomerRepository();
+
+const CUSTOMER_SORTS = {
+  email: (a, b) => a.email.localeCompare(b.email),
+  spending: (a, b) => b.totalSpent - a.totalSpent,
+  purchases: (a, b) => b.purchases - a.purchases,
+  registered: (a, b) => new Date(b.registeredDate) - new Date(a.registeredDate),
+  default: (a, b) => a.name.localeCompare(b.name),
+};
 
 /**
  * Crea un nuevo cliente
@@ -56,24 +65,7 @@ const getCustomers = async (req, res) => {
   }
 
   // Ordenar
-  switch (sort) {
-    case "email":
-      customers.sort((a, b) => a.email.localeCompare(b.email));
-      break;
-    case "spending":
-      customers.sort((a, b) => b.totalSpent - a.totalSpent);
-      break;
-    case "purchases":
-      customers.sort((a, b) => b.purchases - a.purchases);
-      break;
-    case "registered":
-      customers.sort((a, b) =>
-        new Date(b.registeredDate) - new Date(a.registeredDate),
-      );
-      break;
-    default:
-      customers.sort((a, b) => a.name.localeCompare(b.name));
-  }
+  customers = applySort(customers, CUSTOMER_SORTS, sort);
 
   sendSuccess(res, {
     data: customers,
@@ -86,7 +78,7 @@ const getCustomers = async (req, res) => {
  * Obtiene un cliente específico por ID
  */
 const getCustomer = async (req, res) => {
-  const customerId = parseInt(req.params.id);
+  const customerId = parseInt(req.params.id, 10);
   const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
@@ -103,7 +95,7 @@ const getCustomer = async (req, res) => {
  * Actualiza un cliente existente
  */
 const updateCustomer = async (req, res) => {
-  const customerId = parseInt(req.params.id);
+  const customerId = parseInt(req.params.id, 10);
   const customer = await customerRepository.findById(customerId);
 
   if (!customer) {
@@ -135,7 +127,7 @@ const updateCustomer = async (req, res) => {
  * Elimina un cliente
  */
 const deleteCustomer = async (req, res) => {
-  const customerId = parseInt(req.params.id);
+  const customerId = parseInt(req.params.id, 10);
   const deletedCustomer = await customerRepository.delete(customerId);
 
   if (!deletedCustomer) {

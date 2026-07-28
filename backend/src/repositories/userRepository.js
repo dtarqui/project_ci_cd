@@ -4,9 +4,10 @@
  */
 
 const crypto = require("crypto");
-const { UserDao } = require("../dao/userDao");
+const { UserDao } = require("../mappers/userDao");
 const { getUsers, resetDataStore } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
+const { resolveRepositoryMode } = require("./factory");
 
 const DEFAULT_ROLE = "vendedor";
 
@@ -266,9 +267,7 @@ class DatabaseUserRepository {
 }
 
 const createUserRepository = () => {
-  const provider = process.env.REPOSITORY_MODE || "memory";
-
-  if (provider === "database") {
+  if (resolveRepositoryMode() === "database") {
     return new DatabaseUserRepository();
   }
 

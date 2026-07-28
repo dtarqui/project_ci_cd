@@ -3,10 +3,11 @@
  * Capa de acceso a datos de productos (memory/database).
  */
 
-const { ProductDao } = require("../dao/productDao");
+const { ProductDao } = require("../mappers/productDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 const { calculateProductStatus } = require("../utils/helpers");
+const { createRepository } = require("./factory");
 
 class InMemoryProductRepository {
   async list() {
@@ -162,15 +163,8 @@ class DatabaseProductRepository {
   }
 }
 
-const createProductRepository = () => {
-  const provider = process.env.REPOSITORY_MODE || "memory";
-
-  if (provider === "database") {
-    return new DatabaseProductRepository();
-  }
-
-  return new InMemoryProductRepository();
-};
+const createProductRepository = () =>
+  createRepository(InMemoryProductRepository, DatabaseProductRepository);
 
 module.exports = {
   InMemoryProductRepository,

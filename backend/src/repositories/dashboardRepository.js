@@ -6,6 +6,7 @@
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient } = require("../db/prismaClient");
 const { mapSaleFromDb } = require("./saleRepository");
+const { createRepository } = require("./factory");
 
 class InMemoryDashboardRepository {
   async getSourceData() {
@@ -53,15 +54,8 @@ class DatabaseDashboardRepository {
   }
 }
 
-const createDashboardRepository = () => {
-  const provider = process.env.REPOSITORY_MODE || "memory";
-
-  if (provider === "database") {
-    return new DatabaseDashboardRepository();
-  }
-
-  return new InMemoryDashboardRepository();
-};
+const createDashboardRepository = () =>
+  createRepository(InMemoryDashboardRepository, DatabaseDashboardRepository);
 
 module.exports = {
   InMemoryDashboardRepository,

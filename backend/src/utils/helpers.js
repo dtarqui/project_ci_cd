@@ -3,6 +3,7 @@
  */
 
 const jwt = require("jsonwebtoken");
+const { STOCK_THRESHOLDS } = require("../config/constants");
 
 const DEFAULT_JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
 const DEFAULT_JWT_ALGORITHM = process.env.JWT_ALGORITHM || "HS256";
@@ -57,18 +58,9 @@ const getJwtSecret = () => {
  * @returns {string} Estado del producto
  */
 const calculateProductStatus = (stock) => {
-  if (stock > 20) return "En Stock";
-  if (stock > 0) return "Bajo Stock";
+  if (stock > STOCK_THRESHOLDS.LOW) return "En Stock";
+  if (stock > STOCK_THRESHOLDS.OUT) return "Bajo Stock";
   return "Sin Stock";
-};
-
-/**
- * Obtiene el siguiente ID disponible para un producto
- * @param {Array} products - Array de productos
- * @returns {number} Siguiente ID disponible
- */
-const getNextProductId = (products) => {
-  return Math.max(...products.map((p) => p.id), 0) + 1;
 };
 
 /**
@@ -160,21 +152,10 @@ const verifyAuthToken = (token) => {
   }
 };
 
-/**
- * Valida si un token JWT es válido
- * @param {string} token - Token a validar
- * @returns {boolean} True si es válido
- */
-const isValidToken = (token) => {
-  return Boolean(verifyAuthToken(token));
-};
-
 module.exports = {
   calculateProductStatus,
-  getNextProductId,
   filterByText,
   extractToken,
   createAuthToken,
   verifyAuthToken,
-  isValidToken,
 };
