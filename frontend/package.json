@@ -2,6 +2,11 @@
   "name": "ci-cd-frontend",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
+  "author": "Daniel Tarqui",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",

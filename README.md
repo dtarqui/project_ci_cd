@@ -42,19 +42,12 @@ npm start
 Frontend disponible en `http://localhost:3000`.
 
 ## Variables de entorno
-Backend (`backend/.env`, base: `backend/sample.env`):
-
-```env
-PORT=4000
-NODE_ENV=development
-REPOSITORY_MODE=memory
-CORS_ALLOW_ORIGIN=*
-JWT_SECRET=change-this-secret-in-production
-JWT_EXPIRES_IN=1h
-JWT_ALGORITHM=HS256
-JWT_ISSUER=ci-cd-backend
-JWT_AUDIENCE=ci-cd-frontend
-```
+Backend (`backend/.env`, copiar de `backend/sample.env`): ese archivo marca cada
+variable como **OBLIGATORIA** u **OPCIONAL** con su valor por defecto. En resumen,
+lo unico estrictamente obligatorio es `JWT_SECRET` en produccion (32+ caracteres) y
+`DATABASE_URL` si usas `REPOSITORY_MODE=database` — todo lo demas (`PORT`, `NODE_ENV`,
+`REPOSITORY_MODE`, `CORS_*`, `JWT_EXPIRES_IN`, `JWT_ALGORITHM`, `JWT_ISSUER`,
+`JWT_AUDIENCE`) tiene un default seguro para desarrollo.
 
 ## Modo base de datos (Prisma + Supabase)
 Un solo switch, `REPOSITORY_MODE`, controla toda la capa de datos (users,
@@ -101,13 +94,9 @@ El frontend oculta el botón de eliminar cuando el usuario autenticado no es
 `admin`. Usuarios demo: `admin/admin123` (admin), `demo/demo123` y
 `test/test123` (vendedor).
 
-Frontend (`frontend/.env`, base: `frontend/sample.env`):
-
-```env
-API_BASE_URL=http://localhost:4000
-```
-
-Si `API_BASE_URL` no existe, el frontend usa `http://localhost:4000` en desarrollo.
+Frontend (`frontend/.env`, copiar de `frontend/sample.env`): `API_BASE_URL` es
+**OPCIONAL** — si no existe, el frontend usa `http://localhost:4000` en desarrollo
+y rutas relativas (`/`) en produccion.
 
 ## Scripts principales
 Backend (`backend/package.json`):
@@ -167,4 +156,11 @@ docker run -p 4000:4000 -e PORT=4000 -e NODE_ENV=production mi-tienda-backend:la
 ```
 
 ## Licencia
-MIT. Ver `LICENSE`.
+MIT — ver `LICENSE`. `backend/package.json` y `frontend/package.json` declaran
+`"license": "MIT"` de forma explicita y consistente con este archivo.
+
+Todas las dependencias directas y de desarrollo de ambos proyectos (backend y
+frontend, ~430 y ~910 paquetes respectivamente incluyendo transitivas) usan
+licencias permisivas — MIT, Apache-2.0, BSD-2/3-Clause, ISC — sin ninguna
+licencia copyleft (GPL/AGPL/SSPL) detectada; son compatibles con la licencia
+MIT de este repositorio.
