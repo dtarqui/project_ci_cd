@@ -31,16 +31,15 @@ describe("asyncHandler", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  it("reenvía a next() un throw síncrono dentro del handler", async () => {
+  it("un throw síncrono en un handler no-async se propaga de inmediato (no pasa por next)", () => {
+    // asyncHandler solo intercepta rechazos de promesa (fn async o que retorna
+    // una promesa); un throw síncrono ocurre antes de que exista promesa que
+    // envolver, así que se propaga tal cual al llamador.
     const error = new Error("sync throw");
     const handler = asyncHandler(() => {
       throw error;
     });
 
-    const next = jest.fn();
-    handler({}, {}, next);
-    await flushPromises();
-
-    expect(next).toHaveBeenCalledWith(error);
+    expect(() => handler({}, {}, jest.fn())).toThrow(error);
   });
 });
