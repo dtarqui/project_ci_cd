@@ -194,3 +194,4 @@ dale click a **Build Now**.
 | No llega ningun correo | SMTP no configurado (paso 2), o `NOTIFICATION_EMAIL` esta mal escrito en el Jenkinsfile. |
 | `withCredentials` falla con "vercel-token" no encontrado | La credencial no existe o el ID no es exactamente `vercel-token` (paso 1). |
 | Build se queda colgado ~20 min y termina en timeout | El CLI de Vercel esta pidiendo vincular el proyecto interactivamente porque falta `VERCEL_*_PROJECT`/`VERCEL_*_ORG` o no hay `.vercel/project.json` en el repo. |
+| Backend deployado tira `PrismaClientInitializationError: could not locate the Query Engine for runtime "rhel-openssl-3.0.x"` | El motor de Prisma se genero solo para la plataforma donde corrio `prisma generate` (Jenkins, Debian) y Vercel corre sobre `rhel-openssl-3.0.x`. Agrega `binaryTargets = ["native", "rhel-openssl-3.0.x"]` al bloque `generator client` en `backend/prisma/schema.prisma` y vuelve a desplegar (ya corregido). |
