@@ -73,7 +73,14 @@ def buildEmailHtml(status, headline, statsHtml, metricsExcerpt, linksHtml, build
 // tablas son el layout mas compatible entre clientes de correo para un
 // "grid" de 2 columnas (flexbox/grid de CSS no son fiables en email).
 def buildEmailStatsTable(rows) {
-    def cells = rows.collect { label, value ->
+    // No usar closure de 2 parametros aqui (`{ label, value -> ... }`): en
+    // el Groovy sandboxeado de Jenkins (CPS) no destructura cada fila de
+    // forma confiable -- el primer parametro termina recibiendo la fila
+    // completa (como texto "[label, value]") y el segundo queda null. Se
+    // indexa explicitamente para evitar depender de esa destructuracion.
+    def cells = rows.collect { row ->
+        def label = row[0]
+        def value = row[1]
         """<tr>
              <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;white-space:nowrap;">${label}</td>
              <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${value}</td>

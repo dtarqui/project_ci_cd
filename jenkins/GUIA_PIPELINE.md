@@ -46,6 +46,17 @@ Si no te interesa el correo por ahora, puedes ignorar esta seccion: el stage
 solo genera un `echo` de aviso y el `emailext` fallaria silenciosamente sin
 tumbar el build completo (los bloques `post` no afectan el resultado ya fijado).
 
+**Remitente "address not configured yet":** si el correo llega pero el
+nombre del remitente sale como `address not configured yet
+<dmtarqui@gmail.com>`, es una config **distinta** a la de SMTP de arriba:
+
+1. `Manage Jenkins` > `System` > seccion **Jenkins Location** (no "Extended
+   E-mail Notification").
+2. Campo **System Admin e-mail address**: pon algo como
+   `Jenkins CI/CD <dmtarqui@gmail.com>`.
+3. Guarda. Los siguientes correos van a mostrar ese nombre en vez del
+   placeholder.
+
 ## 3. Variables que viven en el propio Jenkinsfile
 
 Ojo: `VERCEL_BACKEND_PROJECT`, `VERCEL_BACKEND_ORG`, `VERCEL_FRONTEND_PROJECT`,
@@ -195,3 +206,5 @@ dale click a **Build Now**.
 | `withCredentials` falla con "vercel-token" no encontrado | La credencial no existe o el ID no es exactamente `vercel-token` (paso 1). |
 | Build se queda colgado ~20 min y termina en timeout | El CLI de Vercel esta pidiendo vincular el proyecto interactivamente porque falta `VERCEL_*_PROJECT`/`VERCEL_*_ORG` o no hay `.vercel/project.json` en el repo. |
 | Backend deployado tira `PrismaClientInitializationError: could not locate the Query Engine for runtime "rhel-openssl-3.0.x"` | El motor de Prisma se genero solo para la plataforma donde corrio `prisma generate` (Jenkins, Debian) y Vercel corre sobre `rhel-openssl-3.0.x`. Agrega `binaryTargets = ["native", "rhel-openssl-3.0.x"]` al bloque `generator client` en `backend/prisma/schema.prisma` y vuelve a desplegar (ya corregido). |
+| Correo de build sale con `null` en cada fila de la tabla de metricas (Build, Commit, Autor, etc.) | Bug del Groovy sandboxeado de Jenkins (CPS): el closure de 2 parametros `{ label, value -> }` en `buildEmailStatsTable` no destructura cada fila `['label', 'valor']` de forma confiable — el primer parametro recibe la fila completa como texto y el segundo queda `null`. Se arreglo indexando `row[0]`/`row[1]` en vez de depender de esa destructuracion implicita (ya corregido). |
+| Remitente del correo sale como "address not configured yet \<tu-correo\>" | No es SMTP — falta el campo **System Admin e-mail address** en `Manage Jenkins > System > Jenkins Location` (distinto de "Extended E-mail Notification"). Ver nota al final del paso 2. |
