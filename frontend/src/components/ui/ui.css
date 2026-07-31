@@ -262,3 +262,32 @@
     transform: translateY(0);
   }
 }
+
+/* ==================== Pagination ==================== */
+
+.ui-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 4px 4px;
+}
+
+.ui-pagination-summary {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.ui-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ui-pagination-page {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 600;
+  white-space: nowrap;
+}

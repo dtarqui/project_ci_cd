@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MdSearch,
   MdReceiptLong,
@@ -14,6 +14,7 @@ import useEntityList from "../hooks/useEntityList";
 import { formatCurrency, formatDate } from "../utils/format";
 import SalesForm from "./SalesForm";
 import Badge from "./ui/Badge";
+import Pagination from "./ui/Pagination";
 import Skeleton from "./ui/Skeleton";
 import Spinner from "./ui/Spinner";
 import "../styles/sales.css";
@@ -24,9 +25,12 @@ const SALE_STATUS_TONE = {
   Anulada: "danger",
 };
 
+const PAGE_SIZE = 10;
+
 const SalesSection = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
   const [selectedSaleId, setSelectedSaleId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -36,13 +40,31 @@ const SalesSection = () => {
   const [cancelingSaleId, setCancelingSaleId] = useState(null);
   const [actionError, setActionError] = useState(null);
 
+  const salesFilters = { status: selectedStatus, search: searchTerm };
+
   const {
     items: sales,
-    setItems: setSales,
     loading,
     error: loadError,
     reload: loadSales,
-  } = useEntityList(saleService.getSales, { status: selectedStatus });
+    meta,
+  } = useEntityList(saleService.getSales, {
+    ...salesFilters,
+    page,
+    pageSize: PAGE_SIZE,
+  });
+
+  // Sin paginar, solo para las tarjetas de metricas: deben reflejar TODAS
+  // las ventas que matchean el filtro/busqueda, no solo la pagina visible.
+  const { items: allMatchingSales, reload: reloadMetrics } = useEntityList(
+    saleService.getSales,
+    salesFilters,
+  );
+
+  // Volver a la pagina 1 cuando cambian filtro de estado o busqueda.
+  useEffect(() => {
+    setPage(1);
+  }, [selectedStatus, searchTerm]);
 
   const error = loadError ? handleApiError(loadError) : actionError;
 
@@ -63,49 +85,37 @@ const SalesSection = () => {
     }
   }, []);
 
-  const filteredSales = useMemo(() => {
-    if (!searchTerm) return sales;
-    const term = searchTerm.toLowerCase();
-    return sales.filter(
-      (sale) =>
-        sale.customerName.toLowerCase().includes(term) ||
-        String(sale.id).includes(term),
-    );
-  }, [sales, searchTerm]);
-
   const metrics = useMemo(() => {
-    const totalRevenue = filteredSales.reduce(
+    const totalRevenue = allMatchingSales.reduce(
       (acc, sale) => acc + (sale.total || 0),
       0,
     );
-    const pendingCount = filteredSales.filter(
+    const pendingCount = allMatchingSales.filter(
       (sale) => sale.status === "Pendiente",
     ).length;
-    const averageTicket = filteredSales.length
-      ? totalRevenue / filteredSales.length
+    const averageTicket = allMatchingSales.length
+      ? totalRevenue / allMatchingSales.length
       : 0;
 
     return {
-      totalSales: filteredSales.length,
+      totalSales: allMatchingSales.length,
       totalRevenue,
       pendingCount,
       averageTicket,
     };
-  }, [filteredSales]);
+  }, [allMatchingSales]);
 
   const selectedSale = useMemo(
-    () => filteredSales.find((sale) => sale.id === selectedSaleId),
-    [filteredSales, selectedSaleId],
+    () => sales.find((sale) => sale.id === selectedSaleId),
+    [sales, selectedSaleId],
   );
 
   const handleCancelSale = async (saleId) => {
     setCancelingSaleId(saleId);
 
     try {
-      const response = await saleService.cancelSale(saleId);
-      setSales((prev) =>
-        prev.map((sale) => (sale.id === saleId ? response.data : sale)),
-      );
+      await saleService.cancelSale(saleId);
+      await Promise.all([loadSales(), reloadMetrics()]);
     } catch (err) {
       setActionError(handleApiError(err));
     } finally {
@@ -126,7 +136,7 @@ const SalesSection = () => {
   const handleCreateSale = async (saleData) => {
     try {
       await saleService.createSale(saleData);
-      await loadSales();
+      await Promise.all([loadSales(), reloadMetrics()]);
       setFormOpen(false);
       setFormError("");
     } catch (err) {
@@ -232,7 +242,7 @@ const SalesSection = () => {
         <section className="sales-table">
           <header>
             <h3>Ordenes recientes</h3>
-            <span>{filteredSales.length} resultados</span>
+            <span>{meta?.total ?? sales.length} resultados</span>
           </header>
 
           {loading ? (
@@ -258,11 +268,11 @@ const SalesSection = () => {
             </div>
           ) : error ? (
             <div className="sales-state error">{error}</div>
-          ) : filteredSales.length === 0 ? (
+          ) : sales.length === 0 ? (
             <div className="sales-state">No hay ventas para mostrar.</div>
           ) : (
             <div className="sales-list">
-              {filteredSales.map((sale) => (
+              {sales.map((sale) => (
                 <article
                   key={sale.id}
                   className={
@@ -311,6 +321,16 @@ const SalesSection = () => {
                 </article>
               ))}
             </div>
+          )}
+
+          {meta && (
+            <Pagination
+              page={meta.page}
+              totalPages={meta.totalPages}
+              total={meta.total}
+              pageSize={meta.pageSize}
+              onPageChange={setPage}
+            />
           )}
         </section>
 

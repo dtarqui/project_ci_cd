@@ -9,7 +9,7 @@ const {
 const { createProductRepository } = require("../repositories/productRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
-const { applySort } = require("../utils/queryHelpers");
+const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
 
 const productRepository = createProductRepository();
 
@@ -60,9 +60,17 @@ const getProducts = async (req, res) => {
   // Ordenar
   products = applySort(products, PRODUCT_SORTS, sort);
 
+  const pagination = parsePagination(req.query);
+  const result = pagination
+    ? paginate(products, pagination)
+    : { data: products, total: products.length };
+
   sendSuccess(res, {
-    data: products,
-    count: products.length,
+    data: result.data,
+    count: result.total,
+    ...(pagination
+      ? { page: result.page, pageSize: result.pageSize, totalPages: result.totalPages }
+      : {}),
     timestamp: new Date().toISOString(),
   });
 };

@@ -66,7 +66,34 @@ describe("Componente SalesSection", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    saleService.getSales.mockResolvedValue({ data: mockSales });
+    // Simula el filtrado por servidor (status/search) que ahora hace el
+    // backend paginado, para que las aserciones sigan reflejando lo que
+    // el componente realmente vería.
+    saleService.getSales.mockImplementation((params = "") => {
+      const searchParams = new URLSearchParams(params);
+      const status = searchParams.get("status") || "";
+      const search = (searchParams.get("search") || "").toLowerCase();
+
+      let data = mockSales;
+      if (status) {
+        data = data.filter((sale) => sale.status === status);
+      }
+      if (search) {
+        data = data.filter(
+          (sale) =>
+            sale.customerName.toLowerCase().includes(search) ||
+            String(sale.id).includes(search)
+        );
+      }
+
+      return Promise.resolve({
+        data,
+        count: data.length,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
+      });
+    });
     saleService.cancelSale.mockResolvedValue({
       data: { ...mockSales[0], status: "Anulada" },
     });

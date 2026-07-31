@@ -3,6 +3,10 @@
  * En producción, estos datos vendrían de una base de datos real
  */
 
+const { calculateProductStatus } = require("../utils/helpers");
+
+const pad2 = (n) => String(n).padStart(2, "0");
+
 const mockData = {
   dailySales: "0.7M Bs.",
   totalOrders: 184,
@@ -263,6 +267,214 @@ const mockData = {
     },
   ],
 };
+
+// ---------------------------------------------------------------------------
+// Datos extra generados (append-only, nunca reasignan ids 1-4/1-5/1-3 de
+// arriba, que varios tests referencian directamente). Objetivo: catálogo
+// mas grande para poder probar paginación con datos realistas.
+// ---------------------------------------------------------------------------
+
+const PRODUCT_CATALOG = [
+  ["Mouse Inalámbrico Logitech", "Electrónica", 39.99],
+  ["Audífonos Sony WH-1000XM4", "Electrónica", 299.99],
+  ["Tablet Samsung Galaxy Tab", "Electrónica", 449.99],
+  ["Smartwatch Xiaomi Mi Band", "Electrónica", 49.99],
+  ["Cámara Web Logitech C920", "Electrónica", 89.99],
+  ["Disco SSD 1TB Samsung", "Electrónica", 109.99],
+  ["Router WiFi TP-Link", "Electrónica", 69.99],
+  ["Parlante Bluetooth JBL", "Electrónica", 79.99],
+  ["Impresora Multifuncional Epson", "Electrónica", 159.99],
+  ["Cargador Portátil 20000mAh", "Electrónica", 34.99],
+  ["Mesa de Comedor 6 Puestos", "Hogar", 549.99],
+  ["Refrigeradora Samsung 400L", "Hogar", 899.99],
+  ["Microondas LG 20L", "Hogar", 129.99],
+  ["Aspiradora Robot Xiaomi", "Hogar", 259.99],
+  ["Juego de Sábanas King", "Hogar", 59.99],
+  ["Lámpara de Piso LED", "Hogar", 44.99],
+  ["Set de Ollas Antiadherentes", "Hogar", 89.99],
+  ["Bicicleta Montaña Trek", "Deportes", 599.99],
+  ["Balón de Fútbol Nike", "Deportes", 34.99],
+  ["Mancuernas Ajustables 20kg", "Deportes", 119.99],
+  ["Colchoneta de Yoga", "Deportes", 24.99],
+  ["Zapatillas Running Adidas", "Deportes", 89.99],
+  ["Bolsa de Boxeo", "Deportes", 149.99],
+  ["Silla Ergonómica Ejecutiva", "Oficina", 249.99],
+  ["Escritorio Gamer", "Oficina", 199.99],
+  ["Impresora HP LaserJet", "Oficina", 179.99],
+  ["Organizador de Escritorio", "Oficina", 19.99],
+  ["Pizarra Blanca 90x60", "Oficina", 39.99],
+  ["Calculadora Científica Casio", "Oficina", 24.99],
+  ["Archivador Metálico 4 Gavetas", "Oficina", 129.99],
+  ["Lámpara de Escritorio LED", "Oficina", 29.99],
+  ["Chaqueta Impermeable North Face", "Ropa", 159.99],
+  ["Jeans Levi's 501", "Ropa", 79.99],
+  ["Zapatos de Vestir Cuero", "Ropa", 99.99],
+  ["Mochila Antirrobo", "Ropa", 69.99],
+  ["Reloj de Pulsera Casio", "Ropa", 49.99],
+];
+
+const buildGeneratedProducts = (startId) =>
+  PRODUCT_CATALOG.map(([name, category, price], index) => {
+    const id = startId + index;
+    // Stock 0 cada 9 productos para tener tambien casos "Sin Stock" de ejemplo.
+    const stock = id % 9 === 0 ? 0 : 3 + ((id * 5) % 40);
+    const sales = 1 + ((id * 3) % 35);
+    const lastSaleDay = 1 + (id % 28);
+
+    return {
+      id,
+      name,
+      category,
+      price,
+      stock,
+      status: calculateProductStatus(stock),
+      lastSale: `2026-03-${pad2(lastSaleDay)}`,
+      sales,
+    };
+  });
+
+const CUSTOMER_CATALOG = [
+  ["Patricia Vargas", "Sucre", "64"],
+  ["Roberto Quispe", "El Alto", "22"],
+  ["Carmen Mamani", "Oruro", "25"],
+  ["Jorge Choque", "Potosí", "26"],
+  ["Silvia Rocabado", "Tarija", "66"],
+  ["Fernando Chávez", "La Paz", "22"],
+  ["Gabriela Terán", "Santa Cruz de la Sierra", "33"],
+  ["Ricardo Flores", "Cochabamba", "44"],
+  ["Daniela Salazar", "La Paz", "22"],
+  ["Miguel Ángel Poma", "El Alto", "22"],
+  ["Verónica Cruz", "Santa Cruz de la Sierra", "33"],
+  ["Andrés Villca", "Oruro", "25"],
+  ["Paola Guzmán", "Sucre", "64"],
+  ["Diego Mendoza", "Cochabamba", "44"],
+  ["Claudia Ríos", "Tarija", "66"],
+];
+
+const CITY_POSTAL_PREFIX = {
+  "La Paz": "LP",
+  "Santa Cruz de la Sierra": "SC",
+  Cochabamba: "CB",
+  Sucre: "SU",
+  Oruro: "OR",
+  Potosí: "PT",
+  Tarija: "TJ",
+  "El Alto": "EA",
+};
+
+const CUSTOMER_STATUS_CYCLE = ["Activo", "Activo", "Activo", "Inactivo", "Pendiente"];
+
+const slugNameParts = (name) =>
+  name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, "")
+    .trim()
+    .split(/\s+/);
+
+const buildGeneratedCustomers = (startId) =>
+  CUSTOMER_CATALOG.map(([name, city, areaCode], index) => {
+    const id = startId + index;
+    const parts = slugNameParts(name);
+    const first = parts[0];
+    const last = parts[parts.length - 1];
+    const status = CUSTOMER_STATUS_CYCLE[id % CUSTOMER_STATUS_CYCLE.length];
+    const purchases = 1 + (id % 12);
+    const totalSpent = parseFloat((purchases * (180 + ((id * 37) % 420))).toFixed(2));
+    const registeredMonth = 1 + (id % 12);
+    const registeredDay = 1 + (id % 27);
+    const lastPurchaseDay = 1 + (id % 28);
+
+    return {
+      id,
+      name,
+      email: `${first}.${last}@email.com`,
+      phone: `+591 ${areaCode}${String(100000 + ((id * 913) % 900000)).slice(0, 6)}`,
+      address: `Calle ${10 + (id % 40)} #${100 + ((id * 17) % 900)}, ${city}`,
+      city,
+      postalCode: `${CITY_POSTAL_PREFIX[city] || "BO"}-${pad2(id)}`,
+      status,
+      registeredDate: `2025-${pad2(registeredMonth)}-${pad2(registeredDay)}`,
+      totalSpent,
+      purchases,
+      lastPurchase: `2026-03-${pad2(lastPurchaseDay)}`,
+    };
+  });
+
+const SALE_STATUS_CYCLE = [
+  "Completada",
+  "Completada",
+  "Completada",
+  "Pendiente",
+  "Completada",
+  "Anulada",
+  "Completada",
+];
+const PAYMENT_METHOD_CYCLE = ["Tarjeta", "Efectivo", "Transferencia", "QR"];
+// Ancla fija (no Date.now()) para que el seed sea reproducible en cualquier
+// momento en que corra `npm run db:seed` o los tests.
+const SALE_DATE_ANCHOR = new Date("2026-07-30T18:00:00.000Z");
+
+const saleDateMinusDays = (days, hour) => {
+  const date = new Date(SALE_DATE_ANCHOR);
+  date.setUTCDate(date.getUTCDate() - days);
+  date.setUTCHours(hour, (days * 7) % 60, 0, 0);
+  return date.toISOString();
+};
+
+const buildGeneratedSales = (startId, count, products, customers) =>
+  Array.from({ length: count }, (_, index) => {
+    const id = startId + index;
+    const daysAgo = count - index; // la mas nueva queda casi al dia del ancla
+    const customer = customers[id % customers.length];
+    const itemCount = 1 + (id % 3);
+    const items = Array.from({ length: itemCount }, (_, itemIndex) => {
+      const product = products[(id * 3 + itemIndex) % products.length];
+      const quantity = 1 + ((id + itemIndex) % 3);
+      const total = parseFloat((product.price * quantity).toFixed(2));
+
+      return {
+        productId: product.id,
+        name: product.name,
+        quantity,
+        price: product.price,
+        total,
+      };
+    });
+
+    const subtotal = parseFloat(
+      items.reduce((sum, item) => sum + item.total, 0).toFixed(2)
+    );
+    const discount = id % 6 === 0 ? parseFloat((subtotal * 0.05).toFixed(2)) : 0;
+    const tax = parseFloat((subtotal * 0.13).toFixed(2));
+    const total = parseFloat((subtotal + tax - discount).toFixed(2));
+    const status = SALE_STATUS_CYCLE[id % SALE_STATUS_CYCLE.length];
+    const createdAt = saleDateMinusDays(daysAgo, 9 + (id % 9));
+
+    return {
+      id,
+      customerId: customer.id,
+      customerName: customer.name,
+      items,
+      subtotal,
+      tax,
+      discount,
+      total,
+      status,
+      paymentMethod: PAYMENT_METHOD_CYCLE[id % PAYMENT_METHOD_CYCLE.length],
+      notes: status === "Anulada" ? "Cliente canceló" : "",
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+
+mockData.products = [...mockData.products, ...buildGeneratedProducts(5)];
+mockData.customers = [...mockData.customers, ...buildGeneratedCustomers(6)];
+mockData.sales = [
+  ...mockData.sales,
+  ...buildGeneratedSales(4, 50, mockData.products, mockData.customers),
+];
 
 const users = [
   {

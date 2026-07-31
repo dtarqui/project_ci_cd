@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdPeopleOutline } from "react-icons/md";
 import { customerService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
@@ -8,6 +8,7 @@ import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import Modal from "./ui/Modal";
 import EmptyState from "./ui/EmptyState";
+import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
 import "../styles/customersActions.css";
@@ -19,6 +20,7 @@ const CUSTOMER_STATUS_TONE = {
 };
 
 const TABLE_COLUMNS = 9;
+const PAGE_SIZE = 10;
 
 const CustomersSection = () => {
   const { user } = useAuth();
@@ -26,6 +28,7 @@ const CustomersSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -33,14 +36,21 @@ const CustomersSection = () => {
 
   const {
     items: customers,
-    setItems: setCustomers,
     loading,
+    meta,
     reload: loadCustomers,
   } = useEntityList(customerService.getCustomers, {
     search: searchTerm,
     status: selectedStatus,
     sort: sortBy,
+    page,
+    pageSize: PAGE_SIZE,
   });
+
+  // Volver a la página 1 cuando cambian los filtros.
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedStatus, sortBy]);
 
   const handleCreateCustomer = () => {
     setEditingCustomer(null);
@@ -72,7 +82,7 @@ const CustomersSection = () => {
 
     try {
       await customerService.deleteCustomer(id);
-      setCustomers(customers.filter((c) => c.id !== id));
+      await loadCustomers();
       setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting customer:", handleApiError(error));
@@ -102,7 +112,7 @@ const CustomersSection = () => {
       <div className="customers-header">
         <div>
           <h2>Gestión de Clientes</h2>
-          <p>{customers.length} cliente(s) registrado(s)</p>
+          <p>{meta?.total ?? customers.length} cliente(s) registrado(s)</p>
         </div>
         <Button className="btn-create-customer" onClick={handleCreateCustomer} icon={<MdAdd />}>
           Nuevo Cliente
@@ -227,6 +237,16 @@ const CustomersSection = () => {
             </tbody>
           </table>
         </div>
+      )}
+
+      {meta && (
+        <Pagination
+          page={meta.page}
+          totalPages={meta.totalPages}
+          total={meta.total}
+          pageSize={meta.pageSize}
+          onPageChange={setPage}
+        />
       )}
 
       <CustomerForm

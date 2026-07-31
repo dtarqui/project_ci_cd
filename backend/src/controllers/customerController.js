@@ -9,7 +9,7 @@ const {
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
-const { applySort } = require("../utils/queryHelpers");
+const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
 
 const customerRepository = createCustomerRepository();
 
@@ -67,9 +67,17 @@ const getCustomers = async (req, res) => {
   // Ordenar
   customers = applySort(customers, CUSTOMER_SORTS, sort);
 
+  const pagination = parsePagination(req.query);
+  const result = pagination
+    ? paginate(customers, pagination)
+    : { data: customers, total: customers.length };
+
   sendSuccess(res, {
-    data: customers,
-    count: customers.length,
+    data: result.data,
+    count: result.total,
+    ...(pagination
+      ? { page: result.page, pageSize: result.pageSize, totalPages: result.totalPages }
+      : {}),
     timestamp: new Date().toISOString(),
   });
 };

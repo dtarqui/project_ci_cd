@@ -8,6 +8,7 @@ const { createProductRepository } = require("../repositories/productRepository")
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
 const { buildSaleFromRequest } = require("../services/salesService");
+const { parsePagination, paginate } = require("../utils/queryHelpers");
 
 const saleRepository = createSaleRepository();
 const productRepository = createProductRepository();
@@ -17,13 +18,22 @@ const customerRepository = createCustomerRepository();
  * Obtiene lista de ventas con filtros
  */
 const getSales = async (req, res) => {
-  const { status = "", customerId = "" } = req.query;
+  const { status = "", customerId = "", search = "" } = req.query;
 
   let sales = await saleRepository.list();
 
   if (status) {
     sales = sales.filter(
       (sale) => sale.status.toLowerCase() === status.toLowerCase()
+    );
+  }
+
+  if (search) {
+    const term = search.toLowerCase();
+    sales = sales.filter(
+      (sale) =>
+        sale.customerName.toLowerCase().includes(term) ||
+        String(sale.id).includes(term)
     );
   }
 
@@ -34,9 +44,22 @@ const getSales = async (req, res) => {
     }
   }
 
+  // Ordenes recientes primero (no hay parametro `sort` para ventas).
+  sales = [...sales].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  const pagination = parsePagination(req.query);
+  const result = pagination
+    ? paginate(sales, pagination)
+    : { data: sales, total: sales.length };
+
   sendSuccess(res, {
-    data: sales,
-    count: sales.length,
+    data: result.data,
+    count: result.total,
+    ...(pagination
+      ? { page: result.page, pageSize: result.pageSize, totalPages: result.totalPages }
+      : {}),
     timestamp: new Date().toISOString(),
   });
 };

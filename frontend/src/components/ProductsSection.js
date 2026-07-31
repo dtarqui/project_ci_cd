@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdInventory2 } from "react-icons/md";
 import { productService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
@@ -8,6 +8,7 @@ import Button from "./ui/Button";
 import Badge from "./ui/Badge";
 import Modal from "./ui/Modal";
 import EmptyState from "./ui/EmptyState";
+import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
 import "../styles/productsActions.css";
@@ -19,6 +20,7 @@ const PRODUCT_STATUS_TONE = {
 };
 
 const TABLE_COLUMNS = 8;
+const PAGE_SIZE = 10;
 
 const ProductsSection = () => {
   const { user } = useAuth();
@@ -27,6 +29,7 @@ const ProductsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -36,11 +39,35 @@ const ProductsSection = () => {
     items: products,
     setItems: setProducts,
     loading,
+    meta,
+    reload: loadProducts,
   } = useEntityList(productService.getProducts, {
     search: searchTerm,
     category: selectedCategory,
     sort: sortBy,
+    page,
+    pageSize: PAGE_SIZE,
   });
+
+  // Volver a la página 1 cuando cambian los filtros (evita quedar en una
+  // página vacía si el filtro nuevo tiene menos resultados).
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedCategory, sortBy]);
+
+  // Categorías para el filtro: se piden sin paginar aparte, porque `products`
+  // ahora solo trae la página actual y dejaría el dropdown incompleto.
+  const [allCategories, setAllCategories] = useState([]);
+
+  useEffect(() => {
+    productService
+      .getProducts()
+      .then((response) => {
+        const cats = [...new Set((response.data || []).map((p) => p.category))].sort();
+        setAllCategories(cats);
+      })
+      .catch(() => {});
+  }, []);
 
   /**
    * Abrir formulario para crear nuevo producto
@@ -73,9 +100,10 @@ const ProductsSection = () => {
           products.map((p) => (p.id === editingProduct.id ? response.data : p)),
         );
       } else {
-        // Crear nuevo producto
-        const response = await productService.createProduct(productData);
-        setProducts([...products, response.data]);
+        // Crear nuevo producto: recarga la pagina actual (agregarlo a mano
+        // podria dejar la pagina con 11 items o en el orden equivocado).
+        await productService.createProduct(productData);
+        await loadProducts();
       }
       setFormOpen(false);
       setEditingProduct(null);
@@ -92,7 +120,7 @@ const ProductsSection = () => {
 
     try {
       await productService.deleteProduct(id);
-      setProducts(products.filter((p) => p.id !== id));
+      await loadProducts();
       setDeleteConfirm(null);
     } catch (err) {
       console.error("Error deleting product:", err);
@@ -102,7 +130,7 @@ const ProductsSection = () => {
     }
   };
 
-  const categories = [...new Set(products.map((p) => p.category))].sort();
+  const categories = allCategories;
 
   if (error) {
     return (
@@ -134,7 +162,7 @@ const ProductsSection = () => {
         <div>
           <h2>Gestión de Productos</h2>
           <p>
-            Administra tu catálogo de productos ({products.length} artículos)
+            Administra tu catálogo de productos ({meta?.total ?? products.length} artículos)
           </p>
         </div>
         <Button
@@ -255,6 +283,16 @@ const ProductsSection = () => {
             </tbody>
           </table>
         </div>
+      )}
+
+      {meta && (
+        <Pagination
+          page={meta.page}
+          totalPages={meta.totalPages}
+          total={meta.total}
+          pageSize={meta.pageSize}
+          onPageChange={setPage}
+        />
       )}
 
       {/* Modal de Formulario */}
