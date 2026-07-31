@@ -1,0 +1,10 @@
+git:latest
+github:latest
+workflow-aggregator:latest
+nodejs:latest
+timestamper:latest
+ws-cleanup:latest
+credentials-binding:latest
+email-ext:latest
+htmlpublisher:latest
+configuration-as-code:latest

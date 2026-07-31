@@ -1,0 +1,25 @@
+jenkins:
+  systemMessage: "Jenkins local - project_ci_cd (levantado via Docker)"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${ADMIN_USER}"
+          password: "${ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+# Nombre 'Node18' debe coincidir con `tools { nodejs 'Node18' }` en el
+# Jenkinsfile. Se descarga solo la primera vez que un pipeline lo requiere.
+tool:
+  nodejs:
+    installations:
+      - name: "Node18"
+        properties:
+          - installSource:
+              installers:
+                - nodeJSInstaller:
+                    id: "18.20.4"
+                    npmPackagesRefreshHours: 72

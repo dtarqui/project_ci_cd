@@ -14,9 +14,29 @@ const profile = process.env.METRICS_PROFILE || "pre-cicd";
 const durationSeconds = Number(process.env.BUILD_DURATION_SECONDS || 0);
 const frontendTestDurationSeconds = Number(process.env.FRONTEND_TEST_DURATION_SECONDS || 0);
 const backendTestDurationSeconds = Number(process.env.BACKEND_TEST_DURATION_SECONDS || 0);
-const coverageThreshold = Number(process.env.COVERAGE_THRESHOLD || 0);
 const timestamp = new Date().toISOString();
 const LOW_COVERAGE_LIMIT = 10;
+
+// El objetivo de cobertura real es el que cada proyecto ya exige en su propio
+// jest.config.js (distinto por metrica y por frontend/backend). Antes este
+// script usaba un unico COVERAGE_THRESHOLD (env var, ej. 85) desconectado de
+// esos valores reales -- ademas de comparar solo "lines", lo que producia un
+// "objetivo" que no correspondia a nada realmente exigido por los tests.
+function readCoverageThresholds(projectDir) {
+  try {
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const config = require(path.join(projectDir, "jest.config.js"));
+    const g = (config && config.coverageThreshold && config.coverageThreshold.global) || {};
+    return {
+      lines: typeof g.lines === "number" ? g.lines : null,
+      statements: typeof g.statements === "number" ? g.statements : null,
+      branches: typeof g.branches === "number" ? g.branches : null,
+      functions: typeof g.functions === "number" ? g.functions : null,
+    };
+  } catch (_err) {
+    return { lines: null, statements: null, branches: null, functions: null };
+  }
+}
 
 function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
@@ -147,7 +167,7 @@ function toCsvValue(value) {
   return raw;
 }
 
-function buildCoverageFileRanking(coverageSummary, limit = LOW_COVERAGE_LIMIT) {
+function buildCoverageFileRanking(coverageSummary, projectDir, limit = LOW_COVERAGE_LIMIT) {
   if (!coverageSummary || typeof coverageSummary !== "object") {
     return [];
   }
@@ -161,8 +181,11 @@ function buildCoverageFileRanking(coverageSummary, limit = LOW_COVERAGE_LIMIT) {
     if (!lines || typeof lines.pct !== "number") {
       continue;
     }
+    // coverage-summary.json guarda rutas absolutas del entorno donde corrio
+    // Jest; se muestran relativas al proyecto para que el reporte sea legible
+    // y portable entre maquinas/agentes de CI.
     ranking.push({
-      file: filePath,
+      file: path.relative(projectDir, filePath).split(path.sep).join("/"),
       lineCoveragePct: Number(lines.pct.toFixed(2)),
       coveredLines: lines.covered,
       totalLines: lines.total,
@@ -252,8 +275,17 @@ const backendCoverage = {
   functions: metricFromCoverageSummary(backendCoverageSummary, "functions"),
 };
 
-const lowCoverageFrontendFiles = buildCoverageFileRanking(frontendCoverageSummary);
-const lowCoverageBackendFiles = buildCoverageFileRanking(backendCoverageSummary);
+const lowCoverageFrontendFiles = buildCoverageFileRanking(
+  frontendCoverageSummary,
+  path.join(rootDir, "frontend")
+);
+const lowCoverageBackendFiles = buildCoverageFileRanking(
+  backendCoverageSummary,
+  path.join(rootDir, "backend")
+);
+
+const frontendThresholds = readCoverageThresholds(path.join(rootDir, "frontend"));
+const backendThresholds = readCoverageThresholds(path.join(rootDir, "backend"));
 
 const frontendJunit = parseJUnit(path.join(rootDir, "frontend", "junit.xml"));
 const backendJunit = parseJUnit(path.join(rootDir, "backend", "junit.xml"));
@@ -273,10 +305,33 @@ const totalSuites = frontendSuiteCount + backendSuiteCount;
 const frontendFailedTestcases = frontendJunit.failedTestcases;
 const backendFailedTestcases = backendJunit.failedTestcases;
 
-const frontendCoverageGapVsTarget =
-  frontendCoverage.lines.pct === null ? null : Number((coverageThreshold - frontendCoverage.lines.pct).toFixed(2));
-const backendCoverageGapVsTarget =
-  backendCoverage.lines.pct === null ? null : Number((coverageThreshold - backendCoverage.lines.pct).toFixed(2));
+// Delta = cobertura real - objetivo real de CADA proyecto (leido de su propio
+// jest.config.js). Positivo o cero = cumple/supera el objetivo; negativo =
+// por debajo. (Antes era "objetivo - real", asi que superar el objetivo daba
+// un numero negativo que parecia una falla cuando en realidad era algo bueno.)
+function coverageDelta(actualPct, thresholdPct) {
+  if (actualPct === null || thresholdPct === null) {
+    return null;
+  }
+  return Number((actualPct - thresholdPct).toFixed(2));
+}
+
+function meetsAllThresholds(coverage, thresholds) {
+  const keys = ["lines", "statements", "branches", "functions"];
+  const comparable = keys.filter((k) => thresholds[k] !== null && coverage[k].pct !== null);
+  if (!comparable.length) {
+    return null;
+  }
+  return comparable.every((k) => coverage[k].pct >= thresholds[k]);
+}
+
+const frontendTests = frontendJunit.tests;
+const backendTests = backendJunit.tests;
+
+const frontendLinesDeltaVsThreshold = coverageDelta(frontendCoverage.lines.pct, frontendThresholds.lines);
+const backendLinesDeltaVsThreshold = coverageDelta(backendCoverage.lines.pct, backendThresholds.lines);
+const frontendMeetsThreshold = meetsAllThresholds(frontendCoverage, frontendThresholds);
+const backendMeetsThreshold = meetsAllThresholds(backendCoverage, backendThresholds);
 
 const row = {
   timestamp,
@@ -288,6 +343,8 @@ const row = {
   frontendTestDurationSeconds,
   backendTestDurationSeconds,
   totalTests,
+  frontendTests,
+  backendTests,
   passedTests,
   failedTests,
   skippedTests,
@@ -305,17 +362,52 @@ const row = {
   backendStatementCoverage: backendCoverage.statements.pct,
   backendBranchCoverage: backendCoverage.branches.pct,
   backendFunctionCoverage: backendCoverage.functions.pct,
-  coverageThreshold,
-  frontendCoverageGapVsTarget,
-  backendCoverageGapVsTarget,
+  frontendLinesThreshold: frontendThresholds.lines,
+  backendLinesThreshold: backendThresholds.lines,
+  frontendLinesDeltaVsThreshold,
+  backendLinesDeltaVsThreshold,
+  frontendMeetsThreshold,
+  backendMeetsThreshold,
   commit,
   author,
   buildUrl,
 };
 
+// Deployment Frequency y Change Failure Rate son 2 de las 4 metricas DORA
+// (indicadores estandar de la industria/academia para medir si un pipeline
+// de CI/CD realmente mejora la entrega de software). Se calculan aqui porque
+// ya tenemos todo lo necesario acumulado en el historico: no requieren
+// instrumentacion nueva, solo leer `result` y `timestamp` de cada build.
+function computeChangeFailureRatePct(rows) {
+  const withResult = rows.filter((r) => r.result);
+  if (!withResult.length) {
+    return null;
+  }
+  const failed = withResult.filter((r) => /fail/i.test(r.result)).length;
+  return Number(((failed / withResult.length) * 100).toFixed(2));
+}
+
+function computeDeploymentFrequency(rows) {
+  const successfulBuilds = rows.filter((r) => r.result && /success/i.test(r.result)).length;
+  const timestamps = rows.map((r) => new Date(r.timestamp).getTime()).filter((t) => Number.isFinite(t));
+  const daysObserved =
+    timestamps.length >= 2
+      ? Math.max(1, Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 86400000))
+      : 1;
+  return {
+    successfulBuilds,
+    daysObserved,
+    perWeek: successfulBuilds > 0 ? Number(((successfulBuilds / daysObserved) * 7).toFixed(2)) : 0,
+  };
+}
+
 const csvPath = path.join(metricsDir, "pre-cicd-baseline.csv");
 const historicalRows = parseCsvRows(csvPath);
 const previous = historicalRows.length ? historicalRows[historicalRows.length - 1] : null;
+
+const allBuildsIncludingCurrent = [...historicalRows, row];
+const changeFailureRatePct = computeChangeFailureRatePct(allBuildsIncludingCurrent);
+const deploymentFrequency = computeDeploymentFrequency(allBuildsIncludingCurrent);
 
 const previousDuration = previous ? toNumberOrNull(previous.durationSeconds) : null;
 const previousFailureRate = previous ? toNumberOrNull(previous.failureRatePct) : null;
@@ -369,15 +461,22 @@ const detailedPayload = {
     },
   },
   coverageBreakdown: {
-    targetLineCoveragePct: coverageThreshold,
     frontend: {
       ...frontendCoverage,
+      thresholds: frontendThresholds,
+      meetsThreshold: frontendMeetsThreshold,
       lowCoverageFiles: lowCoverageFrontendFiles,
     },
     backend: {
       ...backendCoverage,
+      thresholds: backendThresholds,
+      meetsThreshold: backendMeetsThreshold,
       lowCoverageFiles: lowCoverageBackendFiles,
     },
+  },
+  doraLite: {
+    changeFailureRatePct,
+    deploymentFrequency,
   },
   trend: {
     previousBuild: {
@@ -412,6 +511,8 @@ const headers = [
   "frontendTestDurationSeconds",
   "backendTestDurationSeconds",
   "totalTests",
+  "frontendTests",
+  "backendTests",
   "passedTests",
   "failedTests",
   "skippedTests",
@@ -429,9 +530,12 @@ const headers = [
   "backendStatementCoverage",
   "backendBranchCoverage",
   "backendFunctionCoverage",
-  "coverageThreshold",
-  "frontendCoverageGapVsTarget",
-  "backendCoverageGapVsTarget",
+  "frontendLinesThreshold",
+  "backendLinesThreshold",
+  "frontendLinesDeltaVsThreshold",
+  "backendLinesDeltaVsThreshold",
+  "frontendMeetsThreshold",
+  "backendMeetsThreshold",
   "deltaDurationSeconds",
   "deltaFailureRatePct",
   "deltaFrontendLineCoverage",
@@ -461,11 +565,30 @@ if (!fs.existsSync(csvPath)) {
   }
 }
 
+function verdictIcon(meets) {
+  if (meets === null) {
+    return "⬜";
+  }
+  return meets ? "✅" : "⚠️";
+}
+
+function formatDelta(delta) {
+  if (delta === null) {
+    return "N/A";
+  }
+  const sign = delta > 0 ? "+" : "";
+  return `${sign}${delta} pts`;
+}
+
+const isFirstBuild = historicalRows.length === 0;
+const trendNote = isFirstBuild ? " _(N/A: este es el primer build registrado, aun no hay build previo con que comparar)_" : "";
+
 const mdPath = path.join(metricsDir, "pre-cicd-baseline.md");
 const md = [
   "# Metricas Pre-CI/CD",
   "",
   "Este archivo se actualiza automaticamente en Jenkins al finalizar cada build.",
+  "Guia de lectura completa en `docs/metrics/README.md`.",
   "",
   `- Ultima actualizacion: ${timestamp}`,
   `- Build: #${buildNumber}`,
@@ -473,29 +596,32 @@ const md = [
   `- Duracion total (s): ${durationSeconds}`,
   `- Duracion tests frontend (s): ${frontendTestDurationSeconds}`,
   `- Duracion tests backend (s): ${backendTestDurationSeconds}`,
-  `- Tests totales: ${totalTests}`,
+  `- Tests totales: ${totalTests} (frontend: ${frontendTests}, backend: ${backendTests})`,
   `- Tests aprobados: ${passedTests}`,
   `- Tests fallidos: ${failedTests}`,
   `- Tests omitidos: ${skippedTests}`,
   `- Tasa de aprobacion (%): ${passRatePct}`,
   `- Tasa de fallos (%): ${failureRatePct}`,
   `- Tasa de omitidos (%): ${skippedRatePct}`,
-  `- Suites detectadas: ${totalSuites} (FE: ${frontendSuiteCount}, BE: ${backendSuiteCount})`,
+  `- Archivos de prueba ejecutados: ${totalSuites} (frontend: ${frontendSuiteCount}, backend: ${backendSuiteCount})`,
   "",
-  "## Cobertura",
-  `- Objetivo de cobertura lineas (%): ${coverageThreshold}`,
-  `- Cobertura frontend lineas (%): ${frontendLineCoverage ?? "N/A"}`,
-  `- Cobertura frontend statements/branches/functions (%): ${frontendCoverage.statements.pct ?? "N/A"} / ${frontendCoverage.branches.pct ?? "N/A"} / ${frontendCoverage.functions.pct ?? "N/A"}`,
-  `- Gap frontend vs objetivo (%): ${frontendCoverageGapVsTarget ?? "N/A"}`,
-  `- Cobertura backend lineas (%): ${backendLineCoverage ?? "N/A"}`,
-  `- Cobertura backend statements/branches/functions (%): ${backendCoverage.statements.pct ?? "N/A"} / ${backendCoverage.branches.pct ?? "N/A"} / ${backendCoverage.functions.pct ?? "N/A"}`,
-  `- Gap backend vs objetivo (%): ${backendCoverageGapVsTarget ?? "N/A"}`,
+  "## Cobertura (vs. objetivo real de cada jest.config.js)",
+  `${verdictIcon(frontendMeetsThreshold)} **Frontend** — lineas ${frontendLineCoverage ?? "N/A"}% / objetivo ${frontendThresholds.lines ?? "N/A"}% (${formatDelta(frontendLinesDeltaVsThreshold)})`,
+  `  - statements/branches/functions (%): ${frontendCoverage.statements.pct ?? "N/A"} / ${frontendCoverage.branches.pct ?? "N/A"} / ${frontendCoverage.functions.pct ?? "N/A"}`,
+  `${verdictIcon(backendMeetsThreshold)} **Backend** — lineas ${backendLineCoverage ?? "N/A"}% / objetivo ${backendThresholds.lines ?? "N/A"}% (${formatDelta(backendLinesDeltaVsThreshold)})`,
+  `  - statements/branches/functions (%): ${backendCoverage.statements.pct ?? "N/A"} / ${backendCoverage.branches.pct ?? "N/A"} / ${backendCoverage.functions.pct ?? "N/A"}`,
   "",
-  "## Tendencia (comparativo)",
-  `- Delta duracion total vs build previo (s): ${row.deltaDurationSeconds ?? "N/A"}`,
-  `- Delta tasa de fallos vs build previo (%): ${row.deltaFailureRatePct ?? "N/A"}`,
-  `- Delta cobertura FE lineas vs build previo (%): ${row.deltaFrontendLineCoverage ?? "N/A"}`,
-  `- Delta cobertura BE lineas vs build previo (%): ${row.deltaBackendLineCoverage ?? "N/A"}`,
+  "_Nota: el pipeline desactiva el fallo automatico de Jest por cobertura (`--coverageThreshold='{}'`) para poder generar reportes aun si no se alcanza el objetivo; los ✅/⚠️ de arriba son quien realmente indica si se cumplio._",
+  "",
+  "## Indicadores estilo DORA (calculados del historico acumulado)",
+  `- Change Failure Rate — builds fallidos / total (%): ${changeFailureRatePct ?? "N/A"} _(menor es mejor; mide que tan seguido un cambio rompe el pipeline)_`,
+  `- Deployment Frequency — builds exitosos: ${deploymentFrequency.successfulBuilds} en ${deploymentFrequency.daysObserved} dia(s) analizados (~${deploymentFrequency.perWeek}/semana) _(mayor es mejor; mide que tan seguido se entrega software funcionando)_`,
+  "",
+  "## Tendencia (comparativo vs. build anterior)",
+  `- Delta duracion total (s): ${row.deltaDurationSeconds ?? "N/A"}${trendNote}`,
+  `- Delta tasa de fallos (%): ${row.deltaFailureRatePct ?? "N/A"}${trendNote}`,
+  `- Delta cobertura frontend lineas (%): ${row.deltaFrontendLineCoverage ?? "N/A"}${trendNote}`,
+  `- Delta cobertura backend lineas (%): ${row.deltaBackendLineCoverage ?? "N/A"}${trendNote}`,
   `- Promedio movil 5 builds (duracion s): ${rolling5AvgDurationSeconds ?? "N/A"}`,
   `- Promedio movil 5 builds (fallos %): ${rolling5AvgFailureRatePct ?? "N/A"}`,
   "",
@@ -539,6 +665,7 @@ const md = [
   "- JUnit: `frontend/junit.xml`, `backend/junit.xml`",
   "- Coverage: `frontend/coverage/coverage-summary.json`, `backend/coverage/coverage-summary.json`",
   "- Coverage per-file: entries del `coverage-summary.json` por archivo",
+  "- Objetivos de cobertura: `coverageThreshold.global` de `frontend/jest.config.js` y `backend/jest.config.js` (no un valor fijo)",
   "- Contexto de build: variables de Jenkins (`BUILD_NUMBER`, `JOB_NAME`, `BUILD_URL`, commit y autor)",
   "",
   "## Evidencia historica",

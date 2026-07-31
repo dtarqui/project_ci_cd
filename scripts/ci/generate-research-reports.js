@@ -151,6 +151,28 @@ function splitBeforeAfter(rows) {
   };
 }
 
+// Change Failure Rate y Deployment Frequency: 2 de las 4 metricas DORA,
+// estandar para evaluar objetivamente si la adopcion de CI/CD mejora la
+// entrega de software. Se derivan de `result` y `timestamp`, ya presentes
+// en cada fila del historico.
+function changeFailureRatePct(rows) {
+  if (!rows.length) {
+    return null;
+  }
+  const failed = rows.filter((r) => (r.result || "") && /fail/i.test(r.result)).length;
+  return Number(((failed / rows.length) * 100).toFixed(2));
+}
+
+function deploymentFrequencyPerWeek(rows) {
+  const successful = rows.filter((r) => (r.result || "") && /success/i.test(r.result)).length;
+  const timestamps = rows.map((r) => new Date(r.timestamp).getTime()).filter((t) => Number.isFinite(t));
+  const daysObserved =
+    timestamps.length >= 2
+      ? Math.max(1, Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 86400000))
+      : 1;
+  return successful > 0 ? Number(((successful / daysObserved) * 7).toFixed(2)) : 0;
+}
+
 function summarizeRows(rows) {
   const getMetric = (name) => rows.map((r) => toNumberOrNull(r[name])).filter((v) => v !== null);
 
@@ -168,6 +190,8 @@ function summarizeRows(rows) {
     avgFrontendCoveragePct: average(frontendCoverage),
     avgBackendCoveragePct: average(backendCoverage),
     avgPassRatePct: average(passRate),
+    changeFailureRatePct: changeFailureRatePct(rows),
+    deploymentFrequencyPerWeek: deploymentFrequencyPerWeek(rows),
   };
 }
 
@@ -226,6 +250,18 @@ function buildComparativeReport(rows) {
       metric: "Tasa promedio de aprobacion tests (%)",
       before: pre.avgPassRatePct,
       after: post.avgPassRatePct,
+      interpretation: "Mayor es mejor",
+    },
+    {
+      metric: "Change Failure Rate - DORA (%)",
+      before: pre.changeFailureRatePct,
+      after: post.changeFailureRatePct,
+      interpretation: "Menor es mejor",
+    },
+    {
+      metric: "Deployment Frequency - DORA (builds exitosos/semana)",
+      before: pre.deploymentFrequencyPerWeek,
+      after: post.deploymentFrequencyPerWeek,
       interpretation: "Mayor es mejor",
     },
   ];

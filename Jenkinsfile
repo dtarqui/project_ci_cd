@@ -1,3 +1,87 @@
+// Helpers para el correo de notificacion (definidos fuera de pipeline{} para
+// poder reusarlos desde post.success/failure/unstable sin duplicar HTML).
+def emailStatusColor(status) {
+    if (status == 'SUCCESS') { return '#15803d' }
+    if (status == 'UNSTABLE') { return '#b45309' }
+    return '#b91c1c'
+}
+
+def emailStatusBg(status) {
+    if (status == 'SUCCESS') { return '#f0fdf4' }
+    if (status == 'UNSTABLE') { return '#fffbeb' }
+    return '#fef2f2'
+}
+
+def emailStatusLabel(status) {
+    if (status == 'SUCCESS') { return 'Build exitoso' }
+    if (status == 'UNSTABLE') { return 'Build inestable' }
+    return 'Build fallido'
+}
+
+// Recorta docs/metrics/pre-cicd-baseline.md a lo relevante para un correo:
+// se queda con el resumen + cobertura + DORA + tendencia + casos fallidos,
+// y descarta el ranking largo de archivos y "fuente de datos"/"evidencia
+// historica" (demasiado detalle para un email; eso queda para quien abra
+// el artefacto completo del build).
+def trimMetricsForEmail(mdText) {
+    if (!mdText?.trim()) {
+        return 'No se encontro docs/metrics/pre-cicd-baseline.md para este build.'
+    }
+    def text = mdText
+    def rankingStart = text.indexOf('## Archivos con menor cobertura de lineas')
+    def rankingEnd = text.indexOf('## Casos de prueba fallidos')
+    if (rankingStart >= 0 && rankingEnd > rankingStart) {
+        text = text.substring(0, rankingStart) + text.substring(rankingEnd)
+    }
+    def sourceIdx = text.indexOf('## Fuente de datos')
+    if (sourceIdx >= 0) {
+        text = text.substring(0, sourceIdx)
+    }
+    text = text.replaceFirst('(?m)^# .*\n+', '')
+    text = text.replaceFirst('(?m)^Este archivo.*\n.*\n+', '')
+    return text.trim()
+}
+
+// Shell HTML comun (banner de color + tarjeta + pie de pagina) para los 3
+// tipos de correo. Usa tablas/estilos inline porque la mayoria de clientes
+// de correo (Outlook incluido) ignoran <style> y CSS moderno.
+def buildEmailHtml(status, headline, statsHtml, metricsExcerpt, linksHtml, buildUrl) {
+    def color = emailStatusColor(status)
+    def bg = emailStatusBg(status)
+    return """
+    <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:0 auto;color:#1f2937;">
+      <div style="background:${color};color:#ffffff;padding:20px 24px;border-radius:8px 8px 0 0;">
+        <div style="font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85;">Mi Tienda Online &middot; CI/CD</div>
+        <div style="font-size:22px;font-weight:600;margin-top:6px;">${emailStatusLabel(status)}</div>
+        <div style="font-size:14px;opacity:.9;margin-top:2px;">${headline}</div>
+      </div>
+      <div style="background:${bg};border:1px solid #e5e7eb;border-top:none;padding:24px;">
+        ${statsHtml}
+        <div style="font-size:13px;font-weight:600;color:#374151;margin:20px 0 8px;">Metricas de este build</div>
+        <pre style="background:#111827;color:#e5e7eb;padding:16px;border-radius:6px;font-size:12.5px;line-height:1.55;overflow-x:auto;white-space:pre-wrap;margin:0;">${metricsExcerpt}</pre>
+        <div style="font-size:13px;font-weight:600;color:#374151;margin:20px 0 8px;">Enlaces</div>
+        ${linksHtml}
+      </div>
+      <div style="background:${bg};border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;padding:16px 24px;font-size:12px;color:#6b7280;">
+        Mensaje automatico de Jenkins &mdash; <a href="${buildUrl}" style="color:${color};">Ver build completo</a>
+      </div>
+    </div>
+    """
+}
+
+// Fila de datos clave (build, commit, autor, duracion) como tabla HTML -- las
+// tablas son el layout mas compatible entre clientes de correo para un
+// "grid" de 2 columnas (flexbox/grid de CSS no son fiables en email).
+def buildEmailStatsTable(rows) {
+    def cells = rows.collect { label, value ->
+        """<tr>
+             <td style="padding:6px 12px 6px 0;color:#6b7280;font-size:13px;white-space:nowrap;">${label}</td>
+             <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">${value}</td>
+           </tr>"""
+    }.join("\n")
+    return "<table style=\"border-collapse:collapse;width:100%;\">${cells}</table>"
+}
+
 pipeline {
     agent any
 
@@ -28,7 +112,6 @@ pipeline {
         
         // Métricas y monitoreo
         STAGE_START_TIME = ""
-        COVERAGE_THRESHOLD = "85"
         METRICS_PROFILE = "pre-cicd"
         METRICS_DIR = "docs/metrics"
         
@@ -40,7 +123,6 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timeout(time: 20, unit: 'MINUTES')
         timestamps()
-        retry(2)
         skipDefaultCheckout()
     }
 
@@ -143,6 +225,9 @@ pipeline {
         }
 
         stage('Frontend Dependencies') {
+            options {
+                retry(2)
+            }
             steps {
                 echo "Instalando dependencias del frontend..."
                 dir(env.FRONTEND_DIR) {
@@ -150,20 +235,13 @@ pipeline {
                         if (isUnix()) {
                             sh '''
                                 npm ci --cache .npm --prefer-offline
-                                
-                                # Verificar instalaciones críticas
-                                npm list webpack webpack-cli || npm install webpack webpack-cli
-                                npm list eslint-plugin-react eslint-plugin-react-hooks || npm install eslint-plugin-react eslint-plugin-react-hooks
-                                
+
                                 echo "Dependencias frontend instaladas correctamente"
                             '''
                         } else {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
-                                
-                                npm list webpack webpack-cli || npm install webpack webpack-cli
-                                npm list eslint-plugin-react eslint-plugin-react-hooks || npm install eslint-plugin-react eslint-plugin-react-hooks
-                                
+
                                 echo Dependencias frontend instaladas correctamente
                             '''
                         }
@@ -178,6 +256,9 @@ pipeline {
         }
 
         stage('Backend Dependencies') {
+            options {
+                retry(2)
+            }
             steps {
                 echo "Instalando dependencias del backend..."
                 dir(env.BACKEND_DIR) {
@@ -185,22 +266,13 @@ pipeline {
                         if (isUnix()) {
                             sh '''
                                 npm ci --cache .npm --prefer-offline
-                                
-                                # Verificar dependencias críticas
-                                node -e "
-                                    require('express'); 
-                                    require('cors');
-                                    console.log('Dependencias backend verificadas')
-                                "
-                                
+
                                 echo "Dependencias backend instaladas correctamente"
                             '''
                         } else {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
-                                
-                                node -e "require('express'); require('cors'); console.log('Dependencias backend verificadas')"
-                                
+
                                 echo Dependencias backend instaladas correctamente
                             '''
                         }
@@ -215,6 +287,9 @@ pipeline {
         }
 
         stage('Frontend Lint') {
+            options {
+                retry(2)
+            }
             steps {
                 echo "Analizando calidad de codigo frontend..."
                 dir(env.FRONTEND_DIR) {
@@ -226,7 +301,7 @@ pipeline {
                                 bat 'npm run lint'
                             }
                         } catch (Exception e) {
-                            echo "ESLint falló o no esta configurado: ${e.message}"
+                            echo "ESLint falló: ${e.message}"
                             currentBuild.result = 'UNSTABLE'
                         }
                     }
@@ -235,18 +310,22 @@ pipeline {
         }
 
         stage('Backend Lint') {
+            options {
+                retry(2)
+            }
             steps {
                 echo "Analizando calidad de codigo backend..."
                 dir(env.BACKEND_DIR) {
                     script {
                         try {
                             if (isUnix()) {
-                                sh 'npm run lint 2>/dev/null || echo "No hay lint configurado para backend"'
+                                sh 'npm run lint'
                             } else {
-                                bat 'npm run lint 2>nul || echo No hay lint configurado para backend'
+                                bat 'npm run lint'
                             }
                         } catch (Exception e) {
-                            echo "Lint backend no configurado"
+                            echo "ESLint falló: ${e.message}"
+                            currentBuild.result = 'UNSTABLE'
                         }
                     }
                 }
@@ -254,6 +333,9 @@ pipeline {
         }
 
         stage('Frontend Tests') {
+            options {
+                retry(2)
+            }
             steps {
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
@@ -323,6 +405,9 @@ pipeline {
         }
 
         stage('Backend Tests') {
+            options {
+                retry(2)
+            }
             steps {
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
@@ -412,9 +497,19 @@ pipeline {
                                 echo "Backend validado correctamente"
                             '''
                         } else {
+                            // Requiere que el agente Windows tenga PowerShell disponible (estandar en Windows 10/11 y Server 2016+).
                             bat '''
-                                echo Validacion de backend en Windows pendiente
-                                echo Backend validation OK
+                                start /B node index.js > server.log 2>&1
+                                ping -n 4 127.0.0.1 >nul
+
+                                powershell -NoProfile -Command "try { Invoke-WebRequest -UseBasicParsing -Uri http://localhost:4000/health -TimeoutSec 5 | Out-Null; exit 0 } catch { Write-Host 'Health check fallido'; exit 1 }"
+                                if errorlevel 1 (
+                                    taskkill /F /IM node.exe >nul 2>&1
+                                    exit /b 1
+                                )
+
+                                taskkill /F /IM node.exe >nul 2>&1
+                                echo Backend validado correctamente
                             '''
                         }
                     }
@@ -793,7 +888,13 @@ pipeline {
                     artifacts: "${env.METRICS_DIR}/pre-cicd-baseline.csv,${env.METRICS_DIR}/pre-cicd-baseline.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json,${env.METRICS_DIR}/comparative-before-after.md,${env.METRICS_DIR}/scrum-indicators.md,${env.METRICS_DIR}/methodology-barriers-template.md,${env.METRICS_DIR}/sprint-metrics-template.csv,${env.METRICS_DIR}/sprint-metrics.csv",
                     allowEmptyArchive: true
                 )
-                
+
+                // Guarda un extracto legible de las metricas para incrustar en el
+                // correo de notificacion (ver post.success/failure/unstable).
+                def metricsMdPath = "${env.METRICS_DIR}/pre-cicd-baseline.md"
+                def metricsMdText = fileExists(metricsMdPath) ? readFile(metricsMdPath) : ''
+                env.METRICS_EMAIL_EXCERPT = trimMetricsForEmail(metricsMdText)
+
                 // Limpieza
                 if (isUnix()) {
                     sh '''
@@ -821,33 +922,34 @@ pipeline {
         success {
             echo "Pipeline ejecutado correctamente!"
             script {
-                def emailBody = """
-                <h2>Build Exitoso - #${env.BUILD_NUMBER}</h2>
-                <p><strong>Proyecto:</strong> ${env.JOB_NAME}</p>
-                <p><strong>Commit:</strong> ${env.GIT_COMMIT_SHORT} - ${env.GIT_COMMIT_MSG}</p>
-                <p><strong>Autor:</strong> ${env.GIT_AUTHOR}</p>
-                <p><strong>Duración:</strong> ${currentBuild.durationString}</p>
-                
-                <h3>Deployments:</h3>
-                <ul>
-                    ${env.VERCEL_URL ? "<li><strong>Frontend:</strong> <a href='${env.VERCEL_URL}'>${env.VERCEL_URL}</a></li>" : "<li>Frontend: N/A</li>"}
-                    ${env.BACKEND_VERCEL_URL ? "<li><strong>Backend:</strong> <a href='${env.BACKEND_VERCEL_URL}'>${env.BACKEND_VERCEL_URL}</a></li>" : "<li>Backend: N/A</li>"}
+                def stats = buildEmailStatsTable([
+                    ['Build', "#${env.BUILD_NUMBER} &middot; ${env.JOB_NAME}"],
+                    ['Commit', "${env.GIT_COMMIT_SHORT} &mdash; ${env.GIT_COMMIT_MSG}"],
+                    ['Autor', env.GIT_AUTHOR],
+                    ['Duracion', currentBuild.durationString],
+                    ['Backend', env.BACKEND_VERCEL_URL ? "<a href='${env.BACKEND_VERCEL_URL}'>${env.BACKEND_VERCEL_URL}</a>" : 'sin deploy en este build'],
+                    ['Frontend', env.VERCEL_URL ? "<a href='${env.VERCEL_URL}'>${env.VERCEL_URL}</a>" : 'sin deploy en este build'],
+                ])
+
+                def links = """
+                <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.9;">
+                    <li><a href="${env.BUILD_URL}testReport/">Resultados de tests</a></li>
+                    <li><a href="${env.BUILD_URL}Frontend_20Coverage_20Report/">Cobertura frontend</a></li>
+                    <li><a href="${env.BUILD_URL}Backend_20Coverage_20Report/">Cobertura backend</a></li>
+                    <li><a href="${env.BUILD_URL}artifact/">Todos los artefactos (incluye metricas de investigacion)</a></li>
                 </ul>
-                
-                <h3>Reportes:</h3>
-                <ul>
-                    <li><a href='${env.BUILD_URL}artifact/'>Artefactos</a></li>
-                    <li><a href='${env.BUILD_URL}Frontend_20Coverage_20Report/'>Frontend Coverage</a></li>
-                    <li><a href='${env.BUILD_URL}Backend_20Coverage_20Report/'>Backend Coverage</a></li>
-                    <li><a href='${env.BUILD_URL}testReport/'>Test Results</a></li>
-                </ul>
-                
-                <p><a href='${env.BUILD_URL}'>Ver build completo</a></p>
                 """
-                
+
                 emailext(
-                    subject: "Build Success - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: emailBody,
+                    subject: "✅ Build Success - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: buildEmailHtml(
+                        'SUCCESS',
+                        'Tests, build y deploy terminaron sin errores.',
+                        stats,
+                        env.METRICS_EMAIL_EXCERPT ?: 'Sin datos de metricas para este build.',
+                        links,
+                        env.BUILD_URL
+                    ),
                     to: env.NOTIFICATION_EMAIL,
                     mimeType: 'text/html',
                     attachLog: false
@@ -857,22 +959,31 @@ pipeline {
         failure {
             echo "Falla en el pipeline - revisar logs"
             script {
-                def emailBody = """
-                <h2>Build Fallido - #${env.BUILD_NUMBER}</h2>
-                <p><strong>Proyecto:</strong> ${env.JOB_NAME}</p>
-                <p><strong>Commit:</strong> ${env.GIT_COMMIT_SHORT} - ${env.GIT_COMMIT_MSG}</p>
-                <p><strong>Autor:</strong> ${env.GIT_AUTHOR}</p>
-                <p><strong>Duración:</strong> ${currentBuild.durationString}</p>
-                
-                <h3>Acción requerida:</h3>
-                <p>Revisa los logs para identificar el error.</p>
-                
-                <p><a href='${env.BUILD_URL}console'>Ver logs completos</a></p>
+                def stats = buildEmailStatsTable([
+                    ['Build', "#${env.BUILD_NUMBER} &middot; ${env.JOB_NAME}"],
+                    ['Commit', "${env.GIT_COMMIT_SHORT} &mdash; ${env.GIT_COMMIT_MSG}"],
+                    ['Autor', env.GIT_AUTHOR],
+                    ['Duracion', currentBuild.durationString],
+                ])
+
+                def links = """
+                <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.9;">
+                    <li><a href="${env.BUILD_URL}console">Logs completos de la consola</a></li>
+                    <li><a href="${env.BUILD_URL}testReport/">Resultados de tests</a></li>
+                    <li><a href="${env.BUILD_URL}artifact/">Artefactos generados hasta la falla</a></li>
+                </ul>
                 """
-                
+
                 emailext(
-                    subject: "Build Failed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: emailBody,
+                    subject: "❌ Build Failed - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: buildEmailHtml(
+                        'FAILURE',
+                        'El pipeline se detuvo por un error. Revisa los logs para identificarlo.',
+                        stats,
+                        env.METRICS_EMAIL_EXCERPT ?: 'Sin datos de metricas para este build (probablemente fallo antes de generarlos).',
+                        links,
+                        env.BUILD_URL
+                    ),
                     to: env.NOTIFICATION_EMAIL,
                     mimeType: 'text/html',
                     attachLog: true
@@ -882,9 +993,31 @@ pipeline {
         unstable {
             echo "Pipeline inestable - algunas pruebas fallaron"
             script {
+                def stats = buildEmailStatsTable([
+                    ['Build', "#${env.BUILD_NUMBER} &middot; ${env.JOB_NAME}"],
+                    ['Commit', "${env.GIT_COMMIT_SHORT} &mdash; ${env.GIT_COMMIT_MSG}"],
+                    ['Autor', env.GIT_AUTHOR],
+                    ['Duracion', currentBuild.durationString],
+                ])
+
+                def links = """
+                <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.9;">
+                    <li><a href="${env.BUILD_URL}testReport/">Resultados de tests (ver casos fallidos)</a></li>
+                    <li><a href="${env.BUILD_URL}Frontend_20Coverage_20Report/">Cobertura frontend</a></li>
+                    <li><a href="${env.BUILD_URL}Backend_20Coverage_20Report/">Cobertura backend</a></li>
+                </ul>
+                """
+
                 emailext(
-                    subject: "Build Unstable - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                    body: "El build #${env.BUILD_NUMBER} es inestable. <a href='${env.BUILD_URL}testReport/'>Ver resultados de tests</a>",
+                    subject: "⚠️ Build Unstable - ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: buildEmailHtml(
+                        'UNSTABLE',
+                        'El pipeline termino, pero algunas pruebas fallaron o no se cumplio un objetivo de cobertura.',
+                        stats,
+                        env.METRICS_EMAIL_EXCERPT ?: 'Sin datos de metricas para este build.',
+                        links,
+                        env.BUILD_URL
+                    ),
                     to: env.NOTIFICATION_EMAIL,
                     mimeType: 'text/html'
                 )
