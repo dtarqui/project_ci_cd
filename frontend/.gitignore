@@ -7,3 +7,6 @@ junit.xml
 .env.*
 npm-debug.log*
 .npm
+
+.vercel
+.env*

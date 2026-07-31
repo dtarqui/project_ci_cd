@@ -101,6 +101,16 @@ Forma recomendada, sin tocar el Jenkinsfile ni Jenkins:
    de Vercel — el pipeline usa `BACKEND_VERCEL_ENV = "production"` por
    defecto (linea ~109 del Jenkinsfile) y no revisa Preview/Development.
 
+   **Truco rapido:** `vercel link` suele agregar `.vercel` al `.gitignore`
+   de esa carpeta. Si pasa, `project.json` queda ignorado y nunca llega a
+   GitHub aunque exista en tu disco (Jenkins clona limpio, no ve tu carpeta
+   local). Forzarlo a subir:
+   ```
+   git add -f backend/.vercel/project.json frontend/.vercel/project.json
+   ```
+   (El resto de `.vercel/` y cualquier `.env*` sí deben quedar ignorados —
+   ahi guarda tokens locales.)
+
 Si en el futuro quieres rotar secretos *desde* Jenkins en vez de tocar el
 dashboard de Vercel a mano, la forma correcta es una Jenkins Credential
 (igual que `vercel-token`, paso 1) inyectada con `withCredentials` — nunca
