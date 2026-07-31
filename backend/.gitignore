@@ -8,3 +8,6 @@ junit.xml
 npm-debug.log*
 .npm
 docker-compose.override.yml
+
+.vercel
+.env*
