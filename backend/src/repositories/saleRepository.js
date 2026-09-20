@@ -46,6 +46,8 @@ class InMemorySaleRepository {
       id: nextId,
       customerId: payload.customerId,
       customerName: payload.customerName,
+      userId: payload.userId,
+      userName: payload.userName,
       items: payload.items,
       subtotal: payload.subtotal,
       tax: payload.tax,
@@ -99,6 +101,8 @@ class DatabaseSaleRepository {
       data: {
         customerId: payload.customerId,
         customerName: payload.customerName,
+        userId: payload.userId ?? null,
+        userName: payload.userName ?? null,
         subtotal: payload.subtotal,
         tax: payload.tax,
         discount: payload.discount,

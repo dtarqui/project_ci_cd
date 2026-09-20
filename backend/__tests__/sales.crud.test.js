@@ -121,6 +121,50 @@ describe("Endpoints CRUD de ventas", () => {
         });
     });
 
+    it("debe registrar el vendedor autenticado que crea la venta", (done) => {
+      const sellerToken = `Bearer ${createAuthToken(2, {
+        username: "demo",
+        name: "Usuario Demo",
+        role: "vendedor",
+      })}`;
+
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", sellerToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.userId).toBe(2);
+          expect(res.body.data.userName).toBe("Usuario Demo");
+          done();
+        });
+    });
+
+    it("no debe permitir que el cliente atribuya la venta a otro usuario", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+          userId: 999,
+          userName: "Vendedor falso",
+        })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.userId).toBe(1);
+          expect(res.body.data.userName).not.toBe("Vendedor falso");
+          done();
+        });
+    });
+
     it("debe validar campos requeridos", (done) => {
       request(app)
         .post("/api/sales")

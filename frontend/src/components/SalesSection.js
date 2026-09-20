@@ -350,6 +350,10 @@ const SalesSection = () => {
                 <p>Cliente</p>
                 <h4>{selectedSale.customerName}</h4>
               </div>
+              <div className="detail-block">
+                <p>Vendedor</p>
+                <h4>{selectedSale.userName || "No registrado"}</h4>
+              </div>
               <div className="detail-block inline">
                 <div>
                   <p>Método de pago</p>

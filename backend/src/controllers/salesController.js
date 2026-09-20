@@ -98,6 +98,7 @@ const createSale = async (req, res) => {
     productRepository,
     customerRepository,
     saleRepository,
+    user: req.user,
   });
 
   if (result.error) {

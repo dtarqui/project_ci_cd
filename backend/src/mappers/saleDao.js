@@ -11,6 +11,8 @@ const SaleDao = {
       id: payload.id,
       customerId: payload.customerId,
       customerName: payload.customerName,
+      userId: payload.userId ?? null,
+      userName: payload.userName ?? null,
       items: payload.items,
       subtotal: payload.subtotal,
       tax: payload.tax,

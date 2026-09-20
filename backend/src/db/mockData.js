@@ -193,6 +193,8 @@ const mockData = {
       id: 1,
       customerId: 1,
       customerName: "Juan García",
+      userId: 1,
+      userName: "Administrador",
       items: [
         {
           productId: 1,
@@ -223,6 +225,8 @@ const mockData = {
       id: 2,
       customerId: 2,
       customerName: "María López",
+      userId: 2,
+      userName: "Usuario Demo",
       items: [
         {
           productId: 3,
@@ -246,6 +250,8 @@ const mockData = {
       id: 3,
       customerId: 4,
       customerName: "Ana Martínez",
+      userId: 3,
+      userName: "Usuario Test",
       items: [
         {
           productId: 2,

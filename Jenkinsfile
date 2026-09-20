@@ -174,6 +174,11 @@ pipeline {
                         returnStdout: true
                     ).trim()
                     
+                    env.GIT_COMMIT_TIMESTAMP = sh(
+                        script: 'git log -1 --pretty=%ct',
+                        returnStdout: true
+                    ).trim()
+
                     echo "Commit: ${env.GIT_COMMIT_SHORT}"
                     echo "Mensaje: ${env.GIT_COMMIT_MSG}"
                     echo "Autor: ${env.GIT_AUTHOR}"

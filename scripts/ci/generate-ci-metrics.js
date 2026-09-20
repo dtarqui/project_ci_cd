@@ -14,8 +14,36 @@ const profile = process.env.METRICS_PROFILE || "pre-cicd";
 const durationSeconds = Number(process.env.BUILD_DURATION_SECONDS || 0);
 const frontendTestDurationSeconds = Number(process.env.FRONTEND_TEST_DURATION_SECONDS || 0);
 const backendTestDurationSeconds = Number(process.env.BACKEND_TEST_DURATION_SECONDS || 0);
+const commitTimestampEpoch = Number(process.env.GIT_COMMIT_TIMESTAMP || 0);
 const timestamp = new Date().toISOString();
 const LOW_COVERAGE_LIMIT = 10;
+
+const PROCESS_STEPS_TOTAL = 6;
+const PROCESS_MODEL = {
+  "pre-cicd": { manualSteps: 6 },
+  "post-cicd": { manualSteps: 1 },
+};
+
+const processModel = PROCESS_MODEL[profile] || PROCESS_MODEL["pre-cicd"];
+const manualSteps = processModel.manualSteps;
+const automatedSteps = PROCESS_STEPS_TOTAL - manualSteps;
+const automationLevelPct = Number(
+  ((automatedSteps / PROCESS_STEPS_TOTAL) * 100).toFixed(2)
+);
+
+
+function computeCommitToStagingSeconds() {
+  if (!Number.isFinite(commitTimestampEpoch) || commitTimestampEpoch <= 0) {
+    return null;
+  }
+  if (String(result).toUpperCase() !== "SUCCESS") {
+    return null;
+  }
+  const elapsed = Math.round(Date.now() / 1000 - commitTimestampEpoch);
+  return elapsed >= 0 ? elapsed : null;
+}
+
+const commitToStagingSeconds = computeCommitToStagingSeconds();
 
 // El objetivo de cobertura real es el que cada proyecto ya exige en su propio
 // jest.config.js (distinto por metrica y por frontend/backend). Antes este
@@ -340,6 +368,9 @@ const row = {
   jobName,
   result,
   durationSeconds,
+  commitToStagingSeconds,
+  manualSteps,
+  automationLevelPct,
   frontendTestDurationSeconds,
   backendTestDurationSeconds,
   totalTests,
@@ -508,6 +539,9 @@ const headers = [
   "jobName",
   "result",
   "durationSeconds",
+  "commitToStagingSeconds",
+  "manualSteps",
+  "automationLevelPct",
   "frontendTestDurationSeconds",
   "backendTestDurationSeconds",
   "totalTests",
@@ -594,6 +628,7 @@ const md = [
   `- Build: #${buildNumber}`,
   `- Resultado: ${result}`,
   `- Duracion total (s): ${durationSeconds}`,
+  `- Tiempo commit -> staging (s): ${commitToStagingSeconds ?? "N/A"}`,
   `- Duracion tests frontend (s): ${frontendTestDurationSeconds}`,
   `- Duracion tests backend (s): ${backendTestDurationSeconds}`,
   `- Tests totales: ${totalTests} (frontend: ${frontendTests}, backend: ${backendTests})`,
@@ -612,6 +647,16 @@ const md = [
   `  - statements/branches/functions (%): ${backendCoverage.statements.pct ?? "N/A"} / ${backendCoverage.branches.pct ?? "N/A"} / ${backendCoverage.functions.pct ?? "N/A"}`,
   "",
   "_Nota: el pipeline desactiva el fallo automatico de Jest por cobertura (`--coverageThreshold='{}'`) para poder generar reportes aun si no se alcanza el objetivo; los ✅/⚠️ de arriba son quien realmente indica si se cumplio._",
+  "",
+  "## Metricas comparativas AS-IS / TO-BE (M1-M6)",
+  `Perfil de esta ejecucion: \`${profile}\` (${profile === "post-cicd" ? "TO-BE, proceso automatizado" : "AS-IS, linea base manual"}).`,
+  "",
+  `- M1 — Tiempo total de ejecucion del pipeline (s): ${durationSeconds}`,
+  `- M2 — Tiempo desde el commit hasta la version en staging (s): ${commitToStagingSeconds ?? "N/A"} _(incluye la latencia del polling SCM; N/A si el build no fue exitoso o Jenkins no exporto GIT_COMMIT_TIMESTAMP)_`,
+  `- M3 — Pasos manuales por despliegue: ${manualSteps} de ${PROCESS_STEPS_TOTAL} _(propiedad del proceso modelado en el BPMN, no medida por build)_`,
+  `- M4 — Errores detectados antes del despliegue: ${failedTests} de ${totalTests} pruebas (${failureRatePct}%)`,
+  `- M5 — Nivel de automatizacion (%): ${automationLevelPct} _(${automatedSteps} de ${PROCESS_STEPS_TOTAL} pasos automatizados)_`,
+  `- M6 — Frecuencia de despliegues: ${deploymentFrequency.successfulBuilds} builds exitosos en ${deploymentFrequency.daysObserved} dia(s) (~${deploymentFrequency.perWeek}/semana)`,
   "",
   "## Indicadores estilo DORA (calculados del historico acumulado)",
   `- Change Failure Rate — builds fallidos / total (%): ${changeFailureRatePct ?? "N/A"} _(menor es mejor; mide que tan seguido un cambio rompe el pipeline)_`,

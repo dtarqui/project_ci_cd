@@ -10,7 +10,7 @@ const { TAX_RATE } = require("../config/constants");
 
 const buildSaleFromRequest = async (
   { customerId, items, discount = 0, paymentMethod, notes, status },
-  { productRepository, customerRepository, saleRepository }
+  { productRepository, customerRepository, saleRepository, user = null }
 ) => {
   const customer = await customerRepository.findById(customerId);
 
@@ -89,6 +89,8 @@ const buildSaleFromRequest = async (
   const newSale = await saleRepository.create({
     customerId: customer.id,
     customerName: customer.name,
+    userId: user?.id ?? null,
+    userName: user?.name || user?.username || null,
     items: saleItems,
     subtotal,
     tax,

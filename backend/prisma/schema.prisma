@@ -28,6 +28,7 @@ model User {
   dateOfBirth   String?  @map("date_of_birth")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
+  sales         Sale[]
 
   @@map("users")
 }
@@ -73,6 +74,9 @@ model Sale {
   customerId    Int        @map("customer_id")
   customer      Customer   @relation(fields: [customerId], references: [id])
   customerName  String     @map("customer_name")
+  userId        Int?       @map("user_id")
+  user          User?      @relation(fields: [userId], references: [id])
+  userName      String?    @map("user_name")
   subtotal      Float
   tax           Float      @default(0)
   discount      Float      @default(0)

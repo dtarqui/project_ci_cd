@@ -18,8 +18,9 @@ async function main() {
   await prisma.customer.deleteMany();
   await prisma.user.deleteMany();
 
+  const userIdMap = new Map();
   for (const user of users) {
-    await prisma.user.create({
+    const created = await prisma.user.create({
       data: {
         username: user.username,
         email: user.email,
@@ -30,6 +31,8 @@ async function main() {
         address: user.address,
       },
     });
+
+    userIdMap.set(user.id, created.id);
   }
 
   const productIdMap = new Map();
@@ -79,6 +82,8 @@ async function main() {
       data: {
         customerId,
         customerName: sale.customerName,
+        userId: userIdMap.get(sale.userId) ?? null,
+        userName: sale.userName ?? null,
         subtotal: sale.subtotal,
         tax: sale.tax,
         discount: sale.discount,
