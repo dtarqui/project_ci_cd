@@ -32,18 +32,42 @@ const automationLevelPct = Number(
 );
 
 
-function computeCommitToStagingSeconds() {
+// Tope de plausibilidad: si entre el commit y el fin del build pasaron mas de
+// M2_MAX_PLAUSIBLE_SECONDS, el build no lo disparo ese commit (tipicamente una
+// ejecucion manual sobre un commit antiguo). En ese caso la cifra no mide
+// latencia de entrega sino antiguedad del commit, y publicarla seria enganoso:
+// se reporta null junto con el motivo.
+const M2_MAX_PLAUSIBLE_SECONDS = Number(
+  process.env.M2_MAX_PLAUSIBLE_SECONDS || 6 * 3600
+);
+
+function computeCommitToStaging() {
   if (!Number.isFinite(commitTimestampEpoch) || commitTimestampEpoch <= 0) {
-    return null;
+    return { seconds: null, note: "Jenkins no exporto GIT_COMMIT_TIMESTAMP" };
   }
   if (String(result).toUpperCase() !== "SUCCESS") {
-    return null;
+    return { seconds: null, note: "el build no termino en SUCCESS" };
   }
   const elapsed = Math.round(Date.now() / 1000 - commitTimestampEpoch);
-  return elapsed >= 0 ? elapsed : null;
+  if (elapsed < 0) {
+    return { seconds: null, note: "reloj del agente por detras del commit" };
+  }
+  if (elapsed > M2_MAX_PLAUSIBLE_SECONDS) {
+    const hours = (elapsed / 3600).toFixed(1);
+    return {
+      seconds: null,
+      note:
+        `el commit tiene ${hours} h de antiguedad, por encima del tope de ` +
+        `${(M2_MAX_PLAUSIBLE_SECONDS / 3600).toFixed(1)} h: el build no fue ` +
+        "disparado por ese commit (ejecucion manual sobre codigo antiguo)",
+    };
+  }
+  return { seconds: elapsed, note: null };
 }
 
-const commitToStagingSeconds = computeCommitToStagingSeconds();
+const commitToStaging = computeCommitToStaging();
+const commitToStagingSeconds = commitToStaging.seconds;
+const commitToStagingNote = commitToStaging.note;
 
 // El objetivo de cobertura real es el que cada proyecto ya exige en su propio
 // jest.config.js (distinto por metrica y por frontend/backend). Antes este
@@ -437,8 +461,18 @@ const historicalRows = parseCsvRows(csvPath);
 const previous = historicalRows.length ? historicalRows[historicalRows.length - 1] : null;
 
 const allBuildsIncludingCurrent = [...historicalRows, row];
-const changeFailureRatePct = computeChangeFailureRatePct(allBuildsIncludingCurrent);
-const deploymentFrequency = computeDeploymentFrequency(allBuildsIncludingCurrent);
+
+// Los indicadores DORA describen el proceso que se esta midiendo, asi que se
+// calculan solo sobre los builds del MISMO perfil. Sin este filtro, los builds
+// del periodo en que se estaba construyendo el pipeline (perfil pre-cicd, donde
+// los fallos eran de configuracion y no defectos del producto) contaminaban los
+// indicadores del proceso automatizado y producian una tasa de fallo irreal.
+const sameProfileBuilds = allBuildsIncludingCurrent.filter(
+  (r) => !r.profile || r.profile === profile
+);
+const changeFailureRatePct = computeChangeFailureRatePct(sameProfileBuilds);
+const deploymentFrequency = computeDeploymentFrequency(sameProfileBuilds);
+const doraBuildsConsidered = sameProfileBuilds.length;
 
 const previousDuration = previous ? toNumberOrNull(previous.durationSeconds) : null;
 const previousFailureRate = previous ? toNumberOrNull(previous.failureRatePct) : null;
@@ -619,16 +653,18 @@ const trendNote = isFirstBuild ? " _(N/A: este es el primer build registrado, au
 
 const mdPath = path.join(metricsDir, "pre-cicd-baseline.md");
 const md = [
-  "# Metricas Pre-CI/CD",
+  profile === "post-cicd"
+    ? "# Metricas del proceso automatizado (TO-BE)"
+    : "# Metricas de la linea base manual (AS-IS)",
   "",
   "Este archivo se actualiza automaticamente en Jenkins al finalizar cada build.",
-  "Guia de lectura completa en `docs/metrics/README.md`.",
+  "Guia de lectura completa en `Documentos/Notas/README.md` del repositorio de la tesis.",
   "",
   `- Ultima actualizacion: ${timestamp}`,
   `- Build: #${buildNumber}`,
   `- Resultado: ${result}`,
   `- Duracion total (s): ${durationSeconds}`,
-  `- Tiempo commit -> staging (s): ${commitToStagingSeconds ?? "N/A"}`,
+  `- Tiempo commit -> staging (s): ${commitToStagingSeconds ?? `N/A (${commitToStagingNote})`}`,
   `- Duracion tests frontend (s): ${frontendTestDurationSeconds}`,
   `- Duracion tests backend (s): ${backendTestDurationSeconds}`,
   `- Tests totales: ${totalTests} (frontend: ${frontendTests}, backend: ${backendTests})`,
@@ -652,13 +688,13 @@ const md = [
   `Perfil de esta ejecucion: \`${profile}\` (${profile === "post-cicd" ? "TO-BE, proceso automatizado" : "AS-IS, linea base manual"}).`,
   "",
   `- M1 — Tiempo total de ejecucion del pipeline (s): ${durationSeconds}`,
-  `- M2 — Tiempo desde el commit hasta la version en staging (s): ${commitToStagingSeconds ?? "N/A"} _(incluye la latencia del polling SCM; N/A si el build no fue exitoso o Jenkins no exporto GIT_COMMIT_TIMESTAMP)_`,
+  `- M2 — Tiempo desde el commit hasta la version en staging (s): ${commitToStagingSeconds ?? `N/A — ${commitToStagingNote}`} _(incluye la latencia del polling SCM; solo se publica en builds exitosos disparados por un commit reciente)_`,
   `- M3 — Pasos manuales por despliegue: ${manualSteps} de ${PROCESS_STEPS_TOTAL} _(propiedad del proceso modelado en el BPMN, no medida por build)_`,
   `- M4 — Errores detectados antes del despliegue: ${failedTests} de ${totalTests} pruebas (${failureRatePct}%)`,
   `- M5 — Nivel de automatizacion (%): ${automationLevelPct} _(${automatedSteps} de ${PROCESS_STEPS_TOTAL} pasos automatizados)_`,
   `- M6 — Frecuencia de despliegues: ${deploymentFrequency.successfulBuilds} builds exitosos en ${deploymentFrequency.daysObserved} dia(s) (~${deploymentFrequency.perWeek}/semana)`,
   "",
-  "## Indicadores estilo DORA (calculados del historico acumulado)",
+  `## Indicadores estilo DORA (historico del perfil \`${profile}\`: ${doraBuildsConsidered} build(s))`,
   `- Change Failure Rate — builds fallidos / total (%): ${changeFailureRatePct ?? "N/A"} _(menor es mejor; mide que tan seguido un cambio rompe el pipeline)_`,
   `- Deployment Frequency — builds exitosos: ${deploymentFrequency.successfulBuilds} en ${deploymentFrequency.daysObserved} dia(s) analizados (~${deploymentFrequency.perWeek}/semana) _(mayor es mejor; mide que tan seguido se entrega software funcionando)_`,
   "",

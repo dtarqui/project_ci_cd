@@ -118,8 +118,19 @@ pipeline {
         FRONTEND_VERCEL_ENV = "production"
         
         // Métricas y monitoreo
-        STAGE_START_TIME = ""
-        METRICS_PROFILE = "pre-cicd"
+        //
+        // STAGE_START_TIME NO se declara aqui a proposito: una variable definida
+        // en este bloque environment{} tiene precedencia sobre cualquier
+        // asignacion posterior a env.STAGE_START_TIME, de modo que los stages
+        // leian siempre la cadena vacia y las duraciones de tests salian en 0.
+        // Se asigna dinamicamente al inicio de cada stage medido.
+        //
+        // METRICS_PROFILE identifica el proceso que se esta midiendo:
+        //   post-cicd = este pipeline (proceso automatizado, TO-BE)
+        //   pre-cicd  = linea base manual, que se genera aparte ejecutando el
+        //               script con METRICS_PROFILE=pre-cicd y los tiempos
+        //               cronometrados del proceso manual (ver Notas/README.md).
+        METRICS_PROFILE = "post-cicd"
         METRICS_DIR = "docs/metrics"
         
         // Email notifications
