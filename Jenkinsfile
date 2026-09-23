@@ -18,14 +18,14 @@ def emailStatusLabel(status) {
     return 'Build fallido'
 }
 
-// Recorta docs/metrics/pre-cicd-baseline.md a lo relevante para un correo:
+// Recorta docs/metrics/latest-build.md a lo relevante para un correo:
 // se queda con el resumen + cobertura + DORA + tendencia + casos fallidos,
 // y descarta el ranking largo de archivos y "fuente de datos"/"evidencia
 // historica" (demasiado detalle para un email; eso queda para quien abra
 // el artefacto completo del build).
 def trimMetricsForEmail(mdText) {
     if (!mdText?.trim()) {
-        return 'No se encontro docs/metrics/pre-cicd-baseline.md para este build.'
+        return 'No se encontro docs/metrics/latest-build.md para este build.'
     }
     def text = mdText
     def rankingStart = text.indexOf('## Archivos con menor cobertura de lineas')
@@ -154,6 +154,11 @@ pipeline {
         stage('GitHub Checkout') {
             steps {
                 script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
+                script {
                     echo "Obteniendo codigo del repositorio GitHub..."
                     
                     // Checkout desde GitHub (repositorio publico)
@@ -199,6 +204,11 @@ pipeline {
 
         stage('Environment Setup') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 script {
                     echo "Configurando entorno Node.js ${env.NODE_VERSION}..."
                     
@@ -252,6 +262,11 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Instalando dependencias del frontend..."
                 dir(env.FRONTEND_DIR) {
                     script {
@@ -283,6 +298,11 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Instalando dependencias del backend..."
                 dir(env.BACKEND_DIR) {
                     script {
@@ -314,18 +334,22 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Analizando calidad de codigo frontend..."
                 dir(env.FRONTEND_DIR) {
                     script {
-                        try {
-                            if (isUnix()) {
-                                sh 'npm run lint'
-                            } else {
-                                bat 'npm run lint'
-                            }
-                        } catch (Exception e) {
-                            echo "ESLint falló: ${e.message}"
-                            currentBuild.result = 'UNSTABLE'
+                        // Analisis estatico bloqueante: si ESLint falla, la etapa falla y el
+                        // pipeline se detiene antes de desplegar (RF-2 del perfil). Antes se
+                        // capturaba la excepcion y solo se marcaba el build como UNSTABLE, de
+                        // modo que un hallazgo de lint igual llegaba a staging.
+                        if (isUnix()) {
+                            sh 'npm run lint'
+                        } else {
+                            bat 'npm run lint'
                         }
                     }
                 }
@@ -337,18 +361,22 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Analizando calidad de codigo backend..."
                 dir(env.BACKEND_DIR) {
                     script {
-                        try {
-                            if (isUnix()) {
-                                sh 'npm run lint'
-                            } else {
-                                bat 'npm run lint'
-                            }
-                        } catch (Exception e) {
-                            echo "ESLint falló: ${e.message}"
-                            currentBuild.result = 'UNSTABLE'
+                        // Analisis estatico bloqueante: si ESLint falla, la etapa falla y el
+                        // pipeline se detiene antes de desplegar (RF-2 del perfil). Antes se
+                        // capturaba la excepcion y solo se marcaba el build como UNSTABLE, de
+                        // modo que un hallazgo de lint igual llegaba a staging.
+                        if (isUnix()) {
+                            sh 'npm run lint'
+                        } else {
+                            bat 'npm run lint'
                         }
                     }
                 }
@@ -360,6 +388,11 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
                 }
@@ -402,6 +435,16 @@ pipeline {
                         }
                     }
                 }
+                script {
+                    // La cobertura minima vive en jest.config.js. El pipeline corre Jest con
+                    // --coverageThreshold='{}' para que los reportes se generen siempre, asi
+                    // que el umbral se verifica aqui; si no se alcanza, la etapa falla.
+                    if (isUnix()) {
+                        sh 'node scripts/ci/check-coverage.js frontend'
+                    } else {
+                        bat 'node scripts\\ci\\check-coverage.js frontend'
+                    }
+                }
             }
             post {
                 always {
@@ -432,6 +475,11 @@ pipeline {
                 retry(2)
             }
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
                 }
@@ -471,6 +519,16 @@ pipeline {
                         }
                     }
                 }
+                script {
+                    // La cobertura minima vive en jest.config.js. El pipeline corre Jest con
+                    // --coverageThreshold='{}' para que los reportes se generen siempre, asi
+                    // que el umbral se verifica aqui; si no se alcanza, la etapa falla.
+                    if (isUnix()) {
+                        sh 'node scripts/ci/check-coverage.js backend'
+                    } else {
+                        bat 'node scripts\\ci\\check-coverage.js backend'
+                    }
+                }
             }
             post {
                 always {
@@ -498,6 +556,11 @@ pipeline {
 
         stage('Backend Validation') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Validando backend para produccion..."
                 dir(env.BACKEND_DIR) {
                     script {
@@ -542,6 +605,11 @@ pipeline {
 
         stage('Deploy Backend Vercel') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
                 }
@@ -638,6 +706,11 @@ pipeline {
 
         stage('Frontend Build') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Construyendo frontend para produccion..."
                 dir(env.FRONTEND_DIR) {
                     script {
@@ -708,6 +781,11 @@ pipeline {
 
         stage('Deploy Vercel') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 script {
                     env.STAGE_START_TIME = System.currentTimeMillis().toString()
                 }
@@ -789,6 +867,11 @@ pipeline {
 
         stage('Package Artifacts') {
             steps {
+                script {
+                    // Deja registrado el nombre de la etapa en curso: el bloque post lo usa
+                    // para decir en que etapa se detuvo el pipeline (RF-5).
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                }
                 echo "Empaquetando artefactos..."
                 script {
                     // Detect frontend build folder (build/ or dist/)
@@ -886,12 +969,8 @@ pipeline {
                 
                 echo metricsReport
                 
-                // Guardar métricas en archivo
-                writeFile(
-                    file: "metrics-${env.BUILD_NUMBER}.txt",
-                    text: metricsReport
-                )
-                archiveArtifacts(artifacts: "metrics-${env.BUILD_NUMBER}.txt", allowEmptyArchive: true)
+                // El resumen por build se archiva desde docs/metrics/build-metrics-<n>.txt,
+                // que genera scripts/ci/generate-ci-metrics.js con los datos completos.
 
                 // Generar línea base de métricas CI/CD automáticamente
                 env.BUILD_DURATION_SECONDS = ((currentBuild.duration ?: 0) / 1000).toString()
@@ -908,13 +987,13 @@ pipeline {
                     '''
                 }
                 archiveArtifacts(
-                    artifacts: "${env.METRICS_DIR}/pre-cicd-baseline.csv,${env.METRICS_DIR}/pre-cicd-baseline.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json,${env.METRICS_DIR}/comparative-before-after.md,${env.METRICS_DIR}/scrum-indicators.md,${env.METRICS_DIR}/methodology-barriers-template.md,${env.METRICS_DIR}/sprint-metrics-template.csv,${env.METRICS_DIR}/sprint-metrics.csv",
+                    artifacts: "${env.METRICS_DIR}/metrics-history.csv,${env.METRICS_DIR}/latest-build.md,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.json,${env.METRICS_DIR}/build-metrics-${env.BUILD_NUMBER}.txt,${env.METRICS_DIR}/comparative-before-after.md,${env.METRICS_DIR}/scrum-indicators.md,${env.METRICS_DIR}/methodology-barriers-template.md,${env.METRICS_DIR}/sprint-metrics-template.csv,${env.METRICS_DIR}/sprint-metrics.csv",
                     allowEmptyArchive: true
                 )
 
                 // Guarda un extracto legible de las metricas para incrustar en el
                 // correo de notificacion (ver post.success/failure/unstable).
-                def metricsMdPath = "${env.METRICS_DIR}/pre-cicd-baseline.md"
+                def metricsMdPath = "${env.METRICS_DIR}/latest-build.md"
                 def metricsMdText = fileExists(metricsMdPath) ? readFile(metricsMdPath) : ''
                 env.METRICS_EMAIL_EXCERPT = trimMetricsForEmail(metricsMdText)
 
@@ -987,6 +1066,7 @@ pipeline {
                     ['Commit', "${env.GIT_COMMIT_SHORT} &mdash; ${env.GIT_COMMIT_MSG}"],
                     ['Autor', env.GIT_AUTHOR],
                     ['Duracion', currentBuild.durationString],
+                    ['Etapa', env.CURRENT_STAGE ?: 'no registrada'],
                 ])
 
                 def links = """
@@ -1021,6 +1101,7 @@ pipeline {
                     ['Commit', "${env.GIT_COMMIT_SHORT} &mdash; ${env.GIT_COMMIT_MSG}"],
                     ['Autor', env.GIT_AUTHOR],
                     ['Duracion', currentBuild.durationString],
+                    ['Etapa', env.CURRENT_STAGE ?: 'no registrada'],
                 ])
 
                 def links = """

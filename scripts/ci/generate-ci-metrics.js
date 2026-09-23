@@ -4,6 +4,16 @@ const path = require("path");
 const rootDir = path.resolve(__dirname, "..", "..");
 const metricsDir = path.join(rootDir, process.env.METRICS_DIR || "docs/metrics");
 
+// Salidas del script. Los nombres `pre-cicd-baseline.*` eran herencia del primer
+// diseno y confundian: el historico acumula builds de cualquier perfil y el
+// perfil real vive en la columna `profile`, no en el nombre del archivo.
+const HISTORY_CSV = "metrics-history.csv";
+const LATEST_MD = "latest-build.md";
+const LEGACY_NAMES = {
+  "metrics-history.csv": "pre-cicd-baseline.csv",
+  "latest-build.md": "pre-cicd-baseline.md",
+};
+
 const buildNumber = process.env.BUILD_NUMBER || "local";
 const jobName = process.env.JOB_NAME || "local-job";
 const buildUrl = process.env.BUILD_URL || "";
@@ -304,6 +314,17 @@ function safeDelta(current, previous) {
 
 ensureDir(metricsDir);
 
+// Si el espacio de trabajo viene de una version anterior, se conserva el
+// historico renombrando los archivos en vez de empezar de cero.
+Object.entries(LEGACY_NAMES).forEach(([current, legacy]) => {
+  const currentPath = path.join(metricsDir, current);
+  const legacyPath = path.join(metricsDir, legacy);
+  if (!fs.existsSync(currentPath) && fs.existsSync(legacyPath)) {
+    fs.renameSync(legacyPath, currentPath);
+    console.log("[metricas] " + legacy + " renombrado a " + current + " (historico conservado).");
+  }
+});
+
 const frontendCoveragePath = path.join(rootDir, "frontend", "coverage", "coverage-summary.json");
 const backendCoveragePath = path.join(rootDir, "backend", "coverage", "coverage-summary.json");
 
@@ -456,7 +477,7 @@ function computeDeploymentFrequency(rows) {
   };
 }
 
-const csvPath = path.join(metricsDir, "pre-cicd-baseline.csv");
+const csvPath = path.join(metricsDir, HISTORY_CSV);
 const historicalRows = parseCsvRows(csvPath);
 const previous = historicalRows.length ? historicalRows[historicalRows.length - 1] : null;
 
@@ -617,20 +638,32 @@ const headers = [
   "buildUrl",
 ];
 
+const newHeader = headers.join(",");
 const csvLine = headers.map((key) => toCsvValue(row[key])).join(",");
-if (!fs.existsSync(csvPath)) {
-  fs.writeFileSync(csvPath, `${headers.join(",")}\n${csvLine}\n`, "utf8");
+const existingHeader = fs.existsSync(csvPath)
+  ? (readTextIfExists(csvPath).split(/\r?\n/)[0] || "").trim()
+  : null;
+
+if (existingHeader === newHeader) {
+  fs.appendFileSync(csvPath, csvLine + "\n", "utf8");
 } else {
-  const existing = readTextIfExists(csvPath);
-  const firstLine = (existing.split(/\r?\n/)[0] || "").trim();
-  const newHeader = headers.join(",");
-  if (firstLine !== newHeader) {
-    const backupPath = path.join(metricsDir, `pre-cicd-baseline-legacy-${Date.now()}.csv`);
-    fs.copyFileSync(csvPath, backupPath);
-    fs.writeFileSync(csvPath, `${newHeader}\n${csvLine}\n`, "utf8");
-  } else {
-    fs.appendFileSync(csvPath, `${csvLine}\n`, "utf8");
+  // Cuando cambian las columnas, el historico se MIGRA al encabezado nuevo (las
+  // columnas que no existian quedan vacias) en lugar de archivarse y empezar de
+  // cero: las tendencias, los indicadores DORA y el comparativo AS-IS/TO-BE
+  // necesitan la serie completa. Antes, cada cambio de columnas dejaba un CSV
+  // con una sola fila.
+  if (existingHeader !== null) {
+    fs.copyFileSync(csvPath, csvPath + ".bak");
+    console.log(
+      "[metricas] columnas nuevas en el historico: " +
+        historicalRows.length +
+        " fila(s) migradas (copia previa en " +
+        path.basename(csvPath) +
+        ".bak)."
+    );
   }
+  const migrated = historicalRows.map((r) => headers.map((key) => toCsvValue(r[key])).join(","));
+  fs.writeFileSync(csvPath, [newHeader].concat(migrated, csvLine).join("\n") + "\n", "utf8");
 }
 
 function verdictIcon(meets) {
@@ -651,7 +684,7 @@ function formatDelta(delta) {
 const isFirstBuild = historicalRows.length === 0;
 const trendNote = isFirstBuild ? " _(N/A: este es el primer build registrado, aun no hay build previo con que comparar)_" : "";
 
-const mdPath = path.join(metricsDir, "pre-cicd-baseline.md");
+const mdPath = path.join(metricsDir, LATEST_MD);
 const md = [
   profile === "post-cicd"
     ? "# Metricas del proceso automatizado (TO-BE)"
@@ -682,7 +715,7 @@ const md = [
   `${verdictIcon(backendMeetsThreshold)} **Backend** — lineas ${backendLineCoverage ?? "N/A"}% / objetivo ${backendThresholds.lines ?? "N/A"}% (${formatDelta(backendLinesDeltaVsThreshold)})`,
   `  - statements/branches/functions (%): ${backendCoverage.statements.pct ?? "N/A"} / ${backendCoverage.branches.pct ?? "N/A"} / ${backendCoverage.functions.pct ?? "N/A"}`,
   "",
-  "_Nota: el pipeline desactiva el fallo automatico de Jest por cobertura (`--coverageThreshold='{}'`) para poder generar reportes aun si no se alcanza el objetivo; los ✅/⚠️ de arriba son quien realmente indica si se cumplio._",
+  "_Nota: Jest corre con `--coverageThreshold='{}'` para que los reportes se generen siempre; el umbral lo verifica despues `scripts/ci/check-coverage.js`, que detiene la etapa de pruebas si alguna metrica queda por debajo._",
   "",
   "## Metricas comparativas AS-IS / TO-BE (M1-M6)",
   `Perfil de esta ejecucion: \`${profile}\` (${profile === "post-cicd" ? "TO-BE, proceso automatizado" : "AS-IS, linea base manual"}).`,
@@ -750,12 +783,35 @@ const md = [
   "- Contexto de build: variables de Jenkins (`BUILD_NUMBER`, `JOB_NAME`, `BUILD_URL`, commit y autor)",
   "",
   "## Evidencia historica",
-  "- Historico acumulado en `docs/metrics/pre-cicd-baseline.csv`.",
+  "- Historico acumulado en `" + path.posix.join(process.env.METRICS_DIR || "docs/metrics", HISTORY_CSV) + "`.",
 ].join("\n");
 
 fs.writeFileSync(mdPath, md, "utf8");
 
-console.log(`[metrics] Reportes generados en: ${metricsDir}`);
-console.log(`[metrics] CSV: ${csvPath}`);
-console.log(`[metrics] Markdown: ${mdPath}`);
-console.log(`[metrics] JSON: ${jsonPath}`);
+// Resumen por build en texto plano: mismo contenido que el Markdown del ultimo
+// build, pero con un archivo propio por ejecucion, legible sin renderizar y
+// facil de adjuntar como evidencia. Sustituye al metrics-<build>.txt que antes
+// escribia el Jenkinsfile con un resumen mas pobre.
+function toPlainText(markdown) {
+  return markdown
+    .split(/\r?\n/)
+    .map((line) =>
+      line
+        .replace(/^#+\s*/, "")
+        .replace(/\*\*/g, "")
+        .replace(/`/g, "")
+        .replace(/✅/g, "[OK]")
+        .replace(/⚠️/g, "[BAJO]")
+        .replace(/⬜/g, "[N/A]")
+    )
+    .join("\n");
+}
+
+const txtPath = path.join(metricsDir, "build-metrics-" + buildNumber + ".txt");
+fs.writeFileSync(txtPath, toPlainText(md) + "\n", "utf8");
+
+console.log("[metricas] Reportes generados en: " + metricsDir);
+console.log("[metricas] Historico (CSV): " + csvPath);
+console.log("[metricas] Resumen del build (TXT): " + txtPath);
+console.log("[metricas] Resumen del ultimo build (MD): " + mdPath);
+console.log("[metricas] Detalle del build (JSON): " + jsonPath);

@@ -5,13 +5,16 @@ dist
 coverage
 
 # Jenkins / CI generated artifacts
-metrics-*.txt
-
 # Automated CI metrics outputs (keep docs/metrics/README.md tracked)
-docs/metrics/pre-cicd-baseline.csv
-docs/metrics/pre-cicd-baseline.md
+docs/metrics/metrics-history.csv
+docs/metrics/metrics-history.csv.bak
+docs/metrics/latest-build.md
 docs/metrics/build-metrics-*.json
-docs/metrics/pre-cicd-baseline-legacy-*.csv
+docs/metrics/build-metrics-*.txt
+# nombres de versiones anteriores del script de metricas
+docs/metrics/pre-cicd-baseline*.csv
+docs/metrics/pre-cicd-baseline.md
+metrics-*.txt
 
 # Automated research/reporting outputs
 docs/metrics/comparative-before-after.md

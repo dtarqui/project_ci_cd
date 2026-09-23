@@ -4,7 +4,13 @@ const path = require("path");
 const rootDir = path.resolve(__dirname, "..", "..");
 const metricsDir = path.join(rootDir, process.env.METRICS_DIR || "docs/metrics");
 
-const baselineCsvPath = path.join(metricsDir, "pre-cicd-baseline.csv");
+// El historico se llama metrics-history.csv; se acepta el nombre anterior
+// (pre-cicd-baseline.csv) para no perder series generadas por versiones previas.
+const historyCsvPath = (() => {
+  const current = path.join(metricsDir, "metrics-history.csv");
+  const legacy = path.join(metricsDir, "pre-cicd-baseline.csv");
+  return fs.existsSync(current) || !fs.existsSync(legacy) ? current : legacy;
+})();
 const comparativeReportPath = path.join(metricsDir, "comparative-before-after.md");
 const scrumReportPath = path.join(metricsDir, "scrum-indicators.md");
 const methodologyTemplatePath = path.join(metricsDir, "methodology-barriers-template.md");
@@ -202,7 +208,7 @@ function buildComparativeReport(rows) {
     const content = [
       "# Informe Comparativo Cuantitativo (Antes vs Despues)",
       "",
-      "No hay suficientes datos historicos en `pre-cicd-baseline.csv` para calcular comparativos.",
+      "No hay suficientes datos historicos en `" + path.basename(historyCsvPath) + "` para calcular comparativos.",
       "Se requieren al menos 2 filas de builds.",
       "",
       `Generado automaticamente: ${now}`,
@@ -269,7 +275,7 @@ function buildComparativeReport(rows) {
   const lines = [
     "# Informe Comparativo Cuantitativo (Antes vs Despues)",
     "",
-    "Reporte generado automaticamente a partir de `docs/metrics/pre-cicd-baseline.csv`.",
+    "Reporte generado automaticamente a partir de `" + path.basename(historyCsvPath) + "`.",
     `Metodo de separacion de periodos: ${splitMode}.`,
     "",
     "## Resumen de muestras",
@@ -461,7 +467,7 @@ function main() {
   ensureSprintTemplate();
   ensureMethodologyTemplate();
 
-  const baselineRows = parseCsvRows(baselineCsvPath);
+  const baselineRows = parseCsvRows(historyCsvPath);
   buildComparativeReport(baselineRows);
   buildScrumReport();
 
