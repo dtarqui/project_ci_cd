@@ -61,6 +61,7 @@ const calculateProductStatus = (stock) => {
   if (stock > STOCK_THRESHOLDS.LOW) return "En Stock";
   if (stock > STOCK_THRESHOLDS.OUT) return "Bajo Stock";
   return "Sin Stock";
+};
 
 /**
  * Filtra una lista de objetos por coincidencia parcial (case-insensitive)
