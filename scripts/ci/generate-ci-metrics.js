@@ -42,14 +42,30 @@ const automationLevelPct = Number(
 );
 
 
-// Tope de plausibilidad: si entre el commit y el fin del build pasaron mas de
-// M2_MAX_PLAUSIBLE_SECONDS, el build no lo disparo ese commit (tipicamente una
-// ejecucion manual sobre un commit antiguo). En ese caso la cifra no mide
-// latencia de entrega sino antiguedad del commit, y publicarla seria enganoso:
-// se reporta null junto con el motivo.
-const M2_MAX_PLAUSIBLE_SECONDS = Number(
+// Tope de plausibilidad de M2. Si el build lo disparo el polling SCM, el tiempo
+// entre el commit y el fin del build no puede superar: intervalo de polling +
+// duracion del propio build + un margen (cola de ejecucion). Cuando lo supera,
+// el build se lanzo a mano sobre codigo antiguo y la resta mide la antiguedad del
+// commit, no la latencia de entrega: se reporta null con el motivo.
+//
+// El tope anterior era una constante de 6 h, demasiado holgada: dejaba pasar
+// builds manuales sobre commits de horas atras (el build 18 publico 19.722 s).
+const POLL_INTERVAL_SECONDS = Number(process.env.POLL_INTERVAL_SECONDS || 300);
+const M2_MARGIN_SECONDS = Number(process.env.M2_MARGIN_SECONDS || 300);
+const M2_ABSOLUTE_MAX_SECONDS = Number(
   process.env.M2_MAX_PLAUSIBLE_SECONDS || 6 * 3600
 );
+
+function maxPlausibleCommitToStaging() {
+  if (Number.isFinite(durationSeconds) && durationSeconds > 0) {
+    return Math.min(
+      M2_ABSOLUTE_MAX_SECONDS,
+      POLL_INTERVAL_SECONDS + Math.round(durationSeconds) + M2_MARGIN_SECONDS
+    );
+  }
+  // Sin duracion de build (p. ej. ejecucion local del script) se cae al tope absoluto.
+  return M2_ABSOLUTE_MAX_SECONDS;
+}
 
 function computeCommitToStaging() {
   if (!Number.isFinite(commitTimestampEpoch) || commitTimestampEpoch <= 0) {
@@ -62,14 +78,15 @@ function computeCommitToStaging() {
   if (elapsed < 0) {
     return { seconds: null, note: "reloj del agente por detras del commit" };
   }
-  if (elapsed > M2_MAX_PLAUSIBLE_SECONDS) {
-    const hours = (elapsed / 3600).toFixed(1);
+  const maxPlausible = maxPlausibleCommitToStaging();
+  if (elapsed > maxPlausible) {
+    const minutes = (elapsed / 60).toFixed(1);
     return {
       seconds: null,
       note:
-        `el commit tiene ${hours} h de antiguedad, por encima del tope de ` +
-        `${(M2_MAX_PLAUSIBLE_SECONDS / 3600).toFixed(1)} h: el build no fue ` +
-        "disparado por ese commit (ejecucion manual sobre codigo antiguo)",
+        "pasaron " + minutes + " min entre el commit y el fin del build, por encima del " +
+        "tope de " + (maxPlausible / 60).toFixed(1) + " min (polling + duracion del build + " +
+        "margen): el build no fue disparado por ese commit",
     };
   }
   return { seconds: elapsed, note: null };
