@@ -78,6 +78,22 @@ Cada usuario tiene `role`: `admin` o `vendedor` (default). `requireRole("admin")
 protege `DELETE /api/products/:id` y `DELETE /api/customers/:id`; el resto de
 operaciones (lectura, creacion, actualizacion) estan disponibles para ambos roles.
 
+## Reglas de datos de cliente
+
+- **Ciudad:** opcional, pero si se indica debe ser una de las del catálogo
+  (`CITY_CATALOG` en `src/config/constants.js`, que sirve `GET /api/customers/cities`).
+  Antes era texto libre de hasta 80 caracteres, así que "La Paz", "la paz" y "LaPaz"
+  entraban como tres ciudades distintas y los agrupamientos por ciudad del dashboard
+  las contaban por separado. Fuera del catálogo responde 400 `INVALID_CITY`.
+- **Teléfono:** ocho dígitos nacionales, sin código de país — el negocio opera solo en
+  Bolivia, así que `+591` sería el mismo prefijo en todas las filas. El primer dígito
+  indica el tipo de línea: 2, 3 o 4 para fija y 6 o 7 para móvil. Se acepta un `+591`
+  heredado y los separadores, pero se **guarda normalizado** (`normalizePhone` en
+  `src/utils/helpers.js`). Fuera de formato responde 400 `INVALID_PHONE`.
+
+  Sustituye a la regla anterior, «al menos 10 caracteres», que no correspondía a ningún
+  formato real: aceptaba `1234567890` y rechazaba un número boliviano legítimo.
+
 ## Endpoints
 
 Autenticacion:
@@ -100,6 +116,7 @@ Productos (protegido):
 
 Clientes (protegido):
 - `GET /api/customers`
+- `GET /api/customers/cities` (catálogo de ciudades; se declara antes de `/:id`)
 - `POST /api/customers`
 - `GET /api/customers/:id`
 - `PUT /api/customers/:id`

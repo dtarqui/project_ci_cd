@@ -2,6 +2,9 @@
  * Product Validation - Validaciones para productos
  */
 
+const { CITY_NAMES } = require("../config/constants");
+const { normalizePhone } = require("./helpers");
+
 /**
  * Valida datos de producto para crear
  * @param {Object} body - Body del request
@@ -340,6 +343,78 @@ const validateUserUpdate = (body) => {
  * @param {Object} body - Body del request
  * @returns {Object} { isValid: boolean, error?: string, code?: string }
  */
+/**
+ * Telefono boliviano: 8 digitos nacionales, sin codigo de pais. El primer digito
+ * identifica el tipo de linea: 2, 3 o 4 para fija (La Paz/Oruro/Potosi, Santa
+ * Cruz/Beni/Pando, Cochabamba/Chuquisaca/Tarija) y 6 o 7 para movil.
+ *
+ * Sustituye a la regla anterior, "al menos 10 caracteres", que no correspondia a
+ * ningun formato real: dejaba pasar "1234567890" y rechazaba un numero boliviano
+ * legitimo de 8 digitos. El valor se normaliza antes de medirlo, de modo que un
+ * "+591" heredado o los separadores no cambian el resultado.
+ * @param {*} phone
+ * @returns {Object} { isValid: boolean, error?: string, code?: string }
+ */
+const PHONE_DIGITS = 8;
+const PHONE_FIRST_DIGITS = ["2", "3", "4", "6", "7"];
+
+const validateBolivianPhone = (phone) => {
+  const digits = normalizePhone(phone);
+
+  if (digits.length !== PHONE_DIGITS) {
+    return {
+      isValid: false,
+      error: `El teléfono debe tener ${PHONE_DIGITS} dígitos`,
+      code: "INVALID_PHONE",
+    };
+  }
+
+  if (!PHONE_FIRST_DIGITS.includes(digits[0])) {
+    return {
+      isValid: false,
+      error: "El teléfono debe empezar en 2, 3 o 4 (fija) o en 6 o 7 (móvil)",
+      code: "INVALID_PHONE",
+    };
+  }
+
+  return { isValid: true };
+};
+
+/**
+ * La ciudad es opcional, pero cuando viene tiene que ser una de las que atiende
+ * el negocio (CITY_CATALOG en config/constants.js, el mismo catalogo que sirve
+ * GET /api/customers/cities y que ofrece el formulario). Antes era texto libre de
+ * hasta 80 caracteres, asi que "La Paz", "la paz" y "LaPaz" entraban como tres
+ * ciudades distintas y los agrupamientos por ciudad del dashboard las contaban
+ * por separado.
+ * @param {*} city - Valor recibido; `undefined` y cadena vacia se aceptan.
+ * @returns {Object} { isValid: boolean, error?: string, code?: string }
+ */
+const validateCityAgainstCatalog = (city) => {
+  if (city === undefined || city === null) {
+    return { isValid: true };
+  }
+
+  if (typeof city !== "string") {
+    return {
+      isValid: false,
+      error: "La ciudad debe ser texto",
+      code: "INVALID_CITY",
+    };
+  }
+
+  const trimmed = city.trim();
+  if (trimmed && !CITY_NAMES.includes(trimmed)) {
+    return {
+      isValid: false,
+      error: `Ciudad no atendida. Valores válidos: ${CITY_NAMES.join(", ")}`,
+      code: "INVALID_CITY",
+    };
+  }
+
+  return { isValid: true };
+};
+
 const validateCustomerCreate = (body) => {
   const { name, email, phone, address, city, postalCode } = body;
 
@@ -359,12 +434,9 @@ const validateCustomerCreate = (body) => {
     };
   }
 
-  if (phone.length < 10) {
-    return {
-      isValid: false,
-      error: "El teléfono debe tener al menos 10 caracteres",
-      code: "INVALID_PHONE",
-    };
+  const phoneCheck = validateBolivianPhone(phone);
+  if (!phoneCheck.isValid) {
+    return phoneCheck;
   }
 
   if (address !== undefined && (typeof address !== "string" || address.length > 180)) {
@@ -375,12 +447,9 @@ const validateCustomerCreate = (body) => {
     };
   }
 
-  if (city !== undefined && (typeof city !== "string" || city.length > 80)) {
-    return {
-      isValid: false,
-      error: "La ciudad debe ser texto de hasta 80 caracteres",
-      code: "INVALID_CITY",
-    };
+  const cityCheck = validateCityAgainstCatalog(city);
+  if (!cityCheck.isValid) {
+    return cityCheck;
   }
 
   if (postalCode !== undefined && (typeof postalCode !== "string" || postalCode.length > 20)) {
@@ -408,12 +477,16 @@ const validateCustomerUpdate = (body) => {
     };
   }
 
-  if (body.phone && body.phone.length < 10) {
-    return {
-      isValid: false,
-      error: "El teléfono debe tener al menos 10 caracteres",
-      code: "INVALID_PHONE",
-    };
+  if (body.phone) {
+    const phoneCheck = validateBolivianPhone(body.phone);
+    if (!phoneCheck.isValid) {
+      return phoneCheck;
+    }
+  }
+
+  const cityCheck = validateCityAgainstCatalog(body.city);
+  if (!cityCheck.isValid) {
+    return cityCheck;
   }
 
   return { isValid: true };
@@ -528,6 +601,8 @@ module.exports = {
   validatePasswordStrength,
   validateUserRegistration,
   validateUserUpdate,
+  validateBolivianPhone,
+  validateCityAgainstCatalog,
   validateCustomerCreate,
   validateCustomerUpdate,
   validateSaleCreate,

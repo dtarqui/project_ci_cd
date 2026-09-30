@@ -4,6 +4,7 @@
  */
 
 const { calculateProductStatus } = require("../utils/helpers");
+const { CITY_CATALOG, CITY_POSTAL_PREFIX } = require("../config/constants");
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -121,7 +122,7 @@ const mockData = {
       id: 1,
       name: "Juan García",
       email: "juan.garcia@email.com",
-      phone: "+591 22123456",
+      phone: "22123456",
       address: "Avenida Mariscal Santa Cruz 1245, Piso 3",
       city: "La Paz",
       postalCode: "LP-01",
@@ -135,7 +136,7 @@ const mockData = {
       id: 2,
       name: "María López",
       email: "maria.lopez@email.com",
-      phone: "+591 33234567",
+      phone: "33234567",
       address: "Calle Pdte. Sucre 567, Santa Cruz Centro",
       city: "Santa Cruz de la Sierra",
       postalCode: "SC-02",
@@ -149,7 +150,7 @@ const mockData = {
       id: 3,
       name: "Carlos Fernández",
       email: "carlos.fern@email.com",
-      phone: "+591 44345678",
+      phone: "44345678",
       address: "Avenida Oquendo 890, Cochabamba",
       city: "Cochabamba",
       postalCode: "CB-03",
@@ -163,7 +164,7 @@ const mockData = {
       id: 4,
       name: "Ana Martínez",
       email: "ana.martinez@email.com",
-      phone: "+591 22456789",
+      phone: "22456789",
       address: "Calle Comercio 321, La Paz",
       city: "La Paz",
       postalCode: "LP-04",
@@ -177,7 +178,7 @@ const mockData = {
       id: 5,
       name: "Luis Rojas",
       email: "luis.rojas@email.com",
-      phone: "+591 33456789",
+      phone: "33456789",
       address: "Av. Banzer 1200, Santa Cruz",
       city: "Santa Cruz de la Sierra",
       postalCode: "SC-05",
@@ -340,33 +341,28 @@ const buildGeneratedProducts = (startId) =>
   });
 
 const CUSTOMER_CATALOG = [
-  ["Patricia Vargas", "Sucre", "64"],
-  ["Roberto Quispe", "El Alto", "22"],
-  ["Carmen Mamani", "Oruro", "25"],
-  ["Jorge Choque", "Potosí", "26"],
-  ["Silvia Rocabado", "Tarija", "66"],
-  ["Fernando Chávez", "La Paz", "22"],
-  ["Gabriela Terán", "Santa Cruz de la Sierra", "33"],
-  ["Ricardo Flores", "Cochabamba", "44"],
-  ["Daniela Salazar", "La Paz", "22"],
-  ["Miguel Ángel Poma", "El Alto", "22"],
-  ["Verónica Cruz", "Santa Cruz de la Sierra", "33"],
-  ["Andrés Villca", "Oruro", "25"],
-  ["Paola Guzmán", "Sucre", "64"],
-  ["Diego Mendoza", "Cochabamba", "44"],
-  ["Claudia Ríos", "Tarija", "66"],
+  ["Patricia Vargas", "Sucre"],
+  ["Roberto Quispe", "El Alto"],
+  ["Carmen Mamani", "Oruro"],
+  ["Jorge Choque", "Potosí"],
+  ["Silvia Rocabado", "Tarija"],
+  ["Fernando Chávez", "La Paz"],
+  ["Gabriela Terán", "Santa Cruz de la Sierra"],
+  ["Ricardo Flores", "Cochabamba"],
+  ["Daniela Salazar", "La Paz"],
+  ["Miguel Ángel Poma", "El Alto"],
+  ["Verónica Cruz", "Santa Cruz de la Sierra"],
+  ["Andrés Villca", "Oruro"],
+  ["Paola Guzmán", "Sucre"],
+  ["Diego Mendoza", "Cochabamba"],
+  ["Claudia Ríos", "Tarija"],
 ];
 
-const CITY_POSTAL_PREFIX = {
-  "La Paz": "LP",
-  "Santa Cruz de la Sierra": "SC",
-  Cochabamba: "CB",
-  Sucre: "SU",
-  Oruro: "OR",
-  Potosí: "PT",
-  Tarija: "TJ",
-  "El Alto": "EA",
-};
+
+const CITY_AREA_CODE = CITY_CATALOG.reduce((acc, city) => {
+  acc[city.name] = city.areaCode;
+  return acc;
+}, {});
 
 const CUSTOMER_STATUS_CYCLE = ["Activo", "Activo", "Activo", "Inactivo", "Pendiente"];
 
@@ -380,7 +376,7 @@ const slugNameParts = (name) =>
     .split(/\s+/);
 
 const buildGeneratedCustomers = (startId) =>
-  CUSTOMER_CATALOG.map(([name, city, areaCode], index) => {
+  CUSTOMER_CATALOG.map(([name, city], index) => {
     const id = startId + index;
     const parts = slugNameParts(name);
     const first = parts[0];
@@ -396,7 +392,7 @@ const buildGeneratedCustomers = (startId) =>
       id,
       name,
       email: `${first}.${last}@email.com`,
-      phone: `+591 ${areaCode}${String(100000 + ((id * 913) % 900000)).slice(0, 6)}`,
+      phone: `${CITY_AREA_CODE[city]}${String(100000 + ((id * 913) % 900000)).slice(0, 6)}`,
       address: `Calle ${10 + (id % 40)} #${100 + ((id * 17) % 900)}, ${city}`,
       city,
       postalCode: `${CITY_POSTAL_PREFIX[city] || "BO"}-${pad2(id)}`,
@@ -489,7 +485,7 @@ const users = [
     password: "admin123",
     role: "admin",
     name: "Administrador",
-    cellphone: "+591 70000000",
+    cellphone: "70000000",
     email: "admin@email.com",
     address: "La Paz",
   },
@@ -499,7 +495,7 @@ const users = [
     password: "demo123",
     role: "vendedor",
     name: "Usuario Demo",
-    cellphone: "+591 70000001",
+    cellphone: "70000001",
     email: "demo@email.com",
     address: "Santa Cruz",
   },
@@ -509,7 +505,7 @@ const users = [
     password: "test123",
     role: "vendedor",
     name: "Usuario Test",
-    cellphone: "+591 70000002",
+    cellphone: "70000002",
     email: "test@email.com",
     address: "Cochabamba",
   },

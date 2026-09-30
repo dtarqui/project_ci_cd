@@ -334,3 +334,38 @@
     padding: 16px;
   }
 }
+
+/* Error de un campo o de una linea de la venta. El banner de arriba resume; esto
+   senala exactamente que linea hay que corregir. */
+.sales-field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+
+/* En la fila de un item ocupa todo el ancho, debajo de los controles. */
+.sales-item-error {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
+/* Selector de cliente y el boton para crear uno nuevo sin salir de la venta. */
+.sales-customer-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sales-customer-picker select {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .sales-customer-picker {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -33,6 +33,16 @@ const CustomersSection = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  // Catalogo de ciudades para el formulario. Se pide una vez y no se reintenta:
+  // si falla, CustomerForm cae a texto libre y la API sigue validando.
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    customerService
+      .getCities()
+      .then((response) => setCities(response.data || []))
+      .catch(() => setCities([]));
+  }, []);
 
   const {
     items: customers,
@@ -257,6 +267,7 @@ const CustomersSection = () => {
           setEditingCustomer(null);
         }}
         onSubmit={handleSaveCustomer}
+        cities={cities}
       />
 
       <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>

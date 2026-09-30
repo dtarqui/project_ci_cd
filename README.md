@@ -123,6 +123,9 @@ Frontend (`frontend/package.json`):
 - Perfil del usuario autenticado: `GET`, `PUT` y `DELETE /api/users/me`
 - Dashboard: `GET /api/dashboard/data`
 - CRUD completo de `/api/products` y `/api/customers` (el `DELETE` de ambos exige rol `admin`)
+- `GET /api/customers/cities`: catálogo de ciudades atendidas, con su prefijo postal y
+  código de área. Es la fuente única: el formulario ofrece esa lista y el `POST`/`PUT`
+  de clientes rechaza cualquier otra ciudad
 - Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/sales`
   (una venta se anula con `cancel`; no hay borrado)
 - `GET /health`

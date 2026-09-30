@@ -232,9 +232,9 @@ describe("Endpoints CRUD de clientes", () => {
       const newCustomer = {
         name: "Test Customer",
         email: "test@email.com",
-        phone: "1234567890",
+        phone: "22123456",
         address: "Test Address",
-        city: "Test City",
+        city: "La Paz",
         postalCode: "12345",
       };
 
@@ -258,7 +258,7 @@ describe("Endpoints CRUD de clientes", () => {
     it("debe validar que el nombre es requerido", (done) => {
       const invalidCustomer = {
         email: "test@email.com",
-        phone: "1234567890",
+        phone: "22123456",
       };
 
       request(app)
@@ -272,7 +272,7 @@ describe("Endpoints CRUD de clientes", () => {
     it("debe validar que el email es requerido", (done) => {
       const invalidCustomer = {
         name: "Test Customer",
-        phone: "1234567890",
+        phone: "22123456",
       };
 
       request(app)
@@ -301,7 +301,7 @@ describe("Endpoints CRUD de clientes", () => {
       const invalidCustomer = {
         name: "Test Customer",
         email: "invalid-email",
-        phone: "1234567890",
+        phone: "22123456",
       };
 
       request(app)
@@ -312,7 +312,7 @@ describe("Endpoints CRUD de clientes", () => {
         .end(done);
     });
 
-    it("debe validar longitud de teléfono (mínimo 10 caracteres)", (done) => {
+    it("debe rechazar un teléfono que no tenga 8 dígitos", (done) => {
       const invalidCustomer = {
         name: "Test Customer",
         email: "test@email.com",
@@ -331,7 +331,7 @@ describe("Endpoints CRUD de clientes", () => {
       const newCustomer = {
         name: "AutoID Customer",
         email: "autoid@email.com",
-        phone: "1234567890",
+        phone: "22123456",
       };
 
       request(app)
@@ -351,7 +351,7 @@ describe("Endpoints CRUD de clientes", () => {
       const newCustomer = {
         name: "Date Customer",
         email: "date@email.com",
-        phone: "1234567890",
+        phone: "22123456",
       };
 
       request(app)
@@ -413,12 +413,12 @@ describe("Endpoints CRUD de clientes", () => {
       request(app)
         .put("/api/customers/1")
         .set("Authorization", validToken)
-        .send({ phone: "9876543210" })
+        .send({ phone: "76543210" })
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
           expect(res.body.success).toBe(true);
-          expect(res.body.data.phone).toBe("9876543210");
+          expect(res.body.data.phone).toBe("76543210");
           done();
         });
     });
@@ -427,12 +427,12 @@ describe("Endpoints CRUD de clientes", () => {
       request(app)
         .put("/api/customers/1")
         .set("Authorization", validToken)
-        .send({ city: "Barcelona" })
+        .send({ city: "Cochabamba" })
         .expect(200)
         .end((err, res) => {
           if (err) return done(err);
           expect(res.body.success).toBe(true);
-          expect(res.body.data.city).toBe("Barcelona");
+          expect(res.body.data.city).toBe("Cochabamba");
           done();
         });
     });
@@ -458,8 +458,8 @@ describe("Endpoints CRUD de clientes", () => {
         .send({
           name: "Multi Update Customer",
           email: "multi@email.com",
-          phone: "5555555555",
-          city: "Madrid",
+          phone: "65555555",
+          city: "Tarija",
           status: "Activo",
         })
         .expect(200)
@@ -468,8 +468,8 @@ describe("Endpoints CRUD de clientes", () => {
           expect(res.body.success).toBe(true);
           expect(res.body.data.name).toBe("Multi Update Customer");
           expect(res.body.data.email).toBe("multi@email.com");
-          expect(res.body.data.phone).toBe("5555555555");
-          expect(res.body.data.city).toBe("Madrid");
+          expect(res.body.data.phone).toBe("65555555");
+          expect(res.body.data.city).toBe("Tarija");
           expect(res.body.data.status).toBe("Activo");
           done();
         });
@@ -511,6 +511,162 @@ describe("Endpoints CRUD de clientes", () => {
         .end((err, res) => {
           if (err) return done(err);
           expect(res.body.data.id).toBe(1);
+          done();
+        });
+    });
+  });
+
+  describe("GET /api/customers/cities - Catalogo de ciudades", () => {
+    it("debe devolver el catalogo con nombre, prefijo postal y codigo de area", (done) => {
+      request(app)
+        .get("/api/customers/cities")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.success).toBe(true);
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body.count).toBe(res.body.data.length);
+          res.body.data.forEach((city) => {
+            expect(typeof city.name).toBe("string");
+            expect(typeof city.postalPrefix).toBe("string");
+            expect(typeof city.areaCode).toBe("string");
+          });
+          done();
+        });
+    });
+
+    it("debe incluir las ciudades que usa la semilla", (done) => {
+      request(app)
+        .get("/api/customers/cities")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const names = res.body.data.map((city) => city.name);
+          expect(names).toContain("La Paz");
+          expect(names).toContain("Santa Cruz de la Sierra");
+          expect(names).toContain("Cochabamba");
+          done();
+        });
+    });
+
+    // La ruta se declara antes de GET /:id; si se invirtiera el orden, Express
+    // resolveria "cities" como un id y devolveria 404 en vez del catalogo.
+    it("no debe quedar tapada por la ruta GET /:id", (done) => {
+      request(app)
+        .get("/api/customers/cities")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body.error).toBeUndefined();
+          done();
+        });
+    });
+
+    it("debe exigir token", (done) => {
+      request(app).get("/api/customers/cities").expect(401).end(done);
+    });
+  });
+
+  describe("Validacion de ciudad contra el catalogo", () => {
+    it("debe rechazar una ciudad que no esta en el catalogo al crear", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({
+          name: "Cliente Fuera de Catalogo",
+          email: "fuera@email.com",
+          phone: "22123456",
+          city: "Madrid",
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_CITY");
+          done();
+        });
+    });
+
+    it("debe rechazar una ciudad fuera del catalogo al actualizar", (done) => {
+      request(app)
+        .put("/api/customers/1")
+        .set("Authorization", validToken)
+        .send({ city: "Barcelona" })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_CITY");
+          done();
+        });
+    });
+
+    it("debe aceptar que la ciudad venga vacia, porque es opcional", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({
+          name: "Cliente Sin Ciudad",
+          email: "sinciudad@email.com",
+          phone: "22123456",
+          city: "",
+        })
+        .expect(201)
+        .end(done);
+    });
+  });
+
+  describe("Formato de telefono boliviano", () => {
+    it("debe aceptar 8 digitos de linea fija", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Fija", email: "fija@email.com", phone: "44345678" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.phone).toBe("44345678");
+          done();
+        });
+    });
+
+    it("debe guardar sin codigo de pais cuando llega con +591", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Heredado", email: "heredado@email.com", phone: "+591 76543210" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.phone).toBe("76543210");
+          done();
+        });
+    });
+
+    it("debe rechazar un numero de 10 digitos, que la regla anterior aceptaba", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Largo", email: "largo@email.com", phone: "1234567890" })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_PHONE");
+          done();
+        });
+    });
+
+    it("debe rechazar 8 digitos que empiecen en un digito imposible", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Raro", email: "raro@email.com", phone: "12345678" })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_PHONE");
           done();
         });
     });

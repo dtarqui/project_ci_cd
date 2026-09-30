@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ProductForm from "../components/ProductForm";
 
@@ -108,7 +108,7 @@ describe("Componente ProductForm", () => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
-    it("debe validar que el precio sea positivo", async () => {
+    it("debe validar que el precio sea requerido", async () => {
       render(<ProductForm {...defaultProps} />);
       const nameInput = screen.getByLabelText(/nombre del producto/i);
       const categorySelect = screen.getByLabelText(/categoría/i);
@@ -123,13 +123,13 @@ describe("Componente ProductForm", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/el precio debe ser un número positivo/i)
+          screen.getByText(/el precio es requerido/i)
         ).toBeInTheDocument();
       });
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
-    it("debe validar que el stock sea no negativo", async () => {
+    it("debe validar que el stock sea requerido", async () => {
       render(<ProductForm {...defaultProps} />);
       const nameInput = screen.getByLabelText(/nombre del producto/i);
       const categorySelect = screen.getByLabelText(/categoría/i);
@@ -144,10 +144,59 @@ describe("Componente ProductForm", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/el stock debe ser un número no negativo/i)
+          screen.getByText(/el stock es requerido/i)
         ).toBeInTheDocument();
       });
       expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it("debe rechazar un precio negativo", async () => {
+      render(<ProductForm {...defaultProps} />);
+
+      await userEvent.type(screen.getByLabelText(/nombre del producto/i), "Laptop");
+      await userEvent.selectOptions(screen.getByLabelText(/categoría/i), "Electrónica");
+      fireEvent.change(screen.getByLabelText(/precio/i), { target: { value: "-1" } });
+      await userEvent.type(screen.getByLabelText(/stock/i), "10");
+      await userEvent.click(screen.getByRole("button", { name: /guardar/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/el precio no puede ser negativo/i)).toBeInTheDocument();
+      });
+      expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it("debe rechazar un stock decimal en vez de truncarlo en silencio", async () => {
+      render(<ProductForm {...defaultProps} />);
+
+      await userEvent.type(screen.getByLabelText(/nombre del producto/i), "Laptop");
+      await userEvent.selectOptions(screen.getByLabelText(/categoría/i), "Electrónica");
+      await userEvent.type(screen.getByLabelText(/precio/i), "999");
+      fireEvent.change(screen.getByLabelText(/stock/i), { target: { value: "1.5" } });
+      await userEvent.click(screen.getByRole("button", { name: /guardar/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/entero de unidades/i)).toBeInTheDocument();
+      });
+      expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it("debe mostrar el error al salir del campo, sin esperar al envío", async () => {
+      render(<ProductForm {...defaultProps} />);
+
+      await userEvent.click(screen.getByLabelText(/nombre del producto/i));
+      await userEvent.tab();
+
+      expect(screen.getByText(/el nombre es requerido/i)).toBeInTheDocument();
+      expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+    it("debe llevar el foco al primer campo inválido", async () => {
+      render(<ProductForm {...defaultProps} />);
+
+      await userEvent.type(screen.getByLabelText(/nombre del producto/i), "Laptop");
+      await userEvent.click(screen.getByRole("button", { name: /guardar/i }));
+
+      expect(screen.getByLabelText(/categoría/i)).toHaveFocus();
     });
 
     it("debe enviar datos válidos al onSubmit", async () => {

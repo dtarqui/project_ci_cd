@@ -3,6 +3,8 @@
  * Normaliza datos de cliente para evitar lógica de persistencia en controladores.
  */
 
+const { normalizePhone } = require("../utils/helpers");
+
 const CustomerDao = {
   createFromPayload(payload, nextId) {
     const now = new Date().toISOString();
@@ -12,7 +14,7 @@ const CustomerDao = {
       id: nextId,
       name: payload.name,
       email: payload.email,
-      phone: payload.phone,
+      phone: normalizePhone(payload.phone),
       address: payload.address || "",
       city: payload.city || "",
       postalCode: payload.postalCode || "",
@@ -31,7 +33,7 @@ const CustomerDao = {
 
     if (updates.name) next.name = updates.name;
     if (updates.email) next.email = updates.email;
-    if (updates.phone) next.phone = updates.phone;
+    if (updates.phone) next.phone = normalizePhone(updates.phone);
     if (updates.address !== undefined) next.address = updates.address;
     if (updates.city !== undefined) next.city = updates.city;
     if (updates.postalCode !== undefined) next.postalCode = updates.postalCode;

@@ -3,11 +3,14 @@ const {
   extractToken,
   createAuthToken,
   verifyAuthToken,
+  normalizePhone,
 } = require("../src/utils/helpers");
 const {
   validateProductCreate,
   validateProductUpdate,
   validateLoginCredentials,
+  validateBolivianPhone,
+  validateCityAgainstCatalog,
 } = require("../src/utils/validators");
 
 describe("Pruebas unitarias - Cobertura extendida", () => {
@@ -77,6 +80,94 @@ describe("Pruebas unitarias - Cobertura extendida", () => {
 
     it("debe retornar null para token vacío", () => {
       expect(verifyAuthToken("")).toBeNull();
+    });
+  });
+
+  describe("Helpers - normalizar telefono", () => {
+    it("debe dejar intactos los 8 digitos nacionales", () => {
+      expect(normalizePhone("22123456")).toBe("22123456");
+    });
+
+    it("debe quitar el codigo de pais heredado, con y sin +", () => {
+      expect(normalizePhone("+591 22123456")).toBe("22123456");
+      expect(normalizePhone("591 76543210")).toBe("76543210");
+    });
+
+    it("debe quitar separadores y parentesis", () => {
+      expect(normalizePhone("(2) 2123456")).toBe("22123456");
+      expect(normalizePhone("7-654-3210")).toBe("76543210");
+    });
+
+    it("debe devolver cadena vacia cuando no hay nada usable", () => {
+      expect(normalizePhone("")).toBe("");
+      expect(normalizePhone("abc")).toBe("");
+      expect(normalizePhone(null)).toBe("");
+      expect(normalizePhone(undefined)).toBe("");
+      expect(normalizePhone(42)).toBe("");
+    });
+  });
+
+  describe("Validadores - telefono boliviano", () => {
+    it("debe aceptar lineas fijas y moviles", () => {
+      ["22123456", "33234567", "44345678", "65555555", "76543210"].forEach((phone) => {
+        expect(validateBolivianPhone(phone).isValid).toBe(true);
+      });
+    });
+
+    it("debe rechazar cualquier cantidad de digitos distinta de 8", () => {
+      ["1234567", "123456789", "1234567890", ""].forEach((phone) => {
+        const result = validateBolivianPhone(phone);
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe("INVALID_PHONE");
+      });
+    });
+
+    it("debe rechazar primeros digitos que no existen en Bolivia", () => {
+      ["12345678", "52345678", "82345678", "92345678", "02345678"].forEach((phone) => {
+        const result = validateBolivianPhone(phone);
+        expect(result.isValid).toBe(false);
+        expect(result.code).toBe("INVALID_PHONE");
+      });
+    });
+
+    it("debe rechazar valores que no son texto", () => {
+      expect(validateBolivianPhone(22123456).isValid).toBe(false);
+      expect(validateBolivianPhone(null).isValid).toBe(false);
+    });
+  });
+
+  describe("Validadores - ciudad contra el catalogo", () => {
+    it("debe aceptar una ciudad del catalogo", () => {
+      expect(validateCityAgainstCatalog("La Paz").isValid).toBe(true);
+      expect(validateCityAgainstCatalog("Santa Cruz de la Sierra").isValid).toBe(true);
+    });
+
+    it("debe aceptar los espacios sobrantes alrededor del nombre", () => {
+      expect(validateCityAgainstCatalog("  Cochabamba  ").isValid).toBe(true);
+    });
+
+    it("debe tratar la ciudad como opcional", () => {
+      expect(validateCityAgainstCatalog(undefined).isValid).toBe(true);
+      expect(validateCityAgainstCatalog(null).isValid).toBe(true);
+      expect(validateCityAgainstCatalog("").isValid).toBe(true);
+      expect(validateCityAgainstCatalog("   ").isValid).toBe(true);
+    });
+
+    it("debe rechazar una ciudad que no se atiende", () => {
+      const result = validateCityAgainstCatalog("Madrid");
+      expect(result.isValid).toBe(false);
+      expect(result.code).toBe("INVALID_CITY");
+      expect(result.error).toContain("La Paz");
+    });
+
+    it("debe distinguir mayusculas, para que no entren variantes del mismo nombre", () => {
+      expect(validateCityAgainstCatalog("la paz").isValid).toBe(false);
+    });
+
+    it("debe rechazar valores que no son texto", () => {
+      const result = validateCityAgainstCatalog(42);
+      expect(result.isValid).toBe(false);
+      expect(result.code).toBe("INVALID_CITY");
     });
   });
 

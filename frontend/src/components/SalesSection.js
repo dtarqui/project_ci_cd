@@ -37,6 +37,7 @@ const SalesSection = () => {
   const [formError, setFormError] = useState("");
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
+  const [cities, setCities] = useState([]);
   const [cancelingSaleId, setCancelingSaleId] = useState(null);
   const [actionError, setActionError] = useState(null);
 
@@ -71,12 +72,16 @@ const SalesSection = () => {
   const loadFormOptions = useCallback(async () => {
     try {
       setFormLoading(true);
-      const [customersResponse, productsResponse] = await Promise.all([
+      const [customersResponse, productsResponse, citiesResponse] = await Promise.all([
         customerService.getCustomers(),
         productService.getProducts(),
+        // El catalogo alimenta el alta de cliente desde la propia venta. Si
+        // falla, no se bloquea la venta: el formulario anidado cae a texto libre.
+        customerService.getCities().catch(() => ({ data: [] })),
       ]);
       setCustomers(customersResponse.data || []);
       setProducts(productsResponse.data || []);
+      setCities(citiesResponse.data || []);
       setFormError("");
     } catch (err) {
       setFormError(handleApiError(err));
@@ -131,6 +136,22 @@ const SalesSection = () => {
   const handleCloseForm = () => {
     setFormOpen(false);
     setFormError("");
+  };
+
+  /**
+   * Alta de cliente desde el formulario de venta. Crea, lo agrega a la lista de
+   * opciones y lo devuelve para que SalesForm lo deje seleccionado, de modo que
+   * el usuario no tenga que abandonar la venta a medio cargar.
+   */
+  const handleCreateCustomerFromSale = async (customerData) => {
+    try {
+      const response = await customerService.createCustomer(customerData);
+      const created = response.data;
+      setCustomers((prev) => [...prev, created]);
+      return created;
+    } catch (err) {
+      throw new Error(handleApiError(err));
+    }
   };
 
   const handleCreateSale = async (saleData) => {
@@ -414,8 +435,10 @@ const SalesSection = () => {
         onSave={handleCreateSale}
         customers={customers}
         products={products}
+        cities={cities}
         loading={formLoading}
         error={formError}
+        onCreateCustomer={handleCreateCustomerFromSale}
       />
     </div>
   );

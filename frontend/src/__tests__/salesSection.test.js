@@ -27,6 +27,8 @@ jest.mock("../services/api", () => ({
   },
   customerService: {
     getCustomers: jest.fn(),
+    getCities: jest.fn(),
+    createCustomer: jest.fn(),
   },
   productService: {
     getProducts: jest.fn(),
@@ -98,6 +100,7 @@ describe("Componente SalesSection", () => {
       data: { ...mockSales[0], status: "Anulada" },
     });
     customerService.getCustomers.mockResolvedValue({ data: [] });
+    customerService.getCities.mockResolvedValue({ data: [] });
     productService.getProducts.mockResolvedValue({ data: [] });
     saleService.createSale.mockResolvedValue({});
   });

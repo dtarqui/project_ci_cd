@@ -10,6 +10,7 @@ const { createCustomerRepository } = require("../repositories/customerRepository
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
 const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
+const { CITY_CATALOG } = require("../config/constants");
 
 const customerRepository = createCustomerRepository();
 
@@ -152,7 +153,22 @@ const deleteCustomer = async (req, res) => {
   });
 };
 
+/**
+ * Devuelve el catalogo de ciudades atendidas. El formulario de clientes lo usa
+ * para ofrecer una lista en vez de un campo de texto libre, y `postalPrefix`
+ * para proponer el codigo postal una vez elegida la ciudad. Es el mismo
+ * catalogo contra el que valida el POST/PUT, de modo que la lista que ve el
+ * usuario y lo que acepta la API no pueden separarse.
+ */
+const getCities = async (req, res) => {
+  sendSuccess(res, {
+    data: CITY_CATALOG,
+    count: CITY_CATALOG.length,
+  });
+};
+
 module.exports = {
+  getCities,
   createCustomer,
   getCustomers,
   getCustomer,

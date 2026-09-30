@@ -6,6 +6,31 @@
 
 const TAX_RATE = 0.13;
 
+// Catalogo de ciudades atendidas. Es la fuente unica: la semilla deriva de aqui
+// los prefijos postales de cada cliente, el validador acepta solo estos nombres y
+// GET /api/customers/cities lo expone para que el formulario ofrezca la lista en
+// lugar de un campo de texto libre donde "La Paz", "la paz" y "LaPaz" eran tres
+// ciudades distintas.
+//   - postalPrefix: prefijo del codigo postal interno (LP-01, SC-02, ...).
+//   - areaCode: codigo de area telefonico que usa la semilla al generar numeros.
+const CITY_CATALOG = [
+  { name: "La Paz", postalPrefix: "LP", areaCode: "22" },
+  { name: "El Alto", postalPrefix: "EA", areaCode: "22" },
+  { name: "Santa Cruz de la Sierra", postalPrefix: "SC", areaCode: "33" },
+  { name: "Cochabamba", postalPrefix: "CB", areaCode: "44" },
+  { name: "Sucre", postalPrefix: "SU", areaCode: "64" },
+  { name: "Oruro", postalPrefix: "OR", areaCode: "25" },
+  { name: "Potosí", postalPrefix: "PT", areaCode: "26" },
+  { name: "Tarija", postalPrefix: "TJ", areaCode: "66" },
+];
+
+const CITY_NAMES = CITY_CATALOG.map((city) => city.name);
+
+const CITY_POSTAL_PREFIX = CITY_CATALOG.reduce((acc, city) => {
+  acc[city.name] = city.postalPrefix;
+  return acc;
+}, {});
+
 const STOCK_THRESHOLDS = {
   LOW: 20,
   OUT: 0,
@@ -36,6 +61,9 @@ const TOP_PRODUCTS_TREND_FUDGE = -50;
 
 module.exports = {
   TAX_RATE,
+  CITY_CATALOG,
+  CITY_NAMES,
+  CITY_POSTAL_PREFIX,
   STOCK_THRESHOLDS,
   CUSTOMER_SEGMENT_THRESHOLDS,
   MONEY_FORMAT_THRESHOLDS,

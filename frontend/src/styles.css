@@ -1214,3 +1214,44 @@ body {
     font-size: 0.75rem;
   }
 }
+
+/* Pista bajo un campo: aclara el formato esperado sin ocupar el sitio del error.
+   La usan el telefono (8 digitos), el stock (unidades enteras) y el prefijo
+   postal derivado de la ciudad. */
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+/* Campo con un prefijo fijo delante: el prefijo del codigo postal lo pone la
+   ciudad elegida, asi que se muestra en vez de pedir que se teclee. */
+.input-with-prefix {
+  display: flex;
+  align-items: stretch;
+}
+
+.input-with-prefix .input-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--color-border-soft);
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.input-with-prefix .input-prefix + input {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.input-with-prefix input {
+  flex: 1;
+  min-width: 0;
+}

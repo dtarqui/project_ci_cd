@@ -131,6 +131,13 @@ export const customerService = {
     return response.data;
   },
 
+  // Catalogo de ciudades atendidas. Lo sirve el backend para que la lista del
+  // formulario y lo que acepta la API sean lo mismo.
+  getCities: async () => {
+    const response = await api.get("/api/customers/cities");
+    return response.data;
+  },
+
   getCustomer: async (id) => {
     const response = await api.get(`/api/customers/${id}`);
     return response.data;

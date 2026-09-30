@@ -152,10 +152,29 @@ const verifyAuthToken = (token) => {
   }
 };
 
+/**
+ * Deja un telefono en su forma canonica: solo los digitos del numero nacional.
+ *
+ * El negocio opera unicamente en Bolivia, asi que el codigo de pais no se pide
+ * ni se guarda: seria "+591" en todas las filas, ocuparia espacio en la tabla y
+ * el usuario tendria que teclearlo en cada alta. Se acepta al validar, junto con
+ * espacios, guiones y parentesis, para no rechazar registros cargados antes de
+ * esta regla; el resultado siempre son los 8 digitos nacionales.
+ * @param {*} phone
+ * @returns {string} Digitos del numero nacional, o "" si no hay nada usable.
+ */
+const normalizePhone = (phone) => {
+  if (typeof phone !== "string") {
+    return "";
+  }
+  return phone.trim().replace(/^\+?591/, "").replace(/\D/g, "");
+};
+
 module.exports = {
   calculateProductStatus,
   filterByText,
   extractToken,
   createAuthToken,
   verifyAuthToken,
+  normalizePhone,
 };

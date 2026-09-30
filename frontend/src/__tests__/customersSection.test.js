@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 jest.mock("../services/api", () => ({
   customerService: {
     getCustomers: jest.fn(),
+    getCities: jest.fn(),
     createCustomer: jest.fn(),
     updateCustomer: jest.fn(),
     deleteCustomer: jest.fn(),
@@ -27,10 +28,10 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       id: 1,
       name: "Juan García",
       email: "juan.garcia@email.com",
-      phone: "1234567890",
+      phone: "22123456",
       address: "Calle Principal 123",
-      city: "Madrid",
-      postalCode: "28001",
+      city: "La Paz",
+      postalCode: "LP-01",
       status: "Activo",
       registeredDate: "2024-01-15",
       totalSpent: 5420.50,
@@ -41,10 +42,10 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       id: 2,
       name: "María López",
       email: "maria.lopez@email.com",
-      phone: "0987654321",
+      phone: "76543210",
       address: "Avenida Secundaria 456",
-      city: "Barcelona",
-      postalCode: "08002",
+      city: "Cochabamba",
+      postalCode: "CB-02",
       status: "Activo",
       registeredDate: "2024-02-20",
       totalSpent: 8230.75,
@@ -64,6 +65,14 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       success: true,
       data: mockCustomers,
       count: 2,
+    });
+    // El catalogo de ciudades que CustomerForm usa para la lista.
+    apiService.customerService.getCities.mockResolvedValue({
+      success: true,
+      data: [
+        { name: "La Paz", postalPrefix: "LP", areaCode: "22" },
+        { name: "Cochabamba", postalPrefix: "CB", areaCode: "44" },
+      ],
     });
   });
 
@@ -233,15 +242,15 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
       const nameInputs = screen.getAllByPlaceholderText("Juan García");
       const nameInput = nameInputs[0];
-      const emailInput = screen.getByPlaceholderText("juan@example.com");
-      const phoneInput = screen.getByPlaceholderText("1234567890");
+      const emailInput = screen.getByPlaceholderText("juan.garcia@email.com");
+      const phoneInput = screen.getByPlaceholderText("22123456");
 
       await userEvent.clear(nameInput);
       await userEvent.type(nameInput, "Test Customer");
       await userEvent.clear(emailInput);
       await userEvent.type(emailInput, "test@example.com");
       await userEvent.clear(phoneInput);
-      await userEvent.type(phoneInput, "1234567890");
+      await userEvent.type(phoneInput, "22123456");
 
       const submitButton = screen.getByRole("button", { name: /Crear/i });
       await userEvent.click(submitButton);
@@ -251,7 +260,7 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
           expect.objectContaining({
             name: "Test Customer",
             email: "test@example.com",
-            phone: "1234567890",
+            phone: "22123456",
           })
         );
       });
@@ -537,15 +546,15 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
 
       const nameInputs = screen.getAllByPlaceholderText("Juan García");
       const nameInput = nameInputs[0];
-      const emailInput = screen.getByPlaceholderText("juan@example.com");
-      const phoneInput = screen.getByPlaceholderText("1234567890");
+      const emailInput = screen.getByPlaceholderText("juan.garcia@email.com");
+      const phoneInput = screen.getByPlaceholderText("22123456");
 
       await userEvent.clear(nameInput);
       await userEvent.type(nameInput, "Test");
       await userEvent.clear(emailInput);
       await userEvent.type(emailInput, "test@test.com");
       await userEvent.clear(phoneInput);
-      await userEvent.type(phoneInput, "1234567890");
+      await userEvent.type(phoneInput, "22123456");
 
       const submitButton = screen.getByRole("button", { name: /Crear/i });
       await userEvent.click(submitButton);

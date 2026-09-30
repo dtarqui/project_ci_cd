@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SalesForm from "../components/SalesForm";
 
@@ -388,4 +388,295 @@ describe("Componente SalesForm", () => {
       });
     });
   });
+  describe("Stock y líneas de la venta", () => {
+    const stocked = [
+      { id: 1, name: "Producto A", price: 100, stock: 5 },
+      { id: 2, name: "Producto B", price: 200, stock: 0 },
+    ];
+
+    it("debe mostrar el stock disponible en cada opción de producto", () => {
+      render(<SalesForm {...defaultProps} products={stocked} />);
+
+      expect(screen.getAllByRole("option", { name: "Producto A (stock: 5)" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("option", { name: "Producto B (stock: 0)" }).length).toBeGreaterThan(0);
+    });
+
+    it("debe mostrar el disponible junto a la cantidad al elegir un producto", async () => {
+      const { container } = render(<SalesForm {...defaultProps} products={stocked} />);
+
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/Disponible: 5/)).toBeInTheDocument();
+      });
+    });
+
+    it("no debe mostrar stock cuando el producto no lo informa", () => {
+      render(<SalesForm {...defaultProps} />);
+
+      expect(screen.getAllByRole("option", { name: "Producto A" }).length).toBeGreaterThan(0);
+      expect(screen.queryByText(/Disponible:/)).not.toBeInTheDocument();
+    });
+
+    it("debe rechazar una cantidad mayor al stock antes de enviar", async () => {
+      const { container } = render(<SalesForm {...defaultProps} products={stocked} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      fireEvent.change(container.querySelector('input[type="number"][min="1"]'), {
+        target: { value: "9" },
+      });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        // Aparece dos veces a proposito: en el banner de arriba y en la linea.
+        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(2);
+      });
+      expect(mockOnSave).not.toHaveBeenCalled();
+    });
+
+    it("debe quitar el aviso de stock al corregir la cantidad", async () => {
+      const { container } = render(<SalesForm {...defaultProps} products={stocked} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      const quantity = container.querySelector('input[type="number"][min="1"]');
+      fireEvent.change(quantity, { target: { value: "9" } });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(2);
+      });
+
+      fireEvent.change(quantity, { target: { value: "3" } });
+
+      // Se va tanto el aviso de la linea como el banner.
+      await waitFor(() => {
+        expect(screen.queryAllByText("Solo hay 5 en stock.")).toHaveLength(0);
+      });
+    });
+
+    it("debe rechazar el mismo producto en dos líneas", async () => {
+      const { container } = render(<SalesForm {...defaultProps} products={stocked} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      await userEvent.click(screen.getByRole("button", { name: /agregar item/i }));
+
+      const selects = container.querySelectorAll("select");
+      fireEvent.change(selects[3], { target: { value: "1" } });
+      fireEvent.change(selects[4], { target: { value: "1" } });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        expect(
+          screen.getAllByText(/ya está en otra línea/i).length
+        ).toBeGreaterThan(0);
+      });
+      expect(mockOnSave).not.toHaveBeenCalled();
+    });
+
+    it("debe aceptar la venta cuando la cantidad cabe en el stock", async () => {
+      mockOnSave.mockResolvedValueOnce({});
+      const { container } = render(<SalesForm {...defaultProps} products={stocked} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      fireEvent.change(container.querySelector('input[type="number"][min="1"]'), {
+        target: { value: "5" },
+      });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalledWith(
+          expect.objectContaining({
+            customerId: 1,
+            items: [{ productId: 1, quantity: 5 }],
+          })
+        );
+      });
+    });
+  });
+
+  describe("Tope del descuento", () => {
+    it("debe avisar en el campo cuando el descuento supera el total", async () => {
+      const { container } = render(<SalesForm {...defaultProps} />);
+
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      fireEvent.change(screen.getByLabelText(/Descuento/i), { target: { value: "500" } });
+
+      await waitFor(() => {
+        expect(screen.getByText(/No puede superar/i)).toBeInTheDocument();
+      });
+    });
+
+    it("no debe guardar una venta cuyo descuento supera el total", async () => {
+      const { container } = render(<SalesForm {...defaultProps} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      fireEvent.change(screen.getByLabelText(/Descuento/i), { target: { value: "500" } });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        expect(
+          container.querySelector(".sales-form-error").textContent
+        ).toMatch(/El descuento no puede superar/i);
+      });
+      expect(mockOnSave).not.toHaveBeenCalled();
+    });
+
+    it("debe aceptar un descuento igual al total", async () => {
+      mockOnSave.mockResolvedValueOnce({});
+      const { container } = render(<SalesForm {...defaultProps} />);
+
+      fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
+      // 100 de subtotal + 13 de impuesto
+      fireEvent.change(screen.getByLabelText(/Descuento/i), { target: { value: "113" } });
+      fireEvent.submit(container.querySelector("form"));
+
+      await waitFor(() => {
+        expect(mockOnSave).toHaveBeenCalledWith(
+          expect.objectContaining({ discount: 113 })
+        );
+      });
+    });
+  });
+
+  describe("Cliente nuevo desde la venta", () => {
+    const cities = [
+      { name: "La Paz", postalPrefix: "LP", areaCode: "22" },
+      { name: "Cochabamba", postalPrefix: "CB", areaCode: "44" },
+    ];
+
+    // Imita lo que hace SalesSection: crea el cliente, lo agrega a la lista y lo
+    // devuelve para que el formulario lo deje seleccionado.
+    const Harness = ({ onCreate }) => {
+      const [customers, setCustomers] = React.useState(mockCustomers);
+      const handleCreate = async (data) => {
+        const created = { id: 99, name: data.name };
+        setCustomers((prev) => [...prev, created]);
+        if (onCreate) onCreate(data);
+        return created;
+      };
+      return (
+        <SalesForm
+          {...defaultProps}
+          customers={customers}
+          cities={cities}
+          onCreateCustomer={handleCreate}
+        />
+      );
+    };
+
+    const openCustomerForm = () =>
+      userEvent.click(screen.getByRole("button", { name: /nuevo cliente/i }));
+
+    const fillCustomer = async () => {
+      await userEvent.type(screen.getByLabelText(/Nombre/i), "Cliente Nuevo");
+      await userEvent.type(screen.getByLabelText(/Email/i), "nuevo@email.com");
+      await userEvent.type(screen.getByLabelText(/Teléfono/i), "22123456");
+    };
+
+    it("no debe ofrecer el botón si la sección no sabe crear clientes", () => {
+      render(<SalesForm {...defaultProps} />);
+      expect(
+        screen.queryByRole("button", { name: /nuevo cliente/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it("debe abrir el formulario de cliente sobre el de venta", async () => {
+      render(<Harness />);
+
+      await openCustomerForm();
+
+      expect(screen.getByRole("heading", { name: "Nuevo Cliente" })).toBeInTheDocument();
+      // La venta sigue abierta detrás.
+      expect(screen.getByText("Nueva Venta")).toBeInTheDocument();
+    });
+
+    it("debe ofrecer el catálogo de ciudades en el formulario anidado", async () => {
+      render(<Harness />);
+
+      await openCustomerForm();
+
+      expect(screen.getByRole("option", { name: "La Paz" })).toBeInTheDocument();
+    });
+
+    it("debe crear el cliente y dejarlo seleccionado en la venta", async () => {
+      const onCreate = jest.fn();
+      render(<Harness onCreate={onCreate} />);
+
+      await openCustomerForm();
+      await fillCustomer();
+      await userEvent.click(screen.getByRole("button", { name: /crear/i }));
+
+      await waitFor(() => {
+        expect(onCreate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: "Cliente Nuevo",
+            email: "nuevo@email.com",
+            phone: "22123456",
+          })
+        );
+      });
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Cliente")).toHaveValue("99");
+      });
+    });
+
+    it("debe cerrar el formulario de cliente tras crearlo", async () => {
+      render(<Harness />);
+
+      await openCustomerForm();
+      await fillCustomer();
+      await userEvent.click(screen.getByRole("button", { name: /crear/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("heading", { name: "Nuevo Cliente" })
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it("debe conservar los productos ya cargados al crear el cliente", async () => {
+      const { container } = render(<Harness />);
+
+      fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "2" } });
+      fireEvent.change(container.querySelector('input[type="number"][min="1"]'), {
+        target: { value: "3" },
+      });
+
+      await openCustomerForm();
+      await fillCustomer();
+      await userEvent.click(screen.getByRole("button", { name: /crear/i }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Cliente")).toHaveValue("99");
+      });
+      // La linea cargada antes de abrir el formulario sigue ahi.
+      expect(container.querySelectorAll("select")[3]).toHaveValue("2");
+      expect(container.querySelector('input[type="number"][min="1"]')).toHaveValue(3);
+    });
+
+    it("debe cerrar el formulario de cliente al cancelar, sin tocar la venta", async () => {
+      render(<Harness />);
+
+      await openCustomerForm();
+      const customerModal = document.querySelector(".customer-form-modal");
+      await userEvent.click(
+        within(customerModal).getByRole("button", { name: /cancelar/i })
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.queryByRole("heading", { name: "Nuevo Cliente" })
+        ).not.toBeInTheDocument();
+      });
+      expect(screen.getByText("Nueva Venta")).toBeInTheDocument();
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+  });
+
 });

@@ -201,11 +201,45 @@ Ejemplo:
 
 `GET /api/customers?search=juan&status=Activo&sort=spending`
 
+### GET `/api/customers/cities`
+
+Catalogo de ciudades atendidas. Es el mismo contra el que validan `POST` y `PUT`,
+y el que el formulario usa para ofrecer la lista en vez de un campo libre.
+`postalPrefix` es el prefijo del codigo postal y `areaCode` el codigo de area
+telefonico de la ciudad.
+
+Se declara antes de `GET /:id`, porque Express resuelve por orden y `"/cities"`
+encajaria en `"/:id"`.
+
+Respuesta esperada (`200`):
+
+```json
+{
+  "success": true,
+  "data": [
+    { "name": "La Paz", "postalPrefix": "LP", "areaCode": "22" },
+    { "name": "El Alto", "postalPrefix": "EA", "areaCode": "22" },
+    { "name": "Santa Cruz de la Sierra", "postalPrefix": "SC", "areaCode": "33" },
+    { "name": "Cochabamba", "postalPrefix": "CB", "areaCode": "44" },
+    { "name": "Sucre", "postalPrefix": "SU", "areaCode": "64" },
+    { "name": "Oruro", "postalPrefix": "OR", "areaCode": "25" },
+    { "name": "Potosí", "postalPrefix": "PT", "areaCode": "26" },
+    { "name": "Tarija", "postalPrefix": "TJ", "areaCode": "66" }
+  ],
+  "count": 8
+}
+```
+
 ### GET `/api/customers/:id`
 
 Ejemplo: `GET /api/customers/1`
 
 ### POST `/api/customers`
+
+`phone` son los 8 digitos nacionales, sin codigo de pais: el negocio opera solo en
+Bolivia, asi que `+591` seria el mismo prefijo en todas las filas. Se acepta si
+llega pegado (`"+591 70000000"`), junto con espacios y guiones, pero se guarda
+normalizado. `city`, si se indica, debe ser una del catalogo.
 
 Body:
 
@@ -213,7 +247,7 @@ Body:
 {
   "name": "Carlos Perez",
   "email": "carlos.perez@email.com",
-  "phone": "+591 70000000",
+  "phone": "70000000",
   "address": "Av. Principal 123",
   "city": "La Paz",
   "postalCode": "LP-01"
@@ -226,11 +260,18 @@ Body:
 
 ```json
 {
-  "phone": "+591 71111111",
+  "phone": "71111111",
   "city": "Cochabamba",
   "status": "Activo"
 }
 ```
+
+Errores propios de estos dos endpoints:
+
+| Codigo | Cuando |
+|---|---|
+| `INVALID_PHONE` | El telefono no tiene 8 digitos, o no empieza en 2, 3 o 4 (fija) ni en 6 o 7 (movil) |
+| `INVALID_CITY` | La ciudad no esta en `GET /api/customers/cities` |
 
 ### DELETE `/api/customers/:id`
 

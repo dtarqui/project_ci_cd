@@ -1,7 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Button from "./ui/Button";
+import {
+  validateName,
+  validatePrice,
+  validateStock,
+  firstInvalidField,
+  isClean,
+} from "../utils/validation";
 import "../styles/productForm.css";
+
+const EMPTY_FORM = {
+  name: "",
+  category: "",
+  price: "",
+  stock: "",
+};
+
+// Orden visual, para llevar el foco al primer campo con error al enviar.
+const FIELD_ORDER = ["name", "category", "price", "stock"];
 
 /**
  * ProductForm - Componente para crear y editar productos
@@ -12,14 +29,11 @@ import "../styles/productForm.css";
  * @param {Array<string>} categories - Lista de categorías disponibles
  */
 const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    price: "",
-    stock: "",
-  });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fieldRefs = useRef({});
 
   // Inicializar formulario cuando se abre o cambia el producto
   useEffect(() => {
@@ -28,46 +42,37 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
         setFormData({
           name: product.name || "",
           category: product.category || "",
-          price: product.price || "",
-          stock: product.stock || "",
+          price: product.price ?? "",
+          stock: product.stock ?? "",
         });
       } else {
-        setFormData({
-          name: "",
-          category: "",
-          price: "",
-          stock: "",
-        });
+        setFormData(EMPTY_FORM);
       }
       setErrors({});
+      setTouched({});
     }
   }, [isOpen, product]);
 
-  /**
-   * Validar formulario
-   */
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "El nombre es requerido";
+  const validateField = (field, value) => {
+    switch (field) {
+      case "name":
+        return validateName(value);
+      case "category":
+        return typeof value === "string" && value.trim() ? "" : "La categoría es requerida";
+      case "price":
+        return validatePrice(value);
+      case "stock":
+        return validateStock(value);
+      default:
+        return "";
     }
-
-    if (!formData.category.trim()) {
-      newErrors.category = "La categoría es requerida";
-    }
-
-    if (formData.price === "" || parseFloat(formData.price) < 0) {
-      newErrors.price = "El precio debe ser un número positivo";
-    }
-
-    if (formData.stock === "" || parseInt(formData.stock) < 0) {
-      newErrors.stock = "El stock debe ser un número no negativo";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
+
+  const validateAll = (data) =>
+    FIELD_ORDER.reduce((acc, field) => {
+      acc[field] = validateField(field, data[field]);
+      return acc;
+    }, {});
 
   /**
    * Manejar cambios en los inputs
@@ -78,7 +83,8 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
       ...prev,
       [name]: value,
     }));
-    // Limpiar error del campo cuando el usuario empieza a escribir
+    // Limpiar error del campo cuando el usuario empieza a escribir; el mensaje
+    // nuevo aparece al salir del campo, no mientras teclea.
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -87,13 +93,27 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
     }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
   /**
    * Manejar envío del formulario
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    const nextErrors = validateAll(formData);
+    setErrors(nextErrors);
+    setTouched(FIELD_ORDER.reduce((acc, field) => ({ ...acc, [field]: true }), {}));
+
+    if (!isClean(nextErrors)) {
+      const target = firstInvalidField(nextErrors, FIELD_ORDER);
+      if (target && fieldRefs.current[target]) {
+        fieldRefs.current[target].focus();
+      }
       return;
     }
 
@@ -102,12 +122,12 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
       const productData = {
         name: formData.name.trim(),
         category: formData.category.trim(),
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        price: Number(formData.price),
+        stock: Number(formData.stock),
       };
 
       await onSubmit(productData);
-      setFormData({ name: "", category: "", price: "", stock: "" });
+      setFormData(EMPTY_FORM);
       onClose();
     } catch (error) {
       setErrors({
@@ -122,6 +142,25 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
 
   const isEditing = !!product;
   const title = isEditing ? "Editar Producto" : "Crear Nuevo Producto";
+
+  const fieldError = (field) => (touched[field] ? errors[field] : "");
+
+  const errorFor = (field) => {
+    const message = fieldError(field);
+    if (!message) {
+      return null;
+    }
+    return (
+      <span className="error-message" id={`${field}-error`} role="alert">
+        {message}
+      </span>
+    );
+  };
+
+  const a11y = (field) => ({
+    "aria-invalid": fieldError(field) ? "true" : undefined,
+    "aria-describedby": fieldError(field) ? `${field}-error` : undefined,
+  });
 
   return (
     <div className="product-form-overlay">
@@ -138,7 +177,7 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="product-form">
+        <form onSubmit={handleSubmit} className="product-form" noValidate>
           <div className="form-group">
             <label htmlFor="name">Nombre del Producto *</label>
             <input
@@ -147,10 +186,15 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              onBlur={handleBlur}
               placeholder="Ej: Laptop Dell XPS 13"
               disabled={isSubmitting}
+              ref={(el) => {
+                fieldRefs.current.name = el;
+              }}
+              {...a11y("name")}
             />
-            {errors.name && <span className="error-message">{errors.name}</span>}
+            {errorFor("name")}
           </div>
 
           <div className="form-group">
@@ -160,7 +204,12 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
               name="category"
               value={formData.category}
               onChange={handleChange}
+              onBlur={handleBlur}
               disabled={isSubmitting}
+              ref={(el) => {
+                fieldRefs.current.category = el;
+              }}
+              {...a11y("category")}
             >
               <option value="">-- Selecciona una categoría --</option>
               {categories.map((cat) => (
@@ -169,9 +218,7 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
                 </option>
               ))}
             </select>
-            {errors.category && (
-              <span className="error-message">{errors.category}</span>
-            )}
+            {errorFor("category")}
           </div>
 
           <div className="form-row">
@@ -183,14 +230,17 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="0.00"
                 step="0.01"
                 min="0"
                 disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.price = el;
+                }}
+                {...a11y("price")}
               />
-              {errors.price && (
-                <span className="error-message">{errors.price}</span>
-              )}
+              {errorFor("price")}
             </div>
 
             <div className="form-group">
@@ -201,18 +251,25 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
                 name="stock"
                 value={formData.stock}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="0"
                 min="0"
+                step="1"
                 disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.stock = el;
+                }}
+                {...a11y("stock")}
               />
-              {errors.stock && (
-                <span className="error-message">{errors.stock}</span>
-              )}
+              <span className="field-hint">Unidades enteras</span>
+              {errorFor("stock")}
             </div>
           </div>
 
           {errors.submit && (
-            <div className="error-message submit-error">{errors.submit}</div>
+            <div className="error-message submit-error" role="alert">
+              {errors.submit}
+            </div>
           )}
 
           <div className="form-actions">

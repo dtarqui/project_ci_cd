@@ -1,11 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { MdAdd, MdClose, MdDelete } from "react-icons/md";
+import { MdAdd, MdClose, MdDelete, MdPersonAdd } from "react-icons/md";
 import Button from "./ui/Button";
+import CustomerForm from "./CustomerForm";
 import { formatCurrency } from "../utils/format";
 import "../styles/salesForm.css";
 
 const EMPTY_ITEM = { productId: "", quantity: 1 };
+
+// Misma tasa que TAX_RATE en backend/src/config/constants.js. El backend recalcula
+// el total al guardar; esto es solo el avance que ve el usuario mientras carga la
+// venta. Si cambia alla, cambia aca.
+const TAX_RATE = 0.13;
+
+/** Stock declarado del producto, o null si el producto no lo informa. */
+const stockOf = (product) =>
+  product && typeof product.stock === "number" ? product.stock : null;
 
 const SalesForm = ({
   isOpen,
@@ -13,8 +23,10 @@ const SalesForm = ({
   onSave,
   customers,
   products,
+  cities,
   loading,
   error,
+  onCreateCustomer,
 }) => {
   const [customerId, setCustomerId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
@@ -23,7 +35,9 @@ const SalesForm = ({
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
   const [formError, setFormError] = useState("");
+  const [itemErrors, setItemErrors] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customerFormOpen, setCustomerFormOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -34,7 +48,9 @@ const SalesForm = ({
     setNotes("");
     setItems([{ ...EMPTY_ITEM }]);
     setFormError("");
+    setItemErrors([]);
     setIsSubmitting(false);
+    setCustomerFormOpen(false);
   }, [isOpen]);
 
   const productMap = useMemo(() => {
@@ -51,7 +67,7 @@ const SalesForm = ({
       return acc + product.price * item.quantity;
     }, 0);
 
-    const tax = subtotal * 0.13;
+    const tax = subtotal * TAX_RATE;
     const discountValue = Number(discount) || 0;
     const total = Math.max(subtotal + tax - discountValue, 0);
 
@@ -59,31 +75,103 @@ const SalesForm = ({
       subtotal,
       tax,
       discount: discountValue,
+      // Tope del descuento: mas alla de esto el total se recortaba a 0 y la venta
+      // se guardaba regalando la diferencia sin avisar.
+      maxDiscount: subtotal + tax,
       total,
     };
   }, [items, productMap, discount]);
 
-  if (!isOpen) return null;
+  /**
+   * Revisa las lineas de la venta y devuelve un mensaje por linea ("" si esta
+   * bien). Cubre tres cosas que antes pasaban: linea sin producto o con cantidad
+   * <= 0, cantidad por encima del stock (la venta se enviaba y el backend la
+   * rechazaba despues) y el mismo producto repetido en dos lineas, que sumaba mal
+   * el stock pedido.
+   */
+  /**
+   * Recalcula los errores de linea y baja el banner si ya no queda ninguno. Sin
+   * esto, corregir la cantidad limpiaba el aviso de la linea pero dejaba el
+   * mensaje de arriba, que contradecia lo que el formulario mostraba.
+   */
+  const refreshItemErrors = (nextItems) => {
+    setItemErrors((prevErrors) => {
+      if (!prevErrors.length) {
+        return prevErrors;
+      }
+      const recalculated = validateItems(nextItems);
+      if (!recalculated.some((message) => message)) {
+        setFormError("");
+      }
+      return recalculated;
+    });
+  };
+
+  const validateItems = (currentItems) => {
+    const timesChosen = currentItems.reduce((acc, item) => {
+      if (item.productId) {
+        acc[item.productId] = (acc[item.productId] || 0) + 1;
+      }
+      return acc;
+    }, {});
+
+    return currentItems.map((item) => {
+      if (!item.productId) {
+        return "Selecciona un producto.";
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        return "La cantidad debe ser mayor a 0.";
+      }
+      if (timesChosen[item.productId] > 1) {
+        return "Este producto ya está en otra línea; junta las cantidades.";
+      }
+      const product = productMap[item.productId];
+      const stock = stockOf(product);
+      if (stock !== null && item.quantity > stock) {
+        return `Solo hay ${stock} en stock.`;
+      }
+      return "";
+    });
+  };
 
   const handleItemChange = (index, field, value) => {
-    setItems((prev) =>
-      prev.map((item, idx) =>
+    setItems((prev) => {
+      const next = prev.map((item, idx) =>
         idx === index
           ? {
               ...item,
               [field]: field === "quantity" ? Number(value) : value,
             }
           : item,
-      ),
-    );
+      );
+      // Si ya se habia mostrado un error en las lineas, se recalcula al vuelo:
+      // corregir la cantidad debe quitar el aviso sin tener que reenviar.
+      refreshItemErrors(next);
+      return next;
+    });
   };
 
   const handleAddItem = () => {
     setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
+    setItemErrors((prev) => (prev.length ? [...prev, ""] : prev));
   };
 
   const handleRemoveItem = (index) => {
-    setItems((prev) => prev.filter((_, idx) => idx !== index));
+    setItems((prev) => {
+      const next = prev.filter((_, idx) => idx !== index);
+      refreshItemErrors(next);
+      return next;
+    });
+  };
+
+  const handleCustomerCreated = async (customerData) => {
+    const created = await onCreateCustomer(customerData);
+    // Queda seleccionado el cliente recien creado, sin perder los productos ya
+    // cargados: el objetivo de crearlo desde aca es no abandonar la venta.
+    if (created && created.id !== undefined && created.id !== null) {
+      setCustomerId(String(created.id));
+      setFormError("");
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -99,12 +187,29 @@ const SalesForm = ({
       return;
     }
 
-    const invalidItem = items.find(
-      (item) => !item.productId || !item.quantity || item.quantity <= 0,
-    );
+    const nextItemErrors = validateItems(items);
+    setItemErrors(nextItemErrors);
 
-    if (invalidItem) {
-      setFormError("Agrega productos validos con cantidad mayor a 0.");
+    const firstItemError = nextItemErrors.find((message) => message);
+    if (firstItemError) {
+      // El banner conserva el texto historico cuando el problema es el clasico
+      // (falta producto o cantidad <= 0) y muestra el detalle en los casos nuevos.
+      const isClassic =
+        firstItemError === "Selecciona un producto." ||
+        firstItemError === "La cantidad debe ser mayor a 0.";
+      setFormError(
+        isClassic
+          ? "Agrega productos validos con cantidad mayor a 0."
+          : firstItemError,
+      );
+      return;
+    }
+
+    const discountValue = Number(discount) || 0;
+    if (discountValue > summary.maxDiscount) {
+      setFormError(
+        `El descuento no puede superar ${formatCurrency(summary.maxDiscount)}.`,
+      );
       return;
     }
 
@@ -116,7 +221,7 @@ const SalesForm = ({
         productId: Number(item.productId),
         quantity: Number(item.quantity),
       })),
-      discount: Number(discount) || 0,
+      discount: discountValue,
       paymentMethod,
       notes,
       status,
@@ -133,6 +238,10 @@ const SalesForm = ({
     }
   };
 
+  if (!isOpen) return null;
+
+  const discountExceedsTotal = (Number(discount) || 0) > summary.maxDiscount;
+
   return (
     <div className="sales-form-overlay" role="dialog" aria-modal="true">
       <div className="sales-form-modal">
@@ -143,32 +252,48 @@ const SalesForm = ({
           </button>
         </div>
 
-        <form className="sales-form" onSubmit={handleSubmit}>
+        <form className="sales-form" onSubmit={handleSubmit} noValidate>
           {(error || formError) && (
-            <div className="sales-form-error">{error || formError}</div>
+            <div className="sales-form-error" role="alert">
+              {error || formError}
+            </div>
           )}
 
           <div className="sales-form-row">
             <div className="sales-form-field">
-              <label>Cliente</label>
-              <select
-                value={customerId}
-                onChange={(event) => setCustomerId(event.target.value)}
-                disabled={loading}
-                required
-              >
-                <option value="">Selecciona un cliente</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="sale-customer">Cliente</label>
+              <div className="sales-customer-picker">
+                <select
+                  id="sale-customer"
+                  value={customerId}
+                  onChange={(event) => setCustomerId(event.target.value)}
+                  disabled={loading}
+                  required
+                >
+                  <option value="">Selecciona un cliente</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+                {onCreateCustomer && (
+                  <button
+                    type="button"
+                    className="sales-form-add"
+                    onClick={() => setCustomerFormOpen(true)}
+                    disabled={loading}
+                  >
+                    <MdPersonAdd /> Nuevo cliente
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="sales-form-field">
-              <label>Metodo de pago</label>
+              <label htmlFor="sale-payment">Metodo de pago</label>
               <select
+                id="sale-payment"
                 value={paymentMethod}
                 onChange={(event) => setPaymentMethod(event.target.value)}
               >
@@ -182,8 +307,9 @@ const SalesForm = ({
 
           <div className="sales-form-row">
             <div className="sales-form-field">
-              <label>Estado</label>
+              <label htmlFor="sale-status">Estado</label>
               <select
+                id="sale-status"
                 value={status}
                 onChange={(event) => setStatus(event.target.value)}
               >
@@ -193,14 +319,21 @@ const SalesForm = ({
             </div>
 
             <div className="sales-form-field">
-              <label>Descuento (Bs.)</label>
+              <label htmlFor="sale-discount">Descuento (Bs.)</label>
               <input
+                id="sale-discount"
                 type="number"
                 min="0"
                 step="0.01"
                 value={discount}
                 onChange={(event) => setDiscount(event.target.value)}
+                aria-invalid={discountExceedsTotal ? "true" : undefined}
               />
+              {discountExceedsTotal && (
+                <span className="sales-field-error">
+                  No puede superar {formatCurrency(summary.maxDiscount)}
+                </span>
+              )}
             </div>
           </div>
 
@@ -219,11 +352,14 @@ const SalesForm = ({
             {items.map((item, index) => {
               const product = productMap[item.productId];
               const lineTotal = product ? product.price * item.quantity : 0;
+              const stock = stockOf(product);
+              const itemError = itemErrors[index] || "";
               return (
                 <div className="sales-item-row" key={`item-${index}`}>
                   <div className="sales-form-field">
-                    <label>Producto</label>
+                    <label htmlFor={`sale-product-${index}`}>Producto</label>
                     <select
+                      id={`sale-product-${index}`}
                       value={item.productId}
                       onChange={(event) =>
                         handleItemChange(index, "productId", event.target.value)
@@ -231,25 +367,36 @@ const SalesForm = ({
                       required
                     >
                       <option value="">Selecciona un producto</option>
-                      {products.map((productOption) => (
-                        <option key={productOption.id} value={productOption.id}>
-                          {productOption.name}
-                        </option>
-                      ))}
+                      {products.map((productOption) => {
+                        const optionStock = stockOf(productOption);
+                        return (
+                          <option key={productOption.id} value={productOption.id}>
+                            {optionStock === null
+                              ? productOption.name
+                              : `${productOption.name} (stock: ${optionStock})`}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
                   <div className="sales-form-field">
-                    <label>Cantidad</label>
+                    <label htmlFor={`sale-quantity-${index}`}>Cantidad</label>
                     <input
+                      id={`sale-quantity-${index}`}
                       type="number"
                       min="1"
+                      max={stock === null ? undefined : stock}
                       value={item.quantity}
                       onChange={(event) =>
                         handleItemChange(index, "quantity", event.target.value)
                       }
+                      aria-invalid={itemError ? "true" : undefined}
                       required
                     />
+                    {stock !== null && (
+                      <span className="field-hint">Disponible: {stock}</span>
+                    )}
                   </div>
 
                   <div className="sales-line-total">
@@ -265,6 +412,12 @@ const SalesForm = ({
                   >
                     <MdDelete />
                   </button>
+
+                  {itemError && (
+                    <span className="sales-field-error sales-item-error" role="alert">
+                      {itemError}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -290,8 +443,9 @@ const SalesForm = ({
           </div>
 
           <div className="sales-form-field">
-            <label>Notas</label>
+            <label htmlFor="sale-notes">Notas</label>
             <textarea
+              id="sale-notes"
               rows="3"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -320,6 +474,15 @@ const SalesForm = ({
           </div>
         </form>
       </div>
+
+      {onCreateCustomer && (
+        <CustomerForm
+          isOpen={customerFormOpen}
+          onClose={() => setCustomerFormOpen(false)}
+          onSubmit={handleCustomerCreated}
+          cities={cities}
+        />
+      )}
     </div>
   );
 };
@@ -341,15 +504,29 @@ SalesForm.propTypes = {
       id: PropTypes.number,
       name: PropTypes.string,
       price: PropTypes.number,
+      stock: PropTypes.number,
+    }),
+  ),
+  // Catalogo de ciudades para el formulario de cliente anidado.
+  cities: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      postalPrefix: PropTypes.string,
+      areaCode: PropTypes.string,
     }),
   ),
   loading: PropTypes.bool,
   error: PropTypes.string,
+  // Crea el cliente y devuelve el creado, para dejarlo seleccionado en la venta.
+  // Sin este callback no se ofrece el boton "Nuevo cliente".
+  onCreateCustomer: PropTypes.func,
 };
 
 SalesForm.defaultProps = {
   customers: [],
   products: [],
+  cities: [],
   loading: false,
   error: "",
+  onCreateCustomer: undefined,
 };

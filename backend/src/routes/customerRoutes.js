@@ -5,6 +5,7 @@
 const express = require("express");
 const router = express.Router();
 const {
+  getCities,
   createCustomer,
   getCustomers,
   getCustomer,
@@ -27,6 +28,15 @@ router.post("/", authenticateToken, asyncHandler(createCustomer));
  * @access Protected
  */
 router.get("/", authenticateToken, asyncHandler(getCustomers));
+
+/**
+ * @route GET /api/customers/cities
+ * @description Catalogo de ciudades atendidas (nombre, prefijo postal, codigo de area)
+ * @access Protected
+ * @note Debe declararse ANTES de GET /:id: Express resuelve por orden y
+ *       "/cities" encajaria en "/:id" con id="cities".
+ */
+router.get("/cities", authenticateToken, asyncHandler(getCities));
 
 /**
  * @route GET /api/customers/:id

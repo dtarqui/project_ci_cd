@@ -20,6 +20,7 @@ frontend/
       useEntityList.js          # Carga/filtrado/orden compartido por listados CRUD
     utils/
       format.js                 # formatCurrency / formatDate
+      validation.js             # Reglas de los formularios, compartidas por los tres
     components/
       Charts.js
       CustomerForm.js            # Formulario modal de clientes (mismo patron que ProductForm)
@@ -65,6 +66,36 @@ Nota: no existe una carpeta `pages/` separada — el ruteo real vive en `App.js`
 - El dashboard sincroniza URL y seccion activa (`Dashboard`, `Ventas`, `Productos`, `Clientes`, `Configuraciones`).
 - Las tres secciones CRUD (`ProductsSection`, `CustomersSection`, `SalesSection`) siguen el mismo patron: `useEntityList` para listar/filtrar/ordenar, un `*Form.js` modal para crear/editar, `Badge` (via `components/ui/`) para mostrar el estado y `Pagination` para recorrer el listado.
 - Los servicios en `src/services/api.js` centralizan **todas** las llamadas HTTP (ningun componente llama a `axios`/`fetch` directamente) y el manejo de `401` (dispara el evento que `AuthContext` escucha para cerrar sesion).
+
+## Formularios
+
+Los tres formularios (`CustomerForm`, `ProductForm`, `SalesForm`) comparten las reglas
+de `utils/validation.js`, para que el criterio y el texto del error sean el mismo en
+todos. Esas reglas replican las de `backend/src/utils/validators.js`: no se pueden
+importar de ahí porque backend y frontend se compilan y despliegan por separado, así
+que si cambia una regla hay que cambiar las dos. El formulario guía al usuario; quien
+decide es la API.
+
+Comportamiento común:
+- El error aparece al **salir del campo**, no mientras se teclea; al escribir se limpia.
+- Al enviar con errores, el foco va al primer campo inválido según el orden visual.
+- El campo inválido lleva `aria-invalid` y `aria-describedby` apuntando a su mensaje.
+
+Propio de cada uno:
+- **`CustomerForm`** recibe `cities` (el catálogo de `GET /api/customers/cities`) y lo
+  ofrece como lista; si llega vacío porque la petición falló, la ciudad vuelve a ser
+  texto libre para no bloquear el alta. El prefijo del código postal lo pone la ciudad
+  elegida y se muestra al lado del campo en vez de pedir que se teclee. El teléfono son
+  ocho dígitos sin código de país, y un valor pegado con `+591` o con separadores se
+  normaliza solo.
+- **`ProductForm`** rechaza un stock decimal en lugar de truncarlo en silencio, que es
+  lo que hacía antes al pasarlo por `parseInt`.
+- **`SalesForm`** muestra el stock de cada producto y no deja enviar una cantidad que lo
+  supere, ni el mismo producto en dos líneas, ni un descuento mayor que el total —antes
+  el total se recortaba a 0 y la venta se guardaba regalando la diferencia. El banner de
+  arriba resume y cada línea señala su propio problema. Desde el selector de cliente se
+  puede crear uno nuevo sin abandonar la venta: el formulario de cliente se abre encima,
+  y al guardar el cliente queda seleccionado con los productos ya cargados intactos.
 
 ## Rutas
 - `/login` - inicio de sesion.
