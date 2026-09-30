@@ -52,7 +52,7 @@ export const validateEmail = (value) => {
   // Suficiente para atajar el error de tecleo, sin pretender validar RFC 5322:
   // algo antes de la arroba, algo despues, y un punto con dominio.
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return "El email no tiene un formato valido";
+    return "El email no tiene un formato válido";
   }
   return "";
 };
@@ -60,20 +60,20 @@ export const validateEmail = (value) => {
 export const validatePhone = (value) => {
   const digits = normalizePhone(value);
   if (!digits) {
-    return "El telefono es requerido";
+    return "El teléfono es requerido";
   }
   if (digits.length !== PHONE_DIGITS) {
-    return `El telefono debe tener ${PHONE_DIGITS} digitos`;
+    return `El teléfono debe tener ${PHONE_DIGITS} dígitos`;
   }
   if (!PHONE_FIRST_DIGITS.includes(digits[0])) {
-    return "El telefono debe empezar en 2, 3 o 4 (fija) o en 6 o 7 (movil)";
+    return "El teléfono debe empezar en 2, 3 o 4 (fija) o en 6 o 7 (móvil)";
   }
   return "";
 };
 
 export const validateAddress = (value) => {
   if (clean(value).length > ADDRESS_MAX_LENGTH) {
-    return `La direccion no puede pasar de ${ADDRESS_MAX_LENGTH} caracteres`;
+    return `La dirección no puede pasar de ${ADDRESS_MAX_LENGTH} caracteres`;
   }
   return "";
 };
@@ -96,7 +96,7 @@ export const validateCity = (value, cityNames = []) => {
 
 export const validatePostalCode = (value) => {
   if (clean(value).length > POSTAL_CODE_MAX_LENGTH) {
-    return `El codigo postal no puede pasar de ${POSTAL_CODE_MAX_LENGTH} caracteres`;
+    return `El código postal no puede pasar de ${POSTAL_CODE_MAX_LENGTH} caracteres`;
   }
   return "";
 };
@@ -107,7 +107,7 @@ export const validatePrice = (value) => {
   }
   const price = Number(value);
   if (!Number.isFinite(price)) {
-    return "El precio debe ser un numero";
+    return "El precio debe ser un número";
   }
   if (price < 0) {
     return "El precio no puede ser negativo";
@@ -125,10 +125,10 @@ export const validateStock = (value) => {
   }
   const stock = Number(value);
   if (!Number.isFinite(stock)) {
-    return "El stock debe ser un numero";
+    return "El stock debe ser un número";
   }
   if (!Number.isInteger(stock)) {
-    return "El stock debe ser un numero entero de unidades";
+    return "El stock debe ser un número entero de unidades";
   }
   if (stock < 0) {
     return "El stock no puede ser negativo";

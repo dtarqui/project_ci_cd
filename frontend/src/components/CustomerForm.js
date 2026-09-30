@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
+import { MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
 import {
   normalizePhone,
@@ -202,7 +203,8 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
       return null;
     }
     return (
-      <span className="error-message" id={`${field}-error`} role="alert">
+      <span className="field-error" id={`${field}-error`} role="alert">
+        <MdErrorOutline aria-hidden="true" />
         {message}
       </span>
     );

@@ -1215,6 +1215,74 @@ body {
   }
 }
 
+/* Error de un campo.
+
+   No usa .error-message: esa clase es el banner de errores de pagina (login,
+   seccion de productos) y aplicada a un campo dejaba una caja rosa centrada del
+   ancho del formulario por cada mensaje. Aqui el aviso es una linea de texto y
+   quien senala el problema es el propio campo, con su borde en rojo. */
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--color-danger-dark);
+}
+
+.field-error svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--color-danger);
+}
+
+/* Campo invalido: mismo lenguaje que el foco (borde de 1px + halo de 3px), en
+   rojo en lugar de verde, para que se lea como un estado y no como una alarma.
+
+   Los selectores llevan el contenedor delante a proposito. Cada formulario
+   redefine el borde de sus campos en su propia hoja (`.customer-form-modal
+   .form-group input`, `.sales-form-field input`), con la misma especificidad que
+   tendria `.form-group input[aria-invalid]`; sin el contenedor, cual gana
+   dependeria del orden en que webpack inyecte las hojas. */
+.form-group input[aria-invalid="true"],
+.form-group select[aria-invalid="true"],
+.customer-form-modal .form-group input[aria-invalid="true"],
+.customer-form-modal .form-group select[aria-invalid="true"],
+.product-form .form-group input[aria-invalid="true"],
+.product-form .form-group select[aria-invalid="true"],
+.sales-form .sales-form-field input[aria-invalid="true"],
+.sales-form .sales-form-field select[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  background-color: var(--color-surface);
+}
+
+.form-group input[aria-invalid="true"]:focus,
+.form-group select[aria-invalid="true"]:focus,
+.customer-form-modal .form-group input[aria-invalid="true"]:focus,
+.customer-form-modal .form-group select[aria-invalid="true"]:focus,
+.product-form .form-group input[aria-invalid="true"]:focus,
+.product-form .form-group select[aria-invalid="true"]:focus,
+.sales-form .sales-form-field input[aria-invalid="true"]:focus,
+.sales-form .sales-form-field select[aria-invalid="true"]:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--color-danger-bg);
+}
+
+/* El prefijo acompaña al campo cuando este queda invalido. */
+.input-with-prefix:has(input[aria-invalid="true"]) .input-prefix {
+  border-color: var(--color-danger);
+}
+
+/* El banner de fallo al guardar si es un aviso de formulario, pero alineado a la
+   izquierda como el resto del contenido, no centrado. */
+.error-message.submit-error {
+  text-align: left;
+  font-size: 13px;
+}
+
 /* Pista bajo un campo: aclara el formato esperado sin ocupar el sitio del error.
    La usan el telefono (8 digitos), el stock (unidades enteras) y el prefijo
    postal derivado de la ciudad. */

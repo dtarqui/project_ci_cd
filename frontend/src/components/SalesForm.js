@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { MdAdd, MdClose, MdDelete, MdPersonAdd } from "react-icons/md";
+import { MdAdd, MdClose, MdDelete, MdErrorOutline, MdPersonAdd } from "react-icons/md";
 import Button from "./ui/Button";
 import CustomerForm from "./CustomerForm";
 import { formatCurrency } from "../utils/format";
@@ -330,7 +330,8 @@ const SalesForm = ({
                 aria-invalid={discountExceedsTotal ? "true" : undefined}
               />
               {discountExceedsTotal && (
-                <span className="sales-field-error">
+                <span className="field-error" role="alert">
+                  <MdErrorOutline aria-hidden="true" />
                   No puede superar {formatCurrency(summary.maxDiscount)}
                 </span>
               )}
@@ -414,7 +415,8 @@ const SalesForm = ({
                   </button>
 
                   {itemError && (
-                    <span className="sales-field-error sales-item-error" role="alert">
+                    <span className="field-error sales-item-error" role="alert">
+                      <MdErrorOutline aria-hidden="true" />
                       {itemError}
                     </span>
                   )}

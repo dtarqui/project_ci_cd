@@ -240,7 +240,7 @@ describe("Componente CustomerForm", () => {
       await userEvent.type(screen.getByLabelText(/Teléfono/i), "22123456");
       await submit();
 
-      expect(screen.getByText(/formato valido/i)).toBeInTheDocument();
+      expect(screen.getByText(/formato válido/i)).toBeInTheDocument();
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 
@@ -252,7 +252,7 @@ describe("Componente CustomerForm", () => {
       await userEvent.type(screen.getByLabelText(/Teléfono/i), "221234");
       await submit();
 
-      expect(screen.getByText(/debe tener 8 digitos/i)).toBeInTheDocument();
+      expect(screen.getByText(/debe tener 8 dígitos/i)).toBeInTheDocument();
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
 

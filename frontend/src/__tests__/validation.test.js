@@ -88,8 +88,8 @@ describe("Reglas de validacion de formularios", () => {
     });
 
     it("debe exigir exactamente 8 digitos", () => {
-      expect(validatePhone("2212345")).toMatch(new RegExp(`${PHONE_DIGITS} digitos`));
-      expect(validatePhone("1234567890")).toMatch(new RegExp(`${PHONE_DIGITS} digitos`));
+      expect(validatePhone("2212345")).toMatch(new RegExp(`${PHONE_DIGITS} dígitos`));
+      expect(validatePhone("1234567890")).toMatch(new RegExp(`${PHONE_DIGITS} dígitos`));
     });
 
     it("debe rechazar primeros digitos que no existen en Bolivia", () => {
@@ -152,7 +152,7 @@ describe("Reglas de validacion de formularios", () => {
     });
 
     it("debe rechazar texto y negativos", () => {
-      expect(validatePrice("abc")).toMatch(/numero/i);
+      expect(validatePrice("abc")).toMatch(/número/i);
       expect(validatePrice("-1")).toMatch(/negativo/i);
     });
   });
@@ -172,7 +172,7 @@ describe("Reglas de validacion de formularios", () => {
     });
 
     it("debe rechazar texto y negativos", () => {
-      expect(validateStock("abc")).toMatch(/numero/i);
+      expect(validateStock("abc")).toMatch(/número/i);
       expect(validateStock("-3")).toMatch(/negativo/i);
     });
   });

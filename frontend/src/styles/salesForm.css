@@ -335,20 +335,12 @@
   }
 }
 
-/* Error de un campo o de una linea de la venta. El banner de arriba resume; esto
-   senala exactamente que linea hay que corregir. */
-.sales-field-error {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-danger);
-}
-
-/* En la fila de un item ocupa todo el ancho, debajo de los controles. */
+/* El error de una linea usa .field-error (estilo comun de todos los formularios);
+   aqui solo se le dice que ocupe todo el ancho de la fila, debajo de los controles.
+   El banner de arriba resume; esto senala que linea hay que corregir. */
 .sales-item-error {
   grid-column: 1 / -1;
-  margin-top: 0;
+  margin-top: 2px;
 }
 
 /* Selector de cliente y el boton para crear uno nuevo sin salir de la venta. */
