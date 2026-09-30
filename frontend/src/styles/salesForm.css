@@ -157,11 +157,19 @@
   color: var(--color-surface);
 }
 
+/* `start` y no `end`: la celda de Cantidad es mas alta porque lleva la pista del
+   stock debajo, y alineando por abajo el campo Producto se hundia y las etiquetas
+   quedaban a distinta altura. Alineando arriba, todas las etiquetas comparten
+   linea y lo que no tiene etiqueta se baja con --label-offset. */
 .sales-item-row {
   display: grid;
   grid-template-columns: 1.5fr 0.6fr 0.7fr auto;
   gap: 12px;
-  align-items: end;
+  align-items: start;
+  /* Alto de una etiqueta (14px x 1.6) mas el hueco del campo. */
+  --label-offset: calc(14px * 1.6 + 8px);
+  /* Alto de un input: 12px de relleno arriba y abajo, el texto y los bordes. */
+  --control-height: calc(14px * 1.6 + 24px + 2px);
   background: var(--color-row);
   padding: 12px;
   border-radius: var(--radius-md);
@@ -171,23 +179,33 @@
 .sales-line-total {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
-.sales-line-total strong {
+  gap: 8px;
   font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   color: var(--color-text);
 }
 
+.sales-line-total strong {
+  display: flex;
+  align-items: center;
+  /* A la altura de los inputs vecinos, para que el importe no flote. */
+  min-height: var(--control-height);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .sales-item-remove {
+  align-self: start;
+  /* Baja lo que mide una etiqueta para quedar a la altura de los campos. */
+  margin-top: var(--label-offset);
   border: none;
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border-radius: var(--radius-md);
-  height: 44px;
-  width: 44px;
+  height: var(--control-height);
+  width: var(--control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -205,32 +223,52 @@
   color: var(--color-surface);
 }
 
+/* Resumen en una sola fila pegada a la derecha, como el pie de una factura: los
+   importes terminan alineados con el borde del formulario en vez de repartirse
+   por todo el ancho. Antes era una retícula de dos columnas con cada celda en
+   `space-between`, que separaba la etiqueta de su importe hasta dejarlos en
+   extremos opuestos de la celda. */
 .sales-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 8px 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 16px;
+  padding: 14px 16px;
 }
 
+/* Cada concepto es "etiqueta importe" junto, con su propia separacion. El
+   desglose va un punto mas pequeno que el total: son el camino, no el resultado,
+   y asi ademas los cuatro entran en un solo renglon. */
 .sales-summary div {
   display: flex;
-  justify-content: space-between;
-  font-size: 14px;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
   color: var(--color-muted);
+  white-space: nowrap;
 }
 
 .sales-summary strong {
   color: var(--color-text);
+  /* Cifras de ancho fijo: los importes no bailan al cambiar de digito. */
+  font-variant-numeric: tabular-nums;
 }
 
+/* El total cierra la fila. Se distingue por peso y color, sin linea divisoria:
+   con la barra a la izquierda, cuando la fila no cabia y el total pasaba al
+   renglon siguiente quedaba una rayita suelta colgando. */
 .sales-summary-total {
-  grid-column: 1 / -1;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-text);
+}
+
+.sales-summary-total strong {
+  color: var(--color-primary);
 }
 
 .sales-form-actions {
@@ -343,21 +381,20 @@
   margin-top: 2px;
 }
 
-/* Selector de cliente y el boton para crear uno nuevo sin salir de la venta. */
-.sales-customer-picker {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sales-customer-picker select {
-  flex: 1;
-  min-width: 0;
-}
-
 @media (max-width: 600px) {
-  .sales-customer-picker {
-    flex-direction: column;
-    align-items: stretch;
+  .sales-summary {
+    justify-content: space-between;
+  }
+
+  .sales-summary div {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .sales-summary-total {
+    padding-left: 0;
+    padding-top: 10px;
+    border-left: none;
+    border-top: 1px solid var(--color-border);
   }
 }

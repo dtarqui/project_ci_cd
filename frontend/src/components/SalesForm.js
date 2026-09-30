@@ -1,12 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { MdAdd, MdClose, MdDelete, MdErrorOutline, MdPersonAdd } from "react-icons/md";
+import { MdAdd, MdClose, MdDelete, MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
 import CustomerForm from "./CustomerForm";
 import { formatCurrency } from "../utils/format";
 import "../styles/salesForm.css";
 
 const EMPTY_ITEM = { productId: "", quantity: 1 };
+
+// Valor centinela de la opcion "Nuevo cliente" del desplegable. No puede chocar
+// con un id real porque los ids son numericos.
+const NEW_CUSTOMER_OPTION = "__nuevo_cliente__";
 
 // Misma tasa que TAX_RATE en backend/src/config/constants.js. El backend recalcula
 // el total al guardar; esto es solo el avance que ve el usuario mientras carga la
@@ -164,6 +168,21 @@ const SalesForm = ({
     });
   };
 
+  /**
+   * "Nuevo cliente" vive dentro del desplegable, no como un boton al lado: es la
+   * accion sobre ese campo y asi no le quita sitio al selector. Al elegirla se
+   * abre el formulario y NO se toca `customerId`, de modo que el select vuelve
+   * solo a lo que hubiera seleccionado — si se cancela, nada cambio.
+   */
+  const handleCustomerChange = (event) => {
+    const { value } = event.target;
+    if (value === NEW_CUSTOMER_OPTION) {
+      setCustomerFormOpen(true);
+      return;
+    }
+    setCustomerId(value);
+  };
+
   const handleCustomerCreated = async (customerData) => {
     const created = await onCreateCustomer(customerData);
     // Queda seleccionado el cliente recien creado, sin perder los productos ya
@@ -262,32 +281,25 @@ const SalesForm = ({
           <div className="sales-form-row">
             <div className="sales-form-field">
               <label htmlFor="sale-customer">Cliente</label>
-              <div className="sales-customer-picker">
-                <select
-                  id="sale-customer"
-                  value={customerId}
-                  onChange={(event) => setCustomerId(event.target.value)}
-                  disabled={loading}
-                  required
-                >
-                  <option value="">Selecciona un cliente</option>
+              <select
+                id="sale-customer"
+                value={customerId}
+                onChange={handleCustomerChange}
+                disabled={loading}
+                required
+              >
+                <option value="">Selecciona un cliente</option>
+                {onCreateCustomer && (
+                  <option value={NEW_CUSTOMER_OPTION}>+ Nuevo cliente…</option>
+                )}
+                <optgroup label="Clientes">
                   {customers.map((customer) => (
                     <option key={customer.id} value={customer.id}>
                       {customer.name}
                     </option>
                   ))}
-                </select>
-                {onCreateCustomer && (
-                  <button
-                    type="button"
-                    className="sales-form-add"
-                    onClick={() => setCustomerFormOpen(true)}
-                    disabled={loading}
-                  >
-                    <MdPersonAdd /> Nuevo cliente
-                  </button>
-                )}
-              </div>
+                </optgroup>
+              </select>
             </div>
 
             <div className="sales-form-field">

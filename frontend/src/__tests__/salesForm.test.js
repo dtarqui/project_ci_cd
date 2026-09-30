@@ -569,8 +569,13 @@ describe("Componente SalesForm", () => {
       );
     };
 
-    const openCustomerForm = () =>
-      userEvent.click(screen.getByRole("button", { name: /nuevo cliente/i }));
+    // fireEvent en vez de userEvent.selectOptions: la opcion no llega a quedar
+    // seleccionada a proposito (el select vuelve a lo que hubiera), y eso
+    // confunde a userEvent.
+    const openCustomerForm = async () =>
+      fireEvent.change(screen.getByLabelText("Cliente"), {
+        target: { value: "__nuevo_cliente__" },
+      });
 
     const fillCustomer = async () => {
       await userEvent.type(screen.getByLabelText(/Nombre/i), "Cliente Nuevo");
@@ -578,11 +583,37 @@ describe("Componente SalesForm", () => {
       await userEvent.type(screen.getByLabelText(/Teléfono/i), "22123456");
     };
 
-    it("no debe ofrecer el botón si la sección no sabe crear clientes", () => {
+    it("no debe ofrecer la opción si la sección no sabe crear clientes", () => {
       render(<SalesForm {...defaultProps} />);
       expect(
-        screen.queryByRole("button", { name: /nuevo cliente/i })
+        screen.queryByRole("option", { name: /nuevo cliente/i })
       ).not.toBeInTheDocument();
+    });
+
+    it("debe ofrecer el alta como primera opción del desplegable", () => {
+      render(<Harness />);
+
+      const options = Array.from(screen.getByLabelText("Cliente").options);
+      expect(options[0].textContent).toMatch(/selecciona un cliente/i);
+      expect(options[1].textContent).toMatch(/nuevo cliente/i);
+      // Los clientes existentes van después, agrupados.
+      expect(options[2].textContent).toBe("Cliente A");
+    });
+
+    it("debe dejar el cliente como estaba si se cancela el alta", async () => {
+      render(<Harness />);
+
+      fireEvent.change(screen.getByLabelText("Cliente"), { target: { value: "1" } });
+      await openCustomerForm();
+
+      const customerModal = document.querySelector(".customer-form-modal");
+      await userEvent.click(
+        within(customerModal).getByRole("button", { name: /cancelar/i })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Cliente")).toHaveValue("1");
+      });
     });
 
     it("debe abrir el formulario de cliente sobre el de venta", async () => {
