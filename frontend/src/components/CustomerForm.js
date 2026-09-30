@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import { MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
+import "../styles/formModal.css";
 import {
   normalizePhone,
   validateName,
@@ -216,14 +217,24 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
   });
 
   return (
-    <div className="customer-form-overlay" onClick={onClose}>
+    <div className="form-modal-overlay customer-form-overlay" onClick={onClose}>
       <div
-        className="customer-form-modal"
+        className="form-modal customer-form-modal"
         onClick={(event) => event.stopPropagation()}
       >
-        <h3>{title}</h3>
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
+        <div className="form-modal-header">
+          <h3 className="form-modal-title">{title}</h3>
+          <button
+            className="form-modal-close"
+            onClick={onClose}
+            type="button"
+            aria-label="Cerrar formulario"
+          >
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="form-modal-body" noValidate>
+          <div className="form-field">
             <label htmlFor="name">Nombre *</label>
             <input
               id="name"
@@ -242,7 +253,7 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
             {errorFor("name")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="email">Email *</label>
             <input
               id="email"
@@ -261,7 +272,7 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
             {errorFor("email")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="phone">Teléfono *</label>
             <input
               id="phone"
@@ -286,7 +297,7 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
             {errorFor("phone")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="address">Dirección</label>
             <input
               id="address"
@@ -305,7 +316,7 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
             {errorFor("address")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="city">Ciudad</label>
             {hasCatalog ? (
               <select
@@ -346,7 +357,7 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
             {errorFor("city")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="postalCode">Código Postal</label>
             <div className="input-with-prefix">
               {postalPrefix && (
@@ -378,12 +389,12 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
           </div>
 
           {errors.submit && (
-            <div className="error-message submit-error" role="alert">
+            <div className="form-modal-alert" role="alert">
               {errors.submit}
             </div>
           )}
 
-          <div className="form-actions">
+          <div className="form-modal-actions">
             <Button type="submit" loading={isSubmitting}>
               {isEditing ? "Actualizar" : "Crear"}
             </Button>

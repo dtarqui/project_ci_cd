@@ -156,10 +156,9 @@ describe("Componente SalesForm", () => {
     it("debe llamar onClose cuando se hace clic en cerrar", async () => {
       const user = userEvent.setup();
       render(<SalesForm {...defaultProps} />);
-      const closeButton = screen.getAllByRole("button").find(btn => 
-        btn.className.includes("sales-form-close")
-      );
-      await user.click(closeButton);
+      // Por su nombre accesible, no por la clase: el estilo del dialogo es
+      // compartido y la clase puede cambiar sin que cambie el comportamiento.
+      await user.click(screen.getByRole("button", { name: /cerrar formulario/i }));
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 

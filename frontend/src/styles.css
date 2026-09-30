@@ -1239,34 +1239,16 @@ body {
   color: var(--color-danger);
 }
 
-/* Campo invalido: mismo lenguaje que el foco (borde de 1px + halo de 3px), en
-   rojo en lugar de verde, para que se lea como un estado y no como una alarma.
-
-   Los selectores llevan el contenedor delante a proposito. Cada formulario
-   redefine el borde de sus campos en su propia hoja (`.customer-form-modal
-   .form-group input`, `.sales-form-field input`), con la misma especificidad que
-   tendria `.form-group input[aria-invalid]`; sin el contenedor, cual gana
-   dependeria del orden en que webpack inyecte las hojas. */
+/* Campo invalido fuera de los dialogos (login, Settings). Dentro de un dialogo
+   lo define .form-field en styles/formModal.css. */
 .form-group input[aria-invalid="true"],
-.form-group select[aria-invalid="true"],
-.customer-form-modal .form-group input[aria-invalid="true"],
-.customer-form-modal .form-group select[aria-invalid="true"],
-.product-form .form-group input[aria-invalid="true"],
-.product-form .form-group select[aria-invalid="true"],
-.sales-form .sales-form-field input[aria-invalid="true"],
-.sales-form .sales-form-field select[aria-invalid="true"] {
+.form-group select[aria-invalid="true"] {
   border-color: var(--color-danger);
   background-color: var(--color-surface);
 }
 
 .form-group input[aria-invalid="true"]:focus,
-.form-group select[aria-invalid="true"]:focus,
-.customer-form-modal .form-group input[aria-invalid="true"]:focus,
-.customer-form-modal .form-group select[aria-invalid="true"]:focus,
-.product-form .form-group input[aria-invalid="true"]:focus,
-.product-form .form-group select[aria-invalid="true"]:focus,
-.sales-form .sales-form-field input[aria-invalid="true"]:focus,
-.sales-form .sales-form-field select[aria-invalid="true"]:focus {
+.form-group select[aria-invalid="true"]:focus {
   border-color: var(--color-danger);
   box-shadow: 0 0 0 3px var(--color-danger-bg);
 }

@@ -1,0 +1,252 @@
+/* Diálogo de formulario: una sola definición para los tres (producto, cliente,
+   venta).
+
+   Por qué existe: cada formulario traía su propia hoja repitiendo el overlay, el
+   panel, el encabezado, los campos y la barra de acciones, y habían derivado
+   hasta ser tres diálogos distintos — fondo negro contra fondo pizarra, radio md
+   contra lg, un encabezado con aspa y otro sin ella, los botones en un orden en
+   uno y al revés en otro. Peor aún: `.form-group`, `.form-actions` y `.btn` se
+   declaraban desde hojas de componente aunque son nombres que login y Settings ya
+   usaban para otra cosa, así que cargar un formulario cambiaba el aspecto de otra
+   pantalla.
+
+   Las clases de aquí van con prefijo propio y no chocan con las de esas
+   pantallas, que se quedan como estaban. */
+
+/* ---------- Overlay y panel ---------- */
+
+.form-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: formModalFadeIn 0.2s ease-out;
+}
+
+.form-modal {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: formModalSlideUp 0.25s ease-out;
+}
+
+/* La venta lleva más campos y la tabla de productos: necesita más ancho. */
+.form-modal--wide {
+  max-width: 760px;
+}
+
+@keyframes formModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes formModalSlideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ---------- Encabezado ---------- */
+
+.form-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--color-row) 0%, var(--color-bg) 100%);
+  /* El encabezado no se va al desplazar el contenido del panel. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.form-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-modal-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.form-modal-close:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ---------- Cuerpo y campos ---------- */
+
+.form-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.form-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.3px;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-row-alt);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+/* El select nativo no acepta el mismo relleno ni muestra la misma flecha en
+   todos los navegadores: se neutraliza y se dibuja una propia. */
+.form-field select {
+  appearance: none;
+  line-height: 1.5;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  background-color: var(--color-surface);
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--color-muted);
+}
+
+.form-field input:disabled,
+.form-field select:disabled,
+.form-field textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Campo inválido: el mismo lenguaje que el foco (borde de 1px y halo de 3px),
+   en rojo, para que se lea como un estado y no como una alarma. */
+.form-field input[aria-invalid="true"],
+.form-field select[aria-invalid="true"],
+.form-field textarea[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  background-color: var(--color-surface);
+}
+
+.form-field input[aria-invalid="true"]:focus,
+.form-field select[aria-invalid="true"]:focus,
+.form-field textarea[aria-invalid="true"]:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px var(--color-danger-bg);
+}
+
+/* Dos campos en la misma línea; en móvil se apilan. */
+.form-field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  /* Arriba y no abajo: una pista o un error bajo un campo lo hace más alto, y
+     alineando por abajo el campo vecino se hundía y las etiquetas quedaban a
+     distinta altura. */
+  align-items: start;
+}
+
+/* ---------- Aviso de error al guardar ---------- */
+
+.form-modal-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ---------- Barra de acciones ---------- */
+
+.form-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Reparten el ancho por igual, como en el diálogo de confirmación. */
+.form-modal-actions .ui-btn {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .form-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-modal-actions {
+    flex-direction: column;
+  }
+}

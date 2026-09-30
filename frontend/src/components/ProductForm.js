@@ -9,7 +9,7 @@ import {
   firstInvalidField,
   isClean,
 } from "../utils/validation";
-import "../styles/productForm.css";
+import "../styles/formModal.css";
 
 const EMPTY_FORM = {
   name: "",
@@ -165,12 +165,15 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
   });
 
   return (
-    <div className="product-form-overlay">
-      <div className="product-form-modal">
-        <div className="product-form-header">
-          <h2>{title}</h2>
+    <div className="form-modal-overlay" onClick={onClose}>
+      <div
+        className="form-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="form-modal-header">
+          <h2 className="form-modal-title">{title}</h2>
           <button
-            className="product-form-close"
+            className="form-modal-close"
             onClick={onClose}
             type="button"
             aria-label="Cerrar formulario"
@@ -179,8 +182,8 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="product-form" noValidate>
-          <div className="form-group">
+        <form onSubmit={handleSubmit} className="form-modal-body" noValidate>
+          <div className="form-field">
             <label htmlFor="name">Nombre del Producto *</label>
             <input
               type="text"
@@ -199,7 +202,7 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
             {errorFor("name")}
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="category">Categoría *</label>
             <select
               id="category"
@@ -223,8 +226,8 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
             {errorFor("category")}
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
+          <div className="form-field-row">
+            <div className="form-field">
               <label htmlFor="price">Precio (Bs) *</label>
               <input
                 type="number"
@@ -245,7 +248,7 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
               {errorFor("price")}
             </div>
 
-            <div className="form-group">
+            <div className="form-field">
               <label htmlFor="stock">Stock *</label>
               <input
                 type="number"
@@ -269,28 +272,23 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
           </div>
 
           {errors.submit && (
-            <div className="error-message submit-error" role="alert">
+            <div className="form-modal-alert" role="alert">
               {errors.submit}
             </div>
           )}
 
-          <div className="form-actions">
+          {/* Accion principal primero, igual que en el dialogo de borrado. */}
+          <div className="form-modal-actions">
+            <Button type="submit" variant="primary" loading={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar Producto"}
+            </Button>
             <Button
               type="button"
               variant="secondary"
-              className="btn btn-secondary"
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancelar
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              className="btn btn-primary"
-              loading={isSubmitting}
-            >
-              {isSubmitting ? "Guardando..." : "Guardar Producto"}
             </Button>
           </div>
         </form>

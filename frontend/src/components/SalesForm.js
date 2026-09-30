@@ -4,6 +4,7 @@ import { MdAdd, MdClose, MdDelete, MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
 import CustomerForm from "./CustomerForm";
 import { formatCurrency } from "../utils/format";
+import "../styles/formModal.css";
 import "../styles/salesForm.css";
 
 const EMPTY_ITEM = { productId: "", quantity: 1 };
@@ -262,16 +263,29 @@ const SalesForm = ({
   const discountExceedsTotal = (Number(discount) || 0) > summary.maxDiscount;
 
   return (
-    <div className="sales-form-overlay" role="dialog" aria-modal="true">
-      <div className="sales-form-modal">
-        <div className="sales-form-header">
-          <h2>Nueva Venta</h2>
-          <button className="sales-form-close" onClick={onClose} type="button">
+    <div
+      className="form-modal-overlay sales-form-overlay"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="form-modal form-modal--wide sales-form-modal">
+        <div className="form-modal-header sales-form-header">
+          <h2 className="form-modal-title">Nueva Venta</h2>
+          <button
+            className="form-modal-close"
+            onClick={onClose}
+            type="button"
+            aria-label="Cerrar formulario"
+          >
             <MdClose />
           </button>
         </div>
 
-        <form className="sales-form" onSubmit={handleSubmit} noValidate>
+        <form
+          className="form-modal-body sales-form"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {(error || formError) && (
             <div className="sales-form-error" role="alert">
               {error || formError}
@@ -279,7 +293,7 @@ const SalesForm = ({
           )}
 
           <div className="sales-form-row">
-            <div className="sales-form-field">
+            <div className="form-field sales-form-field">
               <label htmlFor="sale-customer">Cliente</label>
               <select
                 id="sale-customer"
@@ -302,7 +316,7 @@ const SalesForm = ({
               </select>
             </div>
 
-            <div className="sales-form-field">
+            <div className="form-field sales-form-field">
               <label htmlFor="sale-payment">Metodo de pago</label>
               <select
                 id="sale-payment"
@@ -318,7 +332,7 @@ const SalesForm = ({
           </div>
 
           <div className="sales-form-row">
-            <div className="sales-form-field">
+            <div className="form-field sales-form-field">
               <label htmlFor="sale-status">Estado</label>
               <select
                 id="sale-status"
@@ -330,7 +344,7 @@ const SalesForm = ({
               </select>
             </div>
 
-            <div className="sales-form-field">
+            <div className="form-field sales-form-field">
               <label htmlFor="sale-discount">Descuento (Bs.)</label>
               <input
                 id="sale-discount"
@@ -369,7 +383,7 @@ const SalesForm = ({
               const itemError = itemErrors[index] || "";
               return (
                 <div className="sales-item-row" key={`item-${index}`}>
-                  <div className="sales-form-field">
+                  <div className="form-field sales-form-field">
                     <label htmlFor={`sale-product-${index}`}>Producto</label>
                     <select
                       id={`sale-product-${index}`}
@@ -393,7 +407,7 @@ const SalesForm = ({
                     </select>
                   </div>
 
-                  <div className="sales-form-field">
+                  <div className="form-field sales-form-field">
                     <label htmlFor={`sale-quantity-${index}`}>Cantidad</label>
                     <input
                       id={`sale-quantity-${index}`}
@@ -456,7 +470,7 @@ const SalesForm = ({
             </div>
           </div>
 
-          <div className="sales-form-field">
+          <div className="form-field sales-form-field">
             <label htmlFor="sale-notes">Notas</label>
             <textarea
               id="sale-notes"
@@ -467,17 +481,11 @@ const SalesForm = ({
             />
           </div>
 
-          <div className="sales-form-actions">
-            <Button
-              className="btn btn-primary"
-              type="submit"
-              loading={isSubmitting}
-              disabled={loading}
-            >
+          <div className="form-modal-actions sales-form-actions">
+            <Button type="submit" loading={isSubmitting} disabled={loading}>
               Guardar venta
             </Button>
             <Button
-              className="btn btn-secondary"
               variant="secondary"
               type="button"
               onClick={onClose}
