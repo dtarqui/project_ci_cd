@@ -5,7 +5,8 @@ dist
 coverage
 
 # Jenkins / CI generated artifacts
-# Automated CI metrics outputs (keep docs/metrics/README.md tracked)
+# Automated CI metrics outputs. La carpeta docs/metrics/ la genera el pipeline en el
+# espacio de trabajo de Jenkins: nada de su contenido se versiona.
 docs/metrics/metrics-history.csv
 docs/metrics/metrics-history.csv.bak
 docs/metrics/latest-build.md

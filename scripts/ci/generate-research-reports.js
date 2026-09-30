@@ -1,8 +1,25 @@
 const fs = require("fs");
 const path = require("path");
 
+// Mismo modulo que usa generate-ci-metrics.js para escribir el historico: asi el
+// parser del CSV y la definicion de los indicadores DORA son necesariamente los
+// mismos en los dos scripts. Ver el encabezado de lib/metrics-history.js.
+const {
+  parseCsvRows,
+  toNumberOrNull,
+  average,
+  changeFailureRatePct,
+  deploymentFrequency,
+} = require("./lib/metrics-history");
+
 const rootDir = path.resolve(__dirname, "..", "..");
 const metricsDir = path.join(rootDir, process.env.METRICS_DIR || "docs/metrics");
+
+// La misma carpeta que `metricsDir`, pero escrita como ruta relativa del repositorio:
+// es la que se imprime dentro de los reportes. Antes esas rutas iban a mano como
+// "docs/metrics/...", asi que un METRICS_DIR distinto generaba reportes que
+// apuntaban a una carpeta inexistente.
+const metricsDirLabel = (process.env.METRICS_DIR || "docs/metrics").split(path.sep).join("/");
 
 // El historico se llama metrics-history.csv; se acepta el nombre anterior
 // (pre-cicd-baseline.csv) para no perder series generadas por versiones previas.
@@ -24,84 +41,6 @@ function ensureDir(dirPath) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
-}
-
-function readTextIfExists(filePath) {
-  if (!fs.existsSync(filePath)) {
-    return "";
-  }
-  return fs.readFileSync(filePath, "utf8");
-}
-
-function parseCsvLine(line) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const char = line[i];
-    const nextChar = i + 1 < line.length ? line[i + 1] : "";
-
-    if (char === '"') {
-      if (inQuotes && nextChar === '"') {
-        current += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (char === "," && !inQuotes) {
-      result.push(current);
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-
-  result.push(current);
-  return result;
-}
-
-function parseCsvRows(csvPath) {
-  const raw = readTextIfExists(csvPath).trim();
-  if (!raw) {
-    return [];
-  }
-
-  const lines = raw.split(/\r?\n/).filter(Boolean);
-  if (lines.length < 2) {
-    return [];
-  }
-
-  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
-  const rows = [];
-
-  for (let i = 1; i < lines.length; i += 1) {
-    const cols = parseCsvLine(lines[i]);
-    const row = {};
-    headers.forEach((header, idx) => {
-      row[header] = (cols[idx] || "").trim();
-    });
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function toNumberOrNull(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function average(values) {
-  if (!values.length) {
-    return null;
-  }
-  const sum = values.reduce((acc, n) => acc + n, 0);
-  return Number((sum / values.length).toFixed(2));
 }
 
 function median(values) {
@@ -157,28 +96,6 @@ function splitBeforeAfter(rows) {
   };
 }
 
-// Change Failure Rate y Deployment Frequency: 2 de las 4 metricas DORA,
-// estandar para evaluar objetivamente si la adopcion de CI/CD mejora la
-// entrega de software. Se derivan de `result` y `timestamp`, ya presentes
-// en cada fila del historico.
-function changeFailureRatePct(rows) {
-  if (!rows.length) {
-    return null;
-  }
-  const failed = rows.filter((r) => (r.result || "") && /fail/i.test(r.result)).length;
-  return Number(((failed / rows.length) * 100).toFixed(2));
-}
-
-function deploymentFrequencyPerWeek(rows) {
-  const successful = rows.filter((r) => (r.result || "") && /success/i.test(r.result)).length;
-  const timestamps = rows.map((r) => new Date(r.timestamp).getTime()).filter((t) => Number.isFinite(t));
-  const daysObserved =
-    timestamps.length >= 2
-      ? Math.max(1, Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 86400000))
-      : 1;
-  return successful > 0 ? Number(((successful / daysObserved) * 7).toFixed(2)) : 0;
-}
-
 function summarizeRows(rows) {
   const getMetric = (name) => rows.map((r) => toNumberOrNull(r[name])).filter((v) => v !== null);
 
@@ -197,7 +114,7 @@ function summarizeRows(rows) {
     avgBackendCoveragePct: average(backendCoverage),
     avgPassRatePct: average(passRate),
     changeFailureRatePct: changeFailureRatePct(rows),
-    deploymentFrequencyPerWeek: deploymentFrequencyPerWeek(rows),
+    deploymentFrequencyPerWeek: deploymentFrequency(rows).perWeek,
   };
 }
 
@@ -368,7 +285,7 @@ function ensureMethodologyTemplate() {
     "- [Sesgos, tamano de muestra, calidad de datos].",
     "",
     "## Trazabilidad",
-    "- Vincular hallazgos con `docs/metrics/comparative-before-after.md` y `docs/metrics/scrum-indicators.md`.",
+    `- Vincular hallazgos con \`${metricsDirLabel}/comparative-before-after.md\` y \`${metricsDirLabel}/scrum-indicators.md\`.`,
   ].join("\n");
 
   fs.writeFileSync(methodologyTemplatePath, `${content}\n`, "utf8");
@@ -382,10 +299,10 @@ function buildScrumReport() {
     const content = [
       "# Indicadores SCRUM Vinculados al Pipeline",
       "",
-      "No se encontro `docs/metrics/sprint-metrics.csv`.",
+      `No se encontro \`${metricsDirLabel}/sprint-metrics.csv\`.`,
       "",
       "## Como habilitar este reporte",
-      "1. Copiar `docs/metrics/sprint-metrics-template.csv` a `docs/metrics/sprint-metrics.csv`.",
+      `1. Copiar \`${metricsDirLabel}/sprint-metrics-template.csv\` a \`${metricsDirLabel}/sprint-metrics.csv\`.`,
       "2. Completar datos reales por sprint: `leadTimeDays`, `defects`, `dodCommitted`, `dodCompleted`.",
       "3. Ejecutar nuevamente este script para recalcular indicadores.",
       "",
@@ -426,7 +343,7 @@ function buildScrumReport() {
   const lines = [
     "# Indicadores SCRUM Vinculados al Pipeline",
     "",
-    "Reporte generado automaticamente desde `docs/metrics/sprint-metrics.csv`.",
+    `Reporte generado automaticamente desde \`${metricsDirLabel}/sprint-metrics.csv\`.`,
     "",
     "## Resumen global",
     `- Total sprints analizados: ${sprintRows.length}`,

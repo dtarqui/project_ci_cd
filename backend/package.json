@@ -18,7 +18,7 @@
     "test": "jest --config jest.config.js",
     "test:watch": "jest --config jest.config.js --watch",
     "test:coverage": "jest --config jest.config.js --coverage",
-    "test:ci": "jest --config jest.config.js --ci --runInBand --coverage --coverageReporters=text-lcov --coverageReporters=html",
+    "test:ci": "jest --config jest.config.js --ci --runInBand --coverage --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=json-summary",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

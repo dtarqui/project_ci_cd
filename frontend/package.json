@@ -11,7 +11,7 @@
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",
     "test": "jest --config jest.config.js --runInBand --coverage",
-    "test:ci": "jest --config jest.config.js --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov --coverageReporters=html",
+    "test:ci": "jest --config jest.config.js --ci --runInBand --watchAll=false --coverage --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=json-summary",
     "test:watch": "jest --config jest.config.js --watch",
     "test:debug": "jest --config jest.config.js --runInBand --no-cache --detectOpenHandles",
     "lint": "eslint src --ext .js,.jsx",

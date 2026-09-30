@@ -40,8 +40,10 @@ frontend/
         Button.js
         EmptyState.js
         Modal.js
+        Pagination.js            # Paginado compartido por las tres secciones CRUD
         Skeleton.js
         Spinner.js
+        ui.css                   # Estilos de los componentes de esta carpeta
     styles/
       *.css                     # Estilos especificos por seccion/formulario
     __tests__/
@@ -61,7 +63,7 @@ Nota: no existe una carpeta `pages/` separada — el ruteo real vive en `App.js`
 - `App.js` envuelve la app en `AuthProvider` (`context/AuthContext.js`), que hidrata la sesion desde `localStorage`, valida el token con `authService.getMe()` y expone `useAuth()` a cualquier componente (sin prop-drilling de `user`).
 - Las rutas privadas usan `ProtectedRoute`.
 - El dashboard sincroniza URL y seccion activa (`Dashboard`, `Ventas`, `Productos`, `Clientes`, `Configuraciones`).
-- Las tres secciones CRUD (`ProductsSection`, `CustomersSection`, `SalesSection`) siguen el mismo patron: `useEntityList` para listar/filtrar/ordenar, un `*Form.js` modal para crear/editar, y `Badge` (via `components/ui/`) para mostrar el estado.
+- Las tres secciones CRUD (`ProductsSection`, `CustomersSection`, `SalesSection`) siguen el mismo patron: `useEntityList` para listar/filtrar/ordenar, un `*Form.js` modal para crear/editar, `Badge` (via `components/ui/`) para mostrar el estado y `Pagination` para recorrer el listado.
 - Los servicios en `src/services/api.js` centralizan **todas** las llamadas HTTP (ningun componente llama a `axios`/`fetch` directamente) y el manejo de `401` (dispara el evento que `AuthContext` escucha para cerrar sesion).
 
 ## Rutas
@@ -105,7 +107,8 @@ Reportes de cobertura:
 - `frontend/coverage/lcov.info`
 
 ## Integracion con backend
-- Servicios disponibles: `authService`, `userService`, `dashboardService`.
+- Servicios disponibles: `authService`, `userService`, `dashboardService`,
+  `productService`, `customerService` y `saleService`, mas el helper `handleApiError`.
 - Endpoints consumidos: autenticacion, perfil (`/api/users/me`), dashboard y CRUD de productos/clientes/ventas.
 - Ante `401`, el frontend limpia sesion y dispara evento `unauthorized` para forzar re-login.
 

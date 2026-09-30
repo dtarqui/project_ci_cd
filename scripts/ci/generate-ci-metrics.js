@@ -1,6 +1,21 @@
 const fs = require("fs");
 const path = require("path");
 
+// El formato del historico (lectura, escritura) y los indicadores DORA que se derivan de
+// sus filas viven en un modulo compartido con generate-research-reports.js: ver el
+// encabezado de lib/metrics-history.js. Se importan con el nombre `compute*` porque mas
+// abajo las constantes del build ya ocupan los nombres `changeFailureRatePct` y
+// `deploymentFrequency`.
+const {
+  parseCsvRows,
+  readCsvHeader,
+  toCsvValue,
+  toNumberOrNull,
+  average,
+  changeFailureRatePct: computeChangeFailureRatePct,
+  deploymentFrequency: computeDeploymentFrequency,
+} = require("./lib/metrics-history");
+
 const rootDir = path.resolve(__dirname, "..", "..");
 const metricsDir = path.join(rootDir, process.env.METRICS_DIR || "docs/metrics");
 
@@ -134,17 +149,6 @@ function readJsonIfExists(filePath) {
   }
 }
 
-function readTextIfExists(filePath) {
-  if (!fs.existsSync(filePath)) {
-    return "";
-  }
-  try {
-    return fs.readFileSync(filePath, "utf8");
-  } catch (_err) {
-    return "";
-  }
-}
-
 function pctFromCoverageSummary(summary, key = "lines") {
   const metric = summary && summary.total && summary.total[key];
   if (!metric || typeof metric.pct !== "number") {
@@ -238,14 +242,6 @@ function parseJUnit(xmlPath) {
   };
 }
 
-function toCsvValue(value) {
-  const raw = value === null || value === undefined ? "" : String(value);
-  if (raw.includes(",") || raw.includes('"') || raw.includes("\n")) {
-    return `"${raw.replace(/"/g, '""')}"`;
-  }
-  return raw;
-}
-
 function buildCoverageFileRanking(coverageSummary, projectDir, limit = LOW_COVERAGE_LIMIT) {
   if (!coverageSummary || typeof coverageSummary !== "object") {
     return [];
@@ -280,46 +276,6 @@ function buildCoverageFileRanking(coverageSummary, projectDir, limit = LOW_COVER
   });
 
   return ranking.slice(0, limit);
-}
-
-function parseCsvRows(csvPath) {
-  if (!fs.existsSync(csvPath)) {
-    return [];
-  }
-  const raw = readTextIfExists(csvPath).trim();
-  if (!raw) {
-    return [];
-  }
-
-  const lines = raw.split(/\r?\n/);
-  if (lines.length < 2) {
-    return [];
-  }
-
-  const headers = lines[0].split(",").map((h) => h.trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i += 1) {
-    const cols = lines[i].split(",");
-    const row = {};
-    headers.forEach((header, idx) => {
-      row[header] = cols[idx] || "";
-    });
-    rows.push(row);
-  }
-  return rows;
-}
-
-function toNumberOrNull(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-function average(values) {
-  if (!values.length) {
-    return null;
-  }
-  const total = values.reduce((acc, n) => acc + n, 0);
-  return Number((total / values.length).toFixed(2));
 }
 
 function safeDelta(current, previous) {
@@ -465,34 +421,6 @@ const row = {
   author,
   buildUrl,
 };
-
-// Deployment Frequency y Change Failure Rate son 2 de las 4 metricas DORA
-// (indicadores estandar de la industria/academia para medir si un pipeline
-// de CI/CD realmente mejora la entrega de software). Se calculan aqui porque
-// ya tenemos todo lo necesario acumulado en el historico: no requieren
-// instrumentacion nueva, solo leer `result` y `timestamp` de cada build.
-function computeChangeFailureRatePct(rows) {
-  const withResult = rows.filter((r) => r.result);
-  if (!withResult.length) {
-    return null;
-  }
-  const failed = withResult.filter((r) => /fail/i.test(r.result)).length;
-  return Number(((failed / withResult.length) * 100).toFixed(2));
-}
-
-function computeDeploymentFrequency(rows) {
-  const successfulBuilds = rows.filter((r) => r.result && /success/i.test(r.result)).length;
-  const timestamps = rows.map((r) => new Date(r.timestamp).getTime()).filter((t) => Number.isFinite(t));
-  const daysObserved =
-    timestamps.length >= 2
-      ? Math.max(1, Math.round((Math.max(...timestamps) - Math.min(...timestamps)) / 86400000))
-      : 1;
-  return {
-    successfulBuilds,
-    daysObserved,
-    perWeek: successfulBuilds > 0 ? Number(((successfulBuilds / daysObserved) * 7).toFixed(2)) : 0,
-  };
-}
 
 const csvPath = path.join(metricsDir, HISTORY_CSV);
 const historicalRows = parseCsvRows(csvPath);
@@ -657,9 +585,7 @@ const headers = [
 
 const newHeader = headers.join(",");
 const csvLine = headers.map((key) => toCsvValue(row[key])).join(",");
-const existingHeader = fs.existsSync(csvPath)
-  ? (readTextIfExists(csvPath).split(/\r?\n/)[0] || "").trim()
-  : null;
+const existingHeader = readCsvHeader(csvPath);
 
 if (existingHeader === newHeader) {
   fs.appendFileSync(csvPath, csvLine + "\n", "utf8");

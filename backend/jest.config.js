@@ -14,7 +14,7 @@ module.exports = {
     "!**/*.spec.js",
   ],
   coverageDirectory: "coverage",
-  coverageReporters: ["text", "lcov", "html"],
+  coverageReporters: ["text", "lcov", "html", "json-summary"],
   reporters: ["default", ["jest-junit", { outputDirectory: ".", outputName: "junit.xml" }]],
   coverageThreshold: {
     global: {

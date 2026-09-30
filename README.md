@@ -118,23 +118,28 @@ Frontend (`frontend/package.json`):
 - `npm run lint`
 
 ## API y rutas clave
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `GET /api/users/me`
-- `GET /api/dashboard/data`
-- CRUD: `/api/products`, `/api/customers`, `/api/sales`
-- `PUT /api/sales/:id/cancel`
+- Autenticacion: `POST /api/auth/register`, `POST /api/auth/login`,
+  `POST /api/auth/logout`, `GET /api/auth/me`
+- Perfil del usuario autenticado: `GET`, `PUT` y `DELETE /api/users/me`
+- Dashboard: `GET /api/dashboard/data`
+- CRUD completo de `/api/products` y `/api/customers` (el `DELETE` de ambos exige rol `admin`)
+- Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/sales`
+  (una venta se anula con `cancel`; no hay borrado)
 - `GET /health`
 
-Documentacion extendida de endpoints en `backend/ENDPOINTS_EJEMPLOS.md`.
+Listado por recurso en `backend/README.md`; ejemplos de uso en
+`backend/ENDPOINTS_EJEMPLOS.md`.
 
 ## CI/CD (Jenkins)
 El pipeline definido en `Jenkinsfile` incluye:
 - Checkout desde GitHub (`main`).
 - Instalacion de dependencias frontend/backend.
-- Lint frontend y backend.
-- Tests frontend y backend con publicacion JUnit + coverage HTML.
+- Lint frontend y backend (bloqueante).
+- Tests frontend y backend con publicacion JUnit + coverage HTML (bloqueante).
+- Verificacion de cobertura con `scripts/ci/check-coverage.js` despues de cada etapa de
+  pruebas: compara la cobertura real contra el `coverageThreshold.global` del
+  `jest.config.js` de cada componente y detiene el pipeline antes de desplegar si alguna
+  metrica queda por debajo.
 - Validacion basica del backend (`/health`).
 - Build frontend (`webpack`).
 - Deploy opcional a Vercel (backend y frontend).
@@ -145,7 +150,8 @@ El pipeline definido en `Jenkinsfile` incluye:
 - `backend/`: API y logica de negocio.
 - `frontend/`: aplicacion cliente.
 - `scripts/ci/`: scripts de metricas y reportes.
-- `docs/metrics/`: salida y plantillas para analisis CI/CD.
+- `docs/metrics/`: salida de los scripts de CI. La crea el propio pipeline en el espacio de
+  trabajo de Jenkins y su contenido esta en `.gitignore`: no se versiona.
 - `Jenkinsfile`: pipeline principal.
 
 ## Docker backend (opcional)
