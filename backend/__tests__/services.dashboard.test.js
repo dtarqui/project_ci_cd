@@ -260,3 +260,26 @@ describe("dashboardService", () => {
     });
   });
 });
+
+describe("Dashboard y registros borrados", () => {
+  const { InMemoryDashboardRepository } = require("../src/repositories/dashboardRepository");
+  const { getMockData } = require("../src/db/dataStore");
+
+  it("no debe incluir clientes ni productos borrados en los datos base", async () => {
+    const data = getMockData();
+    const cliente = data.customers.find((c) => !c.deletedAt);
+    const producto = data.products.find((p) => !p.deletedAt);
+
+    cliente.deletedAt = new Date().toISOString();
+    producto.deletedAt = new Date().toISOString();
+
+    const repo = new InMemoryDashboardRepository();
+    const source = await repo.getSourceData();
+
+    expect(source.customers.some((c) => c.id === cliente.id)).toBe(false);
+    expect(source.products.some((p) => p.id === producto.id)).toBe(false);
+
+    delete cliente.deletedAt;
+    delete producto.deletedAt;
+  });
+});

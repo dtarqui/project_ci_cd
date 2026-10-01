@@ -81,6 +81,22 @@ const buildSaleFromRequest = async (
 
   subtotal = parseFloat(subtotal.toFixed(2));
   const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+
+  // Un descuento mayor que el total se aceptaba y el total se recortaba a 0: la
+  // venta quedaba registrada en Bs 0 pero el stock se descontaba igual, o sea
+  // regalando la mercaderia sin que nada lo advirtiera. El formulario ya aplicaba
+  // este tope; faltaba en la API, que es quien decide.
+  const maxDiscount = parseFloat((subtotal + tax).toFixed(2));
+
+  if (discount > maxDiscount) {
+    return {
+      error: "El descuento no puede superar el total de la venta",
+      code: "INVALID_DISCOUNT",
+      status: 400,
+      data: { subtotal, tax, maxDiscount, requestedDiscount: discount },
+    };
+  }
+
   const total = parseFloat((subtotal + tax - discount).toFixed(2));
 
   const now = new Date().toISOString();

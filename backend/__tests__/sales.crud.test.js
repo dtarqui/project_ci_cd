@@ -318,4 +318,116 @@ describe("Endpoints CRUD de ventas", () => {
         });
     });
   });
+  describe("Tope del descuento", () => {
+    // Antes esto devolvia 201 con total 0: la venta quedaba en Bs 0 pero el
+    // stock se descontaba igual, o sea regalando la mercaderia sin aviso.
+    it("debe rechazar un descuento mayor que el total", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 2,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+          discount: 999999,
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_DISCOUNT");
+          expect(res.body.data.maxDiscount).toBeGreaterThan(0);
+          done();
+        });
+    });
+
+    it("debe aceptar un descuento igual al total", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 2,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          const exacto = Number((res.body.data.subtotal + res.body.data.tax).toFixed(2));
+
+          request(app)
+            .post("/api/sales")
+            .set("Authorization", validToken)
+            .send({
+              customerId: 2,
+              items: [{ productId: 1, quantity: 1 }],
+              paymentMethod: "Efectivo",
+              discount: exacto,
+            })
+            .expect(201)
+            .end((err2, res2) => {
+              if (err2) return done(err2);
+              expect(res2.body.data.total).toBe(0);
+              done();
+            });
+        });
+    });
+  });
+
+  describe("Estado de la venta al crear", () => {
+    // La lista blanca solo la exigia PUT, asi que por POST entraba cualquier
+    // cadena y esa venta no aparecia en ningun filtro de la interfaz.
+    it("debe rechazar un estado que no existe", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 2,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+          status: "Cualquier Cosa",
+        })
+        .expect(400)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.code).toBe("INVALID_STATUS");
+          done();
+        });
+    });
+
+    it("debe aceptar los estados validos", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 2,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+          status: "Pendiente",
+        })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.status).toBe("Pendiente");
+          done();
+        });
+    });
+
+    it("debe aplicar Completada cuando no se indica estado", (done) => {
+      request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 2,
+          items: [{ productId: 1, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          expect(res.body.data.status).toBe("Completada");
+          done();
+        });
+    });
+  });
+
 });

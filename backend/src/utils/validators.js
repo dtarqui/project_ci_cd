@@ -497,8 +497,13 @@ const validateCustomerUpdate = (body) => {
  * @param {Object} body - Body del request
  * @returns {Object} { isValid: boolean, error?: string, code?: string }
  */
+// Estados validos de una venta. Los comparten crear y actualizar: antes solo
+// los exigia la actualizacion, asi que por POST entraba cualquier cadena ("foo",
+// "Pendient") y esa venta no aparecia en ningun filtro de la interfaz.
+const SALE_STATUSES = ["Completada", "Pendiente", "Anulada"];
+
 const validateSaleCreate = (body) => {
-  const { customerId, items, discount, paymentMethod } = body;
+  const { customerId, items, discount, paymentMethod, status } = body;
 
   if (customerId === undefined || !items || !paymentMethod) {
     return {
@@ -555,6 +560,14 @@ const validateSaleCreate = (body) => {
     };
   }
 
+  if (status !== undefined && !SALE_STATUSES.includes(status)) {
+    return {
+      isValid: false,
+      error: `status inválido. Valores válidos: ${SALE_STATUSES.join(", ")}`,
+      code: "INVALID_STATUS",
+    };
+  }
+
   return { isValid: true };
 };
 
@@ -565,9 +578,8 @@ const validateSaleCreate = (body) => {
  */
 const validateSaleUpdate = (body) => {
   const { status, paymentMethod, notes } = body;
-  const validStatuses = ["Completada", "Pendiente", "Anulada"];
 
-  if (status && !validStatuses.includes(status)) {
+  if (status && !SALE_STATUSES.includes(status)) {
     return {
       isValid: false,
       error: "status inválido",

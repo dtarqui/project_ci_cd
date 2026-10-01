@@ -120,11 +120,30 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(createdPayload.total).toBe(63);
   });
 
-  it("clampea el total a 0 cuando el descuento supera subtotal + impuesto", async () => {
+  // Este caso afirmaba que recortar el total a 0 estaba bien, y por eso el
+  // defecto nunca salto: la venta quedaba en Bs 0 pero el stock se descontaba
+  // igual. Ahora la venta se rechaza antes de llegar a registrarse.
+  it("rechaza un descuento mayor que subtotal + impuesto", async () => {
+    const repos = makeRepos({ products: [makeProduct({ price: 10, stock: 10 })] });
+
+    const result = await buildSaleFromRequest(
+      { customerId: 1, items: [{ productId: 1, quantity: 1 }], discount: 999, paymentMethod: "Efectivo" },
+      repos
+    );
+
+    expect(result.code).toBe("INVALID_DISCOUNT");
+    expect(result.status).toBe(400);
+    expect(result.data.maxDiscount).toBe(11.3);
+    // Lo importante: no se registra la venta ni se toca el inventario.
+    expect(repos.saleRepository.create).not.toHaveBeenCalled();
+    expect(repos.productRepository.applySaleImpact).not.toHaveBeenCalled();
+  });
+
+  it("acepta un descuento exactamente igual a subtotal + impuesto", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 10, stock: 10 })] });
 
     await buildSaleFromRequest(
-      { customerId: 1, items: [{ productId: 1, quantity: 1 }], discount: 999, paymentMethod: "Efectivo" },
+      { customerId: 1, items: [{ productId: 1, quantity: 1 }], discount: 11.3, paymentMethod: "Efectivo" },
       repos
     );
 
