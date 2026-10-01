@@ -276,10 +276,10 @@ const CustomersSection = () => {
           ¿Estás seguro de que deseas eliminar a{" "}
           <strong>{deleteConfirm?.name}</strong>?
         </p>
-        <p className="delete-confirm-warning">
+        <p className="ui-confirm-warning">
           Esta acción no se puede deshacer.
         </p>
-        <div className="delete-confirm-actions">
+        <div className="ui-confirm-actions">
           <Button
             variant="danger"
             loading={isDeleting}

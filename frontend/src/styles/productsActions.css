@@ -231,15 +231,6 @@
 
 /* Delete confirmation actions row (panel itself is components/ui/Modal.js) */
 
-.delete-confirm-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.delete-confirm-actions .ui-btn {
-  flex: 1;
-}
-
 .empty-state .btn-create-product {
   margin-top: 16px;
 }
@@ -277,9 +268,6 @@
     width: 100%;
   }
 
-  .delete-confirm-actions {
-    flex-direction: column-reverse;
-  }
 
   .products-table {
     font-size: 12px;

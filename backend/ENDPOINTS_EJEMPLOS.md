@@ -277,6 +277,12 @@ Errores propios de estos dos endpoints:
 
 Ejemplo: `DELETE /api/customers/5`
 
+Es **borrado logico**: marca `deleted_at` y conserva la fila, porque las ventas
+referencian al cliente. Deja de aparecer en `GET /api/customers`, `GET /:id`
+responde 404 y un segundo `DELETE` tambien. Las ventas ya registradas siguen
+resolviendo sus datos. Lo mismo en `DELETE /api/products/:id`. Detalle en
+`README.md`, seccion "Borrado de clientes y productos".
+
 ## Ventas (protegido)
 
 ### GET `/api/sales`

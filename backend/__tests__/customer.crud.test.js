@@ -672,6 +672,174 @@ describe("Endpoints CRUD de clientes", () => {
     });
   });
 
+  describe("Borrado logico", () => {
+    // El motivo del cambio: con borrado fisico, esta misma peticion fallaba con
+    // 500 en modo base de datos (P2003, sales_customer_id_fkey) y en memoria
+    // borraba al cliente dejando sus ventas apuntando a un id inexistente.
+    it("debe poder borrar un cliente que tiene ventas", (done) => {
+      request(app)
+        .get("/api/sales")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const venta = res.body.data.find((s) => s.customerId);
+          expect(venta).toBeDefined();
+
+          request(app)
+            .delete(`/api/customers/${venta.customerId}`)
+            .set("Authorization", validToken)
+            .expect(200)
+            .end((deleteErr, deleteRes) => {
+              if (deleteErr) return done(deleteErr);
+              expect(deleteRes.body.success).toBe(true);
+              expect(deleteRes.body.data.id).toBe(venta.customerId);
+              done();
+            });
+        });
+    });
+
+    it("no debe mostrar al cliente borrado en el listado", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Cliente A Borrar", email: "borrar@email.com", phone: "22123456" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          const id = res.body.data.id;
+
+          request(app)
+            .delete(`/api/customers/${id}`)
+            .set("Authorization", validToken)
+            .expect(200)
+            .end((delErr) => {
+              if (delErr) return done(delErr);
+
+              request(app)
+                .get("/api/customers")
+                .set("Authorization", validToken)
+                .expect(200)
+                .end((listErr, listRes) => {
+                  if (listErr) return done(listErr);
+                  expect(listRes.body.data.some((c) => c.id === id)).toBe(false);
+                  done();
+                });
+            });
+        });
+    });
+
+    it("debe responder 404 al consultar un cliente borrado", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Cliente Fantasma", email: "fantasma@email.com", phone: "22123456" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          const id = res.body.data.id;
+
+          request(app)
+            .delete(`/api/customers/${id}`)
+            .set("Authorization", validToken)
+            .expect(200)
+            .end((delErr) => {
+              if (delErr) return done(delErr);
+              request(app)
+                .get(`/api/customers/${id}`)
+                .set("Authorization", validToken)
+                .expect(404)
+                .end(done);
+            });
+        });
+    });
+
+    it("debe responder 404 al borrar dos veces el mismo cliente", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Cliente Doble", email: "doble@email.com", phone: "22123456" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          const id = res.body.data.id;
+
+          request(app)
+            .delete(`/api/customers/${id}`)
+            .set("Authorization", validToken)
+            .expect(200)
+            .end((delErr) => {
+              if (delErr) return done(delErr);
+              request(app)
+                .delete(`/api/customers/${id}`)
+                .set("Authorization", validToken)
+                .expect(404)
+                .end(done);
+            });
+        });
+    });
+
+    it("no debe permitir vender a un cliente borrado", (done) => {
+      request(app)
+        .post("/api/customers")
+        .set("Authorization", validToken)
+        .send({ name: "Cliente Sin Ventas", email: "sinventas@email.com", phone: "22123456" })
+        .expect(201)
+        .end((err, res) => {
+          if (err) return done(err);
+          const id = res.body.data.id;
+
+          request(app)
+            .delete(`/api/customers/${id}`)
+            .set("Authorization", validToken)
+            .expect(200)
+            .end((delErr) => {
+              if (delErr) return done(delErr);
+              request(app)
+                .post("/api/sales")
+                .set("Authorization", validToken)
+                .send({
+                  customerId: id,
+                  items: [{ productId: 1, quantity: 1 }],
+                  paymentMethod: "Efectivo",
+                })
+                .expect(404)
+                .end(done);
+            });
+        });
+    });
+
+    it("debe conservar las ventas del cliente borrado con sus datos", (done) => {
+      request(app)
+        .get("/api/sales")
+        .set("Authorization", validToken)
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          const venta = res.body.data.find((s) => s.customerId);
+
+          request(app)
+            .delete(`/api/customers/${venta.customerId}`)
+            .set("Authorization", validToken)
+            .end((delErr) => {
+              if (delErr) return done(delErr);
+
+              request(app)
+                .get(`/api/sales/${venta.id}`)
+                .set("Authorization", validToken)
+                .expect(200)
+                .end((saleErr, saleRes) => {
+                  if (saleErr) return done(saleErr);
+                  // La venta sigue existiendo y conserva a quien se le vendio.
+                  expect(saleRes.body.data.customerId).toBe(venta.customerId);
+                  expect(saleRes.body.data.customerName).toBe(venta.customerName);
+                  done();
+                });
+            });
+        });
+    });
+  });
+
   describe("DELETE /api/customers/:id - Eliminar Cliente", () => {
     it("debe eliminar un cliente", (done) => {
       request(app)

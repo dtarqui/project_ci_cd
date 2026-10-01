@@ -7,15 +7,19 @@ const mockPrisma = {
   customer: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
     delete: jest.fn(),
   },
   product: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
     delete: jest.fn(),
   },
   sale: {
@@ -53,20 +57,33 @@ describe("DatabaseCustomerRepository", () => {
     repo = new DatabaseCustomerRepository();
   });
 
-  it("list() delega en prisma.customer.findMany ordenado por id", async () => {
+  it("list() excluye los borrados y ordena por id", async () => {
     mockPrisma.customer.findMany.mockResolvedValue([{ id: 1 }]);
     const result = await repo.list();
 
-    expect(mockPrisma.customer.findMany).toHaveBeenCalledWith({ orderBy: { id: "asc" } });
+    expect(mockPrisma.customer.findMany).toHaveBeenCalledWith({
+      where: { deletedAt: null },
+      orderBy: { id: "asc" },
+    });
     expect(result).toEqual([{ id: 1 }]);
   });
 
-  it("findById() delega en prisma.customer.findUnique", async () => {
-    mockPrisma.customer.findUnique.mockResolvedValue({ id: 5 });
+  it("findById() no encuentra a un cliente borrado", async () => {
+    mockPrisma.customer.findFirst.mockResolvedValue({ id: 5 });
     const result = await repo.findById(5);
 
-    expect(mockPrisma.customer.findUnique).toHaveBeenCalledWith({ where: { id: 5 } });
+    expect(mockPrisma.customer.findFirst).toHaveBeenCalledWith({
+      where: { id: 5, deletedAt: null },
+    });
     expect(result).toEqual({ id: 5 });
+  });
+
+  it("findByIdIncludingDeleted() si resuelve a un cliente borrado", async () => {
+    mockPrisma.customer.findUnique.mockResolvedValue({ id: 5, deletedAt: new Date() });
+    const result = await repo.findByIdIncludingDeleted(5);
+
+    expect(mockPrisma.customer.findUnique).toHaveBeenCalledWith({ where: { id: 5 } });
+    expect(result.id).toBe(5);
   });
 
   it("create() aplica defaults (address/city/postalCode vacíos, status Activo, totalSpent 0)", async () => {
@@ -101,26 +118,42 @@ describe("DatabaseCustomerRepository", () => {
     await expect(repo.update(1, { name: "X" })).rejects.toThrow("Connection lost");
   });
 
-  it("delete() retorna null cuando el registro no existe", async () => {
-    mockPrisma.customer.delete.mockRejectedValue(notFoundError());
+  it("delete() marca deletedAt en vez de destruir la fila", async () => {
+    mockPrisma.customer.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.customer.findUnique.mockResolvedValue({ id: 1, deletedAt: new Date() });
+
+    const result = await repo.delete(1);
+
+    const callArg = mockPrisma.customer.updateMany.mock.calls[0][0];
+    expect(callArg.where).toEqual({ id: 1, deletedAt: null });
+    expect(callArg.data.deletedAt).toBeInstanceOf(Date);
+    // La fila se conserva: es lo que permite que las ventas sigan resolviendola.
+    expect(mockPrisma.customer.delete).not.toHaveBeenCalled();
+    expect(result.id).toBe(1);
+  });
+
+  it("delete() retorna null cuando el cliente no existe", async () => {
+    mockPrisma.customer.updateMany.mockResolvedValue({ count: 0 });
     const result = await repo.delete(999);
+    expect(result).toBeNull();
+    expect(mockPrisma.customer.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("delete() retorna null si el cliente ya estaba borrado", async () => {
+    // El filtro deletedAt: null hace que el segundo intento no afecte filas.
+    mockPrisma.customer.updateMany.mockResolvedValue({ count: 0 });
+    const result = await repo.delete(1);
     expect(result).toBeNull();
   });
 
-  it("delete() retorna el registro eliminado en el caso feliz", async () => {
-    mockPrisma.customer.delete.mockResolvedValue({ id: 1 });
-    const result = await repo.delete(1);
-    expect(result).toEqual({ id: 1 });
-  });
-
   it("updateStats() retorna null cuando el cliente no existe", async () => {
-    mockPrisma.customer.findUnique.mockResolvedValue(null);
+    mockPrisma.customer.findFirst.mockResolvedValue(null);
     const result = await repo.updateStats(999, { totalSpentDelta: 10 });
     expect(result).toBeNull();
   });
 
   it("updateStats() acumula totalSpent y purchases sin bajar de 0", async () => {
-    mockPrisma.customer.findUnique.mockResolvedValue({ id: 1, totalSpent: 100, purchases: 2 });
+    mockPrisma.customer.findFirst.mockResolvedValue({ id: 1, totalSpent: 100, purchases: 2 });
     mockPrisma.customer.update.mockResolvedValue({ id: 1, totalSpent: 150, purchases: 1 });
 
     await repo.updateStats(1, { totalSpentDelta: 50, purchasesDelta: -1, lastPurchase: "2026-01-01" });
@@ -139,25 +172,39 @@ describe("DatabaseProductRepository", () => {
     repo = new DatabaseProductRepository();
   });
 
-  it("list() delega en prisma.product.findMany ordenado por id", async () => {
+  it("list() excluye los borrados y ordena por id", async () => {
     mockPrisma.product.findMany.mockResolvedValue([{ id: 1 }]);
     const result = await repo.list();
 
-    expect(mockPrisma.product.findMany).toHaveBeenCalledWith({ orderBy: { id: "asc" } });
+    expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
+      where: { deletedAt: null },
+      orderBy: { id: "asc" },
+    });
     expect(result).toEqual([{ id: 1 }]);
   });
 
-  it("findById() delega en prisma.product.findUnique", async () => {
-    mockPrisma.product.findUnique.mockResolvedValue({ id: 2 });
+  it("findById() no encuentra un producto borrado", async () => {
+    mockPrisma.product.findFirst.mockResolvedValue({ id: 2 });
     const result = await repo.findById(2);
-    expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: 2 } });
+    expect(mockPrisma.product.findFirst).toHaveBeenCalledWith({
+      where: { id: 2, deletedAt: null },
+    });
     expect(result).toEqual({ id: 2 });
   });
 
-  it("findManyByIds() delega en prisma.product.findMany con filtro 'in'", async () => {
+  it("findByIdIncludingDeleted() si resuelve un producto borrado", async () => {
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 2, deletedAt: new Date() });
+    const result = await repo.findByIdIncludingDeleted(2);
+    expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: 2 } });
+    expect(result.id).toBe(2);
+  });
+
+  it("findManyByIds() excluye los borrados, para no venderlos", async () => {
     mockPrisma.product.findMany.mockResolvedValue([{ id: 1 }, { id: 2 }]);
     await repo.findManyByIds([1, 2]);
-    expect(mockPrisma.product.findMany).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } });
+    expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
+      where: { id: { in: [1, 2] }, deletedAt: null },
+    });
   });
 
   it("create() calcula status a partir del stock", async () => {
@@ -184,12 +231,28 @@ describe("DatabaseProductRepository", () => {
     expect(result).toBeNull();
   });
 
-  it("delete() relanza errores que no son de registro no encontrado", async () => {
-    mockPrisma.product.delete.mockRejectedValue(otherPrismaError());
+  it("delete() marca deletedAt en vez de destruir la fila", async () => {
+    mockPrisma.product.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, deletedAt: new Date() });
+
+    const result = await repo.delete(1);
+
+    expect(mockPrisma.product.updateMany.mock.calls[0][0].where).toEqual({
+      id: 1,
+      deletedAt: null,
+    });
+    expect(mockPrisma.product.delete).not.toHaveBeenCalled();
+    expect(result.id).toBe(1);
+  });
+
+  it("delete() relanza los errores de infraestructura", async () => {
+    mockPrisma.product.updateMany.mockRejectedValue(otherPrismaError());
     await expect(repo.delete(1)).rejects.toThrow("Connection lost");
   });
 
   it("applySaleImpact() decrementa stock sin bajar de 0 y actualiza status", async () => {
+    // findUnique y no findFirst: el impacto de stock alcanza tambien a los
+    // productos borrados, para que anular una venta antigua devuelva el stock.
     mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 2, sales: 5 });
     mockPrisma.product.update.mockResolvedValue({});
 

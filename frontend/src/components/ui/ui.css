@@ -226,8 +226,8 @@
   color: var(--color-text);
 }
 
-.ui-modal-danger-title {
-  color: var(--color-danger) !important;
+.ui-modal h3.ui-modal-danger-title {
+  color: var(--color-danger);
 }
 
 .ui-modal p {
@@ -235,12 +235,6 @@
   font-size: 14px;
   color: var(--color-muted);
   line-height: 1.6;
-}
-
-.delete-confirm-warning {
-  font-size: 12px !important;
-  color: var(--color-danger) !important;
-  margin: -12px 0 20px 0 !important;
 }
 
 @keyframes ui-fade-in {
@@ -290,4 +284,37 @@
   color: var(--color-text);
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* Acciones de un dialogo de confirmacion (borrar un cliente, borrar un producto,
+   anular una venta). Vivia duplicado en customersActions.css y productsActions.css
+   con nombres de "borrar", que ya no describian el uso en cuanto
+   dejo de ser solo borrar. Aqui, junto a .ui-modal-danger-title, que es el titulo
+   que acompana a estas acciones. */
+.ui-confirm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.ui-confirm-actions .ui-btn {
+  flex: 1;
+}
+
+/* La linea que avisa de que la accion no se revierte. Va en rojo, como estaba
+   antes, pero en vez de !important lleva el contenedor delante: `.ui-modal p`
+   tiene mas especificidad que una clase sola y le ganaba el color. */
+.ui-modal .ui-confirm-warning {
+  margin: -12px 0 0;
+  color: var(--color-danger);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .ui-confirm-actions {
+    /* Invertido: la accion destructiva queda abajo, mas lejos del pulgar. */
+    flex-direction: column-reverse;
+  }
 }

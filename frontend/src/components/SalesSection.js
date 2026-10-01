@@ -14,6 +14,8 @@ import useEntityList from "../hooks/useEntityList";
 import { formatCurrency, formatDate } from "../utils/format";
 import SalesForm from "./SalesForm";
 import Badge from "./ui/Badge";
+import Button from "./ui/Button";
+import Modal from "./ui/Modal";
 import Pagination from "./ui/Pagination";
 import Skeleton from "./ui/Skeleton";
 import Spinner from "./ui/Spinner";
@@ -39,6 +41,8 @@ const SalesSection = () => {
   const [products, setProducts] = useState([]);
   const [cities, setCities] = useState([]);
   const [cancelingSaleId, setCancelingSaleId] = useState(null);
+  // Venta pendiente de confirmar su anulacion. null = no hay dialogo abierto.
+  const [cancelConfirm, setCancelConfirm] = useState(null);
   const [actionError, setActionError] = useState(null);
 
   const salesFilters = { status: selectedStatus, search: searchTerm };
@@ -121,6 +125,7 @@ const SalesSection = () => {
     try {
       await saleService.cancelSale(saleId);
       await Promise.all([loadSales(), reloadMetrics()]);
+      setCancelConfirm(null);
     } catch (err) {
       setActionError(handleApiError(err));
     } finally {
@@ -327,7 +332,7 @@ const SalesSection = () => {
                         disabled={cancelingSaleId === sale.id}
                         onClick={(event) => {
                           event.stopPropagation();
-                          handleCancelSale(sale.id);
+                          setCancelConfirm(sale);
                         }}
                       >
                         {cancelingSaleId === sale.id ? (
@@ -440,6 +445,37 @@ const SalesSection = () => {
         error={formError}
         onCreateCustomer={handleCreateCustomerFromSale}
       />
+
+      <Modal isOpen={!!cancelConfirm} onClose={() => setCancelConfirm(null)}>
+        <h3 className="ui-modal-danger-title">Anular venta</h3>
+        <p>
+          ¿Anular la venta <strong>#{cancelConfirm?.id}</strong> de{" "}
+          <strong>{cancelConfirm?.customerName}</strong> por{" "}
+          <strong>{formatCurrency(cancelConfirm?.total || 0)}</strong>?
+        </p>
+        <p className="ui-confirm-warning">
+          La venta se conserva con estado Anulada y no se puede revertir. El stock
+          descontado no se repone automáticamente.
+        </p>
+        <div className="ui-confirm-actions">
+          <Button
+            variant="danger"
+            loading={cancelingSaleId === cancelConfirm?.id}
+            onClick={() => handleCancelSale(cancelConfirm.id)}
+          >
+            Anular venta
+          </Button>
+          {/* "Volver" y no "Cancelar": al lado de "Anular" las dos palabras
+              significan lo mismo en espanol y se presta a confusion. */}
+          <Button
+            variant="secondary"
+            onClick={() => setCancelConfirm(null)}
+            disabled={cancelingSaleId === cancelConfirm?.id}
+          >
+            Volver
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

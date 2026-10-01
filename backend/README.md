@@ -94,6 +94,42 @@ operaciones (lectura, creacion, actualizacion) estan disponibles para ambos role
   Sustituye a la regla anterior, «al menos 10 caracteres», que no correspondía a ningún
   formato real: aceptaba `1234567890` y rechazaba un número boliviano legítimo.
 
+## Borrado de clientes y productos
+
+Es **lógico, no físico**: `DELETE /api/customers/:id` y `DELETE /api/products/:id`
+marcan la columna `deleted_at` en lugar de destruir la fila (`deletedAt` en
+`schema.prisma`; `null` significa activo).
+
+Por qué: una venta guarda `customer_id`, y cada línea de venta guarda
+`product_id`. La base de datos protege esas referencias — `sales_customer_id_fkey`
+y `sale_items_product_id_fkey` no declaran `ON DELETE`, o sea `RESTRICT` — así que
+destruir la fila fallaba con `P2003` en cuanto el cliente o el producto aparecía en
+alguna venta. La restricción es correcta: protege el histórico. Lo que estaba mal
+era la aplicación.
+
+En modo memoria el fallo era peor porque no fallaba: borraba la fila y dejaba las
+ventas apuntando a un id inexistente, sin aviso. Los dos modos se comportan ahora
+igual.
+
+Qué cambia en la práctica:
+
+| | Comportamiento |
+|---|---|
+| `GET /api/customers` y `/api/products` | No listan los borrados |
+| `GET /api/customers/:id` y `/api/products/:id` | 404 para un borrado |
+| `DELETE` repetido | 404 la segunda vez |
+| Ventas ya registradas | Siguen resolviendo al cliente y al producto |
+| Vender a un cliente borrado o con un producto borrado | 404: no se pueden elegir |
+| Anular una venta antigua | Devuelve el stock aunque el producto esté borrado |
+
+Los repositorios exponen `findByIdIncludingDeleted(id)` para leer los datos de un
+cliente o un producto desde una venta del histórico.
+
+**Al desplegar este cambio hay que aplicar la migración**
+(`20261001120000_add_soft_delete`) con `npm run prisma:migrate` en desarrollo o
+`npx prisma migrate deploy` en el entorno desplegado. Sin ella, la columna no
+existe y las consultas fallan.
+
 ## Endpoints
 
 Autenticacion:

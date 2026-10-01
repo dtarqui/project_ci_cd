@@ -178,20 +178,61 @@ describe("Componente SalesSection", () => {
     });
   });
 
-  it("debe anular una venta cuando no está anulada", async () => {
-    const user = userEvent.setup();
-    render(<SalesSection />);
-
+  // Anular es irreversible, asi que pasa por un dialogo de confirmacion: el
+  // boton de la lista ya no llama a la API, solo lo abre.
+  const abrirConfirmacionDeAnular = async (user) => {
     await waitFor(() => {
       expect(screen.getByText("Cliente A")).toBeInTheDocument();
     });
-
     const cancelButtons = screen.getAllByRole("button", { name: /anular/i });
     await user.click(cancelButtons[0]);
+    return screen.findByRole("heading", { name: /anular venta/i });
+  };
+
+  it("debe pedir confirmación antes de anular, sin llamar a la API", async () => {
+    const user = userEvent.setup();
+    render(<SalesSection />);
+
+    await abrirConfirmacionDeAnular(user);
+
+    expect(saleService.cancelSale).not.toHaveBeenCalled();
+  });
+
+  it("debe anular la venta al confirmar en el diálogo", async () => {
+    const user = userEvent.setup();
+    render(<SalesSection />);
+
+    await abrirConfirmacionDeAnular(user);
+    await user.click(screen.getByRole("button", { name: /^anular venta$/i }));
 
     await waitFor(() => {
       expect(saleService.cancelSale).toHaveBeenCalledWith(1);
     });
+  });
+
+  it("no debe anular nada si se vuelve atrás", async () => {
+    const user = userEvent.setup();
+    render(<SalesSection />);
+
+    await abrirConfirmacionDeAnular(user);
+    await user.click(screen.getByRole("button", { name: /volver/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("heading", { name: /anular venta/i })
+      ).not.toBeInTheDocument();
+    });
+    expect(saleService.cancelSale).not.toHaveBeenCalled();
+  });
+
+  it("debe advertir que la anulación no se revierte ni repone el stock", async () => {
+    const user = userEvent.setup();
+    render(<SalesSection />);
+
+    await abrirConfirmacionDeAnular(user);
+
+    expect(screen.getByText(/no se puede revertir/i)).toBeInTheDocument();
+    expect(screen.getByText(/no se repone/i)).toBeInTheDocument();
   });
 
   it("debe abrir formulario y cargar opciones", async () => {

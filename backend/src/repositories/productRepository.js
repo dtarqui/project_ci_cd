@@ -9,18 +9,36 @@ const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient")
 const { calculateProductStatus } = require("../utils/helpers");
 const { createRepository } = require("./factory");
 
+/**
+ * Borrado logico, por el mismo motivo que en clientes: sale_items referencia
+ * productos y la base de datos no deja destruir la fila referenciada. Ver el
+ * encabezado de customerRepository.js.
+ */
+const estaActivo = (product) => !product.deletedAt;
+
 class InMemoryProductRepository {
   async list() {
-    return [...getMockData().products];
+    return getMockData().products.filter(estaActivo);
   }
 
   async findById(id) {
+    return (
+      getMockData().products.find(
+        (product) => product.id === id && estaActivo(product)
+      ) || null
+    );
+  }
+
+  /** Resuelve tambien los borrados, para leer los datos desde una venta pasada. */
+  async findByIdIncludingDeleted(id) {
     return getMockData().products.find((product) => product.id === id) || null;
   }
 
   async findManyByIds(ids) {
     const idSet = new Set(ids);
-    return getMockData().products.filter((product) => idSet.has(product.id));
+    return getMockData().products.filter(
+      (product) => idSet.has(product.id) && estaActivo(product)
+    );
   }
 
   async create(payload) {
@@ -53,20 +71,22 @@ class InMemoryProductRepository {
   }
 
   async delete(id) {
-    const products = getMockData().products;
-    const productIndex = products.findIndex((product) => product.id === id);
+    const product = getMockData().products.find((item) => item.id === id);
 
-    if (productIndex === -1) {
+    if (!product || !estaActivo(product)) {
       return null;
     }
 
-    const [deletedProduct] = products.splice(productIndex, 1);
-    return deletedProduct;
+    product.deletedAt = new Date().toISOString();
+
+    return product;
   }
 
   async applySaleImpact(items, saleDate) {
     for (const item of items) {
-      const product = await this.findById(item.productId);
+      // Incluye los borrados: anular una venta antigua tiene que devolver el
+      // stock aunque el producto ya no se ofrezca, o la cifra queda mal.
+      const product = await this.findByIdIncludingDeleted(item.productId);
 
       if (!product) {
         continue;
@@ -83,15 +103,25 @@ class InMemoryProductRepository {
 
 class DatabaseProductRepository {
   async list() {
-    return getPrismaClient().product.findMany({ orderBy: { id: "asc" } });
+    return getPrismaClient().product.findMany({
+      where: { deletedAt: null },
+      orderBy: { id: "asc" },
+    });
   }
 
   async findById(id) {
+    return getPrismaClient().product.findFirst({ where: { id, deletedAt: null } });
+  }
+
+  /** Resuelve tambien los borrados, para leer los datos desde una venta pasada. */
+  async findByIdIncludingDeleted(id) {
     return getPrismaClient().product.findUnique({ where: { id } });
   }
 
   async findManyByIds(ids) {
-    return getPrismaClient().product.findMany({ where: { id: { in: ids } } });
+    return getPrismaClient().product.findMany({
+      where: { id: { in: ids }, deletedAt: null },
+    });
   }
 
   async create(payload) {
@@ -132,17 +162,23 @@ class DatabaseProductRepository {
   }
 
   async delete(id) {
-    try {
-      return await getPrismaClient().product.delete({ where: { id } });
-    } catch (error) {
-      if (isRecordNotFoundError(error)) return null;
-      throw error;
+    const { count } = await getPrismaClient().product.updateMany({
+      where: { id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+
+    if (count === 0) {
+      return null;
     }
+
+    return getPrismaClient().product.findUnique({ where: { id } });
   }
 
   async applySaleImpact(items, saleDate) {
     for (const item of items) {
-      const product = await this.findById(item.productId);
+      // Incluye los borrados: anular una venta antigua tiene que devolver el
+      // stock aunque el producto ya no se ofrezca, o la cifra queda mal.
+      const product = await this.findByIdIncludingDeleted(item.productId);
 
       if (!product) {
         continue;

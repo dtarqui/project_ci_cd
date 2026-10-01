@@ -314,7 +314,7 @@ const ProductsSection = () => {
           ¿Estás seguro de que deseas eliminar este producto? Esta acción no
           se puede deshacer.
         </p>
-        <div className="delete-confirm-actions">
+        <div className="ui-confirm-actions">
           <Button
             variant="secondary"
             onClick={() => setDeleteConfirm(null)}
