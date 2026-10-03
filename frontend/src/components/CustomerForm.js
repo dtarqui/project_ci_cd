@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
-import { MdErrorOutline } from "react-icons/md";
+import { MdClose, MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
 import "../styles/formModal.css";
 import {
@@ -217,175 +217,197 @@ const CustomerForm = ({ customer, isOpen, onClose, onSubmit, cities }) => {
   });
 
   return (
-    <div className="form-modal-overlay customer-form-overlay" onClick={onClose}>
+    <div
+      className="form-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="customer-form-title"
+      onClick={onClose}
+    >
       <div
-        className="form-modal customer-form-modal"
+        className="form-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="form-modal-header">
-          <h3 className="form-modal-title">{title}</h3>
+          <h2 className="form-modal-title" id="customer-form-title">
+            {title}
+          </h2>
           <button
             className="form-modal-close"
             onClick={onClose}
             type="button"
             aria-label="Cerrar formulario"
           >
-            ×
+            <MdClose />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="form-modal-body" noValidate>
-          <div className="form-field">
-            <label htmlFor="name">Nombre *</label>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Juan García"
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.name = el;
-              }}
-              {...a11y("name")}
-            />
-            {errorFor("name")}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="email">Email *</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="juan.garcia@email.com"
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.email = el;
-              }}
-              {...a11y("email")}
-            />
-            {errorFor("email")}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="phone">Teléfono *</label>
-            <input
-              id="phone"
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="22123456"
-              inputMode="numeric"
-              maxLength={PHONE_DIGITS}
-              autoComplete="tel-national"
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.phone = el;
-              }}
-              {...a11y("phone")}
-            />
-            <span className="field-hint">
-              {PHONE_DIGITS} dígitos, sin código de país
-            </span>
-            {errorFor("phone")}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="address">Dirección</label>
-            <input
-              id="address"
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Av. Mariscal Santa Cruz 1245"
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.address = el;
-              }}
-              {...a11y("address")}
-            />
-            {errorFor("address")}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="city">Ciudad</label>
-            {hasCatalog ? (
-              <select
-                id="city"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                disabled={isSubmitting}
-                ref={(el) => {
-                  fieldRefs.current.city = el;
-                }}
-                {...a11y("city")}
-              >
-                <option value="">-- Selecciona una ciudad --</option>
-                {cities.map((city) => (
-                  <option key={city.name} value={city.name}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
+          <div className="form-field-row">
+            <div className="form-field">
+              <label htmlFor="name">Nombre *</label>
               <input
-                id="city"
+                id="name"
                 type="text"
-                name="city"
-                value={formData.city}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="La Paz"
+                placeholder="Juan García"
                 disabled={isSubmitting}
                 ref={(el) => {
-                  fieldRefs.current.city = el;
+                  fieldRefs.current.name = el;
                 }}
-                {...a11y("city")}
+                {...a11y("name")}
               />
-            )}
-            {errorFor("city")}
+              {errorFor("name")}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="email">Email *</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="juan.garcia@email.com"
+                disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.email = el;
+                }}
+                {...a11y("email")}
+              />
+              {errorFor("email")}
+            </div>
           </div>
 
-          <div className="form-field">
-            <label htmlFor="postalCode">Código Postal</label>
-            <div className="input-with-prefix">
-              {postalPrefix && (
-                <span className="input-prefix" aria-hidden="true">
-                  {postalPrefix}-
+          <div className="form-field-row">
+            <div className="form-field">
+              <label htmlFor="phone">Teléfono *</label>
+              <input
+                id="phone"
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="22123456"
+                inputMode="numeric"
+                maxLength={PHONE_DIGITS}
+                autoComplete="tel-national"
+                disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.phone = el;
+                }}
+                {...a11y("phone")}
+              />
+              {/* La pista cede el sitio al error, para que todos los errores de
+                  una fila queden a la misma altura. */}
+              {fieldError("phone") ? (
+                errorFor("phone")
+              ) : (
+                <span className="field-hint">
+                  {PHONE_DIGITS} dígitos, sin código de país
                 </span>
               )}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="address">Dirección</label>
               <input
-                id="postalCode"
+                id="address"
                 type="text"
-                name="postalCode"
-                value={formData.postalCode}
+                name="address"
+                value={formData.address}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="01"
+                placeholder="Av. Mariscal Santa Cruz 1245"
                 disabled={isSubmitting}
                 ref={(el) => {
-                  fieldRefs.current.postalCode = el;
+                  fieldRefs.current.address = el;
                 }}
-                {...a11y("postalCode")}
+                {...a11y("address")}
               />
+              {errorFor("address")}
             </div>
-            {postalPrefix && (
-              <span className="field-hint">
-                El prefijo {postalPrefix} lo pone la ciudad elegida
-              </span>
-            )}
-            {errorFor("postalCode")}
+          </div>
+
+          <div className="form-field-row">
+            <div className="form-field">
+              <label htmlFor="city">Ciudad</label>
+              {hasCatalog ? (
+                <select
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  disabled={isSubmitting}
+                  ref={(el) => {
+                    fieldRefs.current.city = el;
+                  }}
+                  {...a11y("city")}
+                >
+                  <option value="">-- Selecciona una ciudad --</option>
+                  {cities.map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  id="city"
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="La Paz"
+                  disabled={isSubmitting}
+                  ref={(el) => {
+                    fieldRefs.current.city = el;
+                  }}
+                  {...a11y("city")}
+                />
+              )}
+              {errorFor("city")}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="postalCode">Código Postal</label>
+              <div className="input-with-prefix">
+                {postalPrefix && (
+                  <span className="input-prefix" aria-hidden="true">
+                    {postalPrefix}-
+                  </span>
+                )}
+                <input
+                  id="postalCode"
+                  type="text"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  placeholder="01"
+                  disabled={isSubmitting}
+                  ref={(el) => {
+                    fieldRefs.current.postalCode = el;
+                  }}
+                  {...a11y("postalCode")}
+                />
+              </div>
+              {fieldError("postalCode") ? (
+                errorFor("postalCode")
+              ) : (
+                postalPrefix && (
+                  <span className="field-hint">
+                    El prefijo {postalPrefix} lo pone la ciudad elegida
+                  </span>
+                )
+              )}
+            </div>
           </div>
 
           {errors.submit && (

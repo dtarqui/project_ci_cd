@@ -32,16 +32,21 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 520px;
+  max-width: 680px;
   max-height: 90vh;
   overflow-y: auto;
   animation: formModalSlideUp 0.25s ease-out;
 }
 
-/* La venta lleva más campos y la tabla de productos: necesita más ancho. */
+/* La venta lleva además la tabla de productos y el resumen. */
 .form-modal--wide {
-  max-width: 760px;
+  max-width: 940px;
 }
+
+/* Un solo punto de corte para todo el diálogo: por debajo de aquí las parejas
+   de campos se apilan y los botones ocupan el ancho completo. Antes había dos
+   (600 px en los campos, 768 px en las líneas de la venta), así que entre esos
+   dos anchos la venta se apilaba a medias. */
 
 @keyframes formModalFadeIn {
   from {
@@ -141,6 +146,10 @@
   border-radius: var(--radius-md);
   font-size: 14px;
   font-family: inherit;
+  /* La misma altura de linea en los tres: el select la fijaba y el input la
+     heredaba del navegador, asi que un campo quedaba 2 px mas alto que el de al
+     lado y sus errores no empezaban a la misma altura. */
+  line-height: 1.5;
   color: var(--color-text);
   background-color: var(--color-row-alt);
   transition: border-color 0.2s ease, box-shadow 0.2s ease,
@@ -155,7 +164,6 @@
    todos los navegadores: se neutraliza y se dibuja una propia. */
 .form-field select {
   appearance: none;
-  line-height: 1.5;
   padding-right: 38px;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -236,17 +244,39 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* Reparten el ancho por igual, como en el diálogo de confirmación. */
-.form-modal-actions .ui-btn {
-  flex: 1;
+/* Pegados a la derecha y del ancho de su texto. En el diálogo de confirmación,
+   que es estrecho, se reparten el ancho por igual; aquí el panel mide 680 px o
+   más y dos botones al 50 % quedaban desproporcionados frente a los campos. */
+.form-modal-actions {
+  justify-content: flex-end;
 }
 
-@media (max-width: 600px) {
+.form-modal-actions .ui-btn {
+  min-width: 150px;
+}
+
+@media (max-width: 640px) {
   .form-field-row {
     grid-template-columns: 1fr;
   }
 
+  /* Apilados y a ancho completo: en un teléfono el pulgar llega mejor a un
+     botón ancho que a uno alineado en una esquina. */
   .form-modal-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
+  }
+
+  .form-modal-actions .ui-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .form-modal-header {
+    padding: 16px;
+  }
+
+  .form-modal-body {
+    gap: 16px;
+    padding: 16px;
   }
 }

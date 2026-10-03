@@ -82,19 +82,55 @@ class InMemoryProductRepository {
     return product;
   }
 
-  async applySaleImpact(items, saleDate) {
-    for (const item of items) {
-      // Incluye los borrados: anular una venta antigua tiene que devolver el
-      // stock aunque el producto ya no se ofrezca, o la cifra queda mal.
-      const product = await this.findByIdIncludingDeleted(item.productId);
+  /**
+   * Reserva el stock de todas las lineas o no reserva ninguna.
+   *
+   * Sustituye al par "leer y despues escribir" que permitia que dos ventas
+   * simultaneas se llevaran la misma unidad: aqui la comprobacion y el
+   * descuento ocurren juntos.
+   * @returns {{ok: true}|{ok: false, productId, availableStock, requestedQuantity}}
+   */
+  async reserveStock(items, saleDate) {
+    const reservadas = [];
 
-      if (!product) {
-        continue;
+    for (const item of items) {
+      const product = getMockData().products.find(
+        (candidato) => candidato.id === item.productId && estaActivo(candidato)
+      );
+
+      if (!product || product.stock < item.quantity) {
+        // O se reserva todo, o nada: se devuelve lo ya descontado.
+        await this.releaseStock(reservadas);
+        return {
+          ok: false,
+          productId: item.productId,
+          availableStock: product ? product.stock : 0,
+          requestedQuantity: item.quantity,
+        };
       }
 
-      product.stock = Math.max(product.stock - item.quantity, 0);
+      product.stock -= item.quantity;
       product.sales = (product.sales || 0) + item.quantity;
       product.lastSale = saleDate;
+      product.status = calculateProductStatus(product.stock);
+      product.updatedAt = new Date().toISOString();
+      reservadas.push(item);
+    }
+
+    return { ok: true };
+  }
+
+  /** Devuelve el stock reservado cuando la venta no llega a registrarse. */
+  async releaseStock(items) {
+    for (const item of items) {
+      // Incluye los borrados: si el producto se dio de baja entre la reserva y
+      // la devolucion, la cifra tiene que volver a cuadrar igual.
+      const product = getMockData().products.find(
+        (candidato) => candidato.id === item.productId
+      );
+      if (!product) continue;
+      product.stock += item.quantity;
+      product.sales = Math.max((product.sales || 0) - item.quantity, 0);
       product.status = calculateProductStatus(product.stock);
       product.updatedAt = new Date().toISOString();
     }
@@ -174,27 +210,74 @@ class DatabaseProductRepository {
     return getPrismaClient().product.findUnique({ where: { id } });
   }
 
-  async applySaleImpact(items, saleDate) {
+  /**
+   * Reserva el stock de todas las lineas o no reserva ninguna.
+   *
+   * El descuento va en un UPDATE condicional (`stock >= cantidad`) de una sola
+   * instruccion: decide la base de datos, y dos ventas simultaneas de la ultima
+   * unidad ya no pueden ganar las dos. Si una linea no alcanza, se devuelve lo
+   * ya reservado.
+   * @returns {{ok: true}|{ok: false, productId, availableStock, requestedQuantity}}
+   */
+  async reserveStock(items, saleDate) {
+    const prisma = getPrismaClient();
+    const reservadas = [];
+
     for (const item of items) {
-      // Incluye los borrados: anular una venta antigua tiene que devolver el
-      // stock aunque el producto ya no se ofrezca, o la cifra queda mal.
-      const product = await this.findByIdIncludingDeleted(item.productId);
-
-      if (!product) {
-        continue;
-      }
-
-      const nextStock = Math.max(product.stock - item.quantity, 0);
-
-      await getPrismaClient().product.update({
-        where: { id: product.id },
+      const { count } = await prisma.product.updateMany({
+        where: { id: item.productId, deletedAt: null, stock: { gte: item.quantity } },
         data: {
-          stock: nextStock,
-          sales: (product.sales || 0) + item.quantity,
+          stock: { decrement: item.quantity },
+          sales: { increment: item.quantity },
           lastSale: saleDate,
-          status: calculateProductStatus(nextStock),
         },
       });
+
+      if (count === 0) {
+        await this.releaseStock(reservadas);
+        const actual = await this.findById(item.productId);
+        return {
+          ok: false,
+          productId: item.productId,
+          availableStock: actual ? actual.stock : 0,
+          requestedQuantity: item.quantity,
+        };
+      }
+
+      reservadas.push(item);
+      await this.refreshStatus(item.productId);
+    }
+
+    return { ok: true };
+  }
+
+  /** Devuelve el stock reservado cuando la venta no llega a registrarse. */
+  async releaseStock(items) {
+    const prisma = getPrismaClient();
+    for (const item of items) {
+      await prisma.product.updateMany({
+        where: { id: item.productId },
+        data: {
+          stock: { increment: item.quantity },
+          sales: { decrement: item.quantity },
+        },
+      });
+      await this.refreshStatus(item.productId);
+    }
+  }
+
+  /**
+   * `status` se deriva del stock y Prisma no puede calcularlo dentro del mismo
+   * UPDATE condicional, asi que se refresca justo despues. Lo que debe ser
+   * atomico es el descuento, no esta etiqueta derivada.
+   */
+  async refreshStatus(id) {
+    const prisma = getPrismaClient();
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) return;
+    const status = calculateProductStatus(product.stock);
+    if (status !== product.status) {
+      await prisma.product.update({ where: { id }, data: { status } });
     }
   }
 }

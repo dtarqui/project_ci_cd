@@ -1,4 +1,7 @@
-const { buildSaleFromRequest } = require("../src/services/salesService");
+const {
+  buildSaleFromRequest,
+  cancelSaleById,
+} = require("../src/services/salesService");
 
 const makeProduct = (overrides = {}) => ({
   id: 1,
@@ -14,10 +17,17 @@ const makeCustomer = (overrides = {}) => ({
   ...overrides,
 });
 
-const makeRepos = ({ products = [], customer = makeCustomer(), createResult } = {}) => {
+const makeRepos = ({
+  products = [],
+  customer = makeCustomer(),
+  createResult,
+  reserveResult = { ok: true },
+  createThrows = null,
+} = {}) => {
   const productRepository = {
     findById: jest.fn((id) => Promise.resolve(products.find((p) => p.id === id) || null)),
-    applySaleImpact: jest.fn(() => Promise.resolve()),
+    reserveStock: jest.fn(() => Promise.resolve(reserveResult)),
+    releaseStock: jest.fn(() => Promise.resolve()),
   };
 
   const customerRepository = {
@@ -27,7 +37,9 @@ const makeRepos = ({ products = [], customer = makeCustomer(), createResult } = 
 
   const saleRepository = {
     create: jest.fn((payload) =>
-      Promise.resolve(createResult || { id: 1, ...payload })
+      createThrows
+        ? Promise.reject(createThrows)
+        : Promise.resolve(createResult || { id: 1, ...payload })
     ),
   };
 
@@ -136,7 +148,7 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(result.data.maxDiscount).toBe(11.3);
     // Lo importante: no se registra la venta ni se toca el inventario.
     expect(repos.saleRepository.create).not.toHaveBeenCalled();
-    expect(repos.productRepository.applySaleImpact).not.toHaveBeenCalled();
+    expect(repos.productRepository.reserveStock).not.toHaveBeenCalled();
   });
 
   it("acepta un descuento exactamente igual a subtotal + impuesto", async () => {
@@ -151,7 +163,7 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(createdPayload.total).toBe(0);
   });
 
-  it("aplica impacto en inventario y estadísticas del cliente para ventas activas", async () => {
+  it("reserva el inventario y actualiza las estadísticas del cliente para ventas activas", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 100, stock: 10 })] });
 
     const result = await buildSaleFromRequest(
@@ -159,7 +171,7 @@ describe("salesService.buildSaleFromRequest", () => {
       repos
     );
 
-    expect(repos.productRepository.applySaleImpact).toHaveBeenCalledTimes(1);
+    expect(repos.productRepository.reserveStock).toHaveBeenCalledTimes(1);
     expect(repos.customerRepository.updateStats).toHaveBeenCalledTimes(1);
     expect(result.sale).toBeDefined();
     expect(result.timestamp).toEqual(expect.any(String));
@@ -178,7 +190,7 @@ describe("salesService.buildSaleFromRequest", () => {
       repos
     );
 
-    expect(repos.productRepository.applySaleImpact).not.toHaveBeenCalled();
+    expect(repos.productRepository.reserveStock).not.toHaveBeenCalled();
     expect(repos.customerRepository.updateStats).not.toHaveBeenCalled();
   });
 
@@ -192,5 +204,128 @@ describe("salesService.buildSaleFromRequest", () => {
 
     const createdPayload = repos.saleRepository.create.mock.calls[0][0];
     expect(createdPayload.status).toBe("Completada");
+  });
+  // La reserva es la autoridad sobre el stock, no la lectura previa: si la base
+  // de datos la rechaza (otra venta se llevo la unidad entre medio), la venta no
+  // se registra.
+  it("rechaza la venta cuando la reserva de stock no se puede hacer", async () => {
+    const repos = makeRepos({
+      products: [makeProduct({ price: 100, stock: 10 })],
+      reserveResult: { ok: false, productId: 1, availableStock: 0, requestedQuantity: 1 },
+    });
+
+    const result = await buildSaleFromRequest(
+      { customerId: 1, items: [{ productId: 1, quantity: 1 }], paymentMethod: "Efectivo" },
+      repos
+    );
+
+    expect(result).toMatchObject({ code: "INSUFFICIENT_STOCK", status: 400 });
+    expect(result.data).toMatchObject({ productId: 1, availableStock: 0, requestedQuantity: 1 });
+    expect(repos.saleRepository.create).not.toHaveBeenCalled();
+    expect(repos.customerRepository.updateStats).not.toHaveBeenCalled();
+  });
+
+  it("devuelve el stock reservado cuando falla el registro de la venta", async () => {
+    const fallo = new Error("la base de datos rechazo el insert");
+    const repos = makeRepos({
+      products: [makeProduct({ price: 100, stock: 10 })],
+      createThrows: fallo,
+    });
+
+    await expect(
+      buildSaleFromRequest(
+        { customerId: 1, items: [{ productId: 1, quantity: 1 }], paymentMethod: "Efectivo" },
+        repos
+      )
+    ).rejects.toThrow("la base de datos rechazo el insert");
+
+    expect(repos.productRepository.releaseStock).toHaveBeenCalledTimes(1);
+    expect(repos.productRepository.releaseStock).toHaveBeenCalledWith([
+      expect.objectContaining({ productId: 1, quantity: 1 }),
+    ]);
+    expect(repos.customerRepository.updateStats).not.toHaveBeenCalled();
+  });
+
+  it("no reserva ni devuelve stock cuando la venta nace anulada", async () => {
+    const repos = makeRepos({ products: [makeProduct({ price: 100, stock: 10 })] });
+
+    await buildSaleFromRequest(
+      {
+        customerId: 1,
+        items: [{ productId: 1, quantity: 1 }],
+        paymentMethod: "Efectivo",
+        status: "Anulada",
+      },
+      repos
+    );
+
+    expect(repos.productRepository.reserveStock).not.toHaveBeenCalled();
+    expect(repos.productRepository.releaseStock).not.toHaveBeenCalled();
+  });
+});
+
+describe("salesService.cancelSaleById", () => {
+  const ventaRegistrada = {
+    id: 7,
+    customerId: 1,
+    total: 113,
+    status: "Completada",
+    items: [{ productId: 1, quantity: 2 }],
+    updatedAt: "2026-10-02T10:00:00.000Z",
+  };
+
+  const makeCancelRepos = ({ sale = ventaRegistrada, cancelResult = sale } = {}) => ({
+    productRepository: { releaseStock: jest.fn(() => Promise.resolve()) },
+    customerRepository: { updateStats: jest.fn(() => Promise.resolve()) },
+    saleRepository: {
+      findById: jest.fn(() => Promise.resolve(sale)),
+      cancel: jest.fn(() => Promise.resolve(cancelResult)),
+    },
+  });
+
+  it("devuelve el stock y descuenta la compra del cliente", async () => {
+    const repos = makeCancelRepos();
+
+    const result = await cancelSaleById(7, repos);
+
+    expect(result.sale).toBe(ventaRegistrada);
+    expect(repos.productRepository.releaseStock).toHaveBeenCalledWith([
+      { productId: 1, quantity: 2 },
+    ]);
+    expect(repos.customerRepository.updateStats).toHaveBeenCalledWith(1, {
+      totalSpentDelta: -113,
+      purchasesDelta: -1,
+    });
+  });
+
+  it("retorna SALE_NOT_FOUND cuando la venta no existe", async () => {
+    const repos = makeCancelRepos({ sale: null });
+
+    const result = await cancelSaleById(999, repos);
+
+    expect(result).toMatchObject({ code: "SALE_NOT_FOUND", status: 404 });
+    expect(repos.saleRepository.cancel).not.toHaveBeenCalled();
+    expect(repos.productRepository.releaseStock).not.toHaveBeenCalled();
+  });
+
+  // Si la venta ya estaba anulada, cancel() resuelve null: devolver el stock otra
+  // vez inflaria el inventario.
+  it("no devuelve el stock dos veces si la venta ya estaba anulada", async () => {
+    const repos = makeCancelRepos({ cancelResult: null });
+
+    const result = await cancelSaleById(7, repos);
+
+    expect(result).toMatchObject({ code: "SALE_ALREADY_CANCELED", status: 409 });
+    expect(repos.productRepository.releaseStock).not.toHaveBeenCalled();
+    expect(repos.customerRepository.updateStats).not.toHaveBeenCalled();
+  });
+
+  it("tolera una venta sin lineas registradas", async () => {
+    const sinItems = { ...ventaRegistrada, items: undefined };
+    const repos = makeCancelRepos({ sale: sinItems, cancelResult: sinItems });
+
+    await cancelSaleById(7, repos);
+
+    expect(repos.productRepository.releaseStock).toHaveBeenCalledWith([]);
   });
 });

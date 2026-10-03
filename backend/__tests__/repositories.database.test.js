@@ -27,6 +27,7 @@ const mockPrisma = {
     findUnique: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
   },
   user: {
     findUnique: jest.fn(),
@@ -250,24 +251,92 @@ describe("DatabaseProductRepository", () => {
     await expect(repo.delete(1)).rejects.toThrow("Connection lost");
   });
 
-  it("applySaleImpact() decrementa stock sin bajar de 0 y actualiza status", async () => {
-    // findUnique y no findFirst: el impacto de stock alcanza tambien a los
-    // productos borrados, para que anular una venta antigua devuelva el stock.
-    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 2, sales: 5 });
-    mockPrisma.product.update.mockResolvedValue({});
+  it("reserveStock() descuenta con un UPDATE condicional por stock disponible", async () => {
+    // Lo que hace atomica la reserva es que la condicion viaje en el propio
+    // UPDATE: si se leyera el stock aparte, dos ventas simultaneas de la ultima
+    // unidad pasarian las dos.
+    mockPrisma.product.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 3, status: "Disponible" });
 
-    await repo.applySaleImpact([{ productId: 1, quantity: 10 }], "2026-01-01");
+    const resultado = await repo.reserveStock([{ productId: 1, quantity: 2 }], "2026-01-01");
 
-    const callArg = mockPrisma.product.update.mock.calls[0][0];
-    expect(callArg.data.stock).toBe(0);
-    expect(callArg.data.sales).toBe(15);
-    expect(callArg.data.status).toBe("Sin Stock");
-    expect(callArg.data.lastSale).toBe("2026-01-01");
+    expect(resultado).toEqual({ ok: true });
+    const arg = mockPrisma.product.updateMany.mock.calls[0][0];
+    expect(arg.where).toEqual({ id: 1, deletedAt: null, stock: { gte: 2 } });
+    expect(arg.data.stock).toEqual({ decrement: 2 });
+    expect(arg.data.sales).toEqual({ increment: 2 });
+    expect(arg.data.lastSale).toBe("2026-01-01");
   });
 
-  it("applySaleImpact() omite items cuyo producto no existe", async () => {
+  it("reserveStock() rechaza sin tocar nada cuando el stock no alcanza", async () => {
+    // count 0 significa que ninguna fila cumplio la condicion.
+    mockPrisma.product.updateMany.mockResolvedValue({ count: 0 });
+    mockPrisma.product.findFirst.mockResolvedValue({ id: 1, stock: 1 });
+
+    const resultado = await repo.reserveStock([{ productId: 1, quantity: 5 }], "2026-01-01");
+
+    expect(resultado).toEqual({
+      ok: false,
+      productId: 1,
+      availableStock: 1,
+      requestedQuantity: 5,
+    });
+  });
+
+  it("reserveStock() devuelve las lineas ya reservadas si una posterior no alcanza", async () => {
+    mockPrisma.product.updateMany
+      .mockResolvedValueOnce({ count: 1 }) // la primera linea se reserva
+      .mockResolvedValueOnce({ count: 0 }) // la segunda no alcanza
+      .mockResolvedValue({ count: 1 }); // la devolucion de la primera
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 1, status: "Stock Bajo" });
+    mockPrisma.product.findFirst.mockResolvedValue({ id: 2, stock: 0 });
+
+    const resultado = await repo.reserveStock(
+      [{ productId: 1, quantity: 1 }, { productId: 2, quantity: 1 }],
+      "2026-01-01"
+    );
+
+    expect(resultado.ok).toBe(false);
+    expect(resultado.productId).toBe(2);
+    // La devolucion de la linea 1: incrementa en lugar de decrementar.
+    const devolucion = mockPrisma.product.updateMany.mock.calls.find(
+      (c) => c[0].data.stock && c[0].data.stock.increment === 1
+    );
+    expect(devolucion).toBeDefined();
+    expect(devolucion[0].where).toEqual({ id: 1 });
+  });
+
+  it("releaseStock() repone el stock incluso de productos dados de baja", async () => {
+    // Sin deletedAt en el where: si el producto se borro entre la reserva y la
+    // devolucion, la cifra tiene que volver a cuadrar igual.
+    mockPrisma.product.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 4, status: "Disponible" });
+
+    await repo.releaseStock([{ productId: 1, quantity: 3 }]);
+
+    const arg = mockPrisma.product.updateMany.mock.calls[0][0];
+    expect(arg.where).toEqual({ id: 1 });
+    expect(arg.data.stock).toEqual({ increment: 3 });
+    expect(arg.data.sales).toEqual({ decrement: 3 });
+  });
+
+  it("refreshStatus() solo escribe cuando el status derivado cambio", async () => {
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 0, status: "Disponible" });
+    await repo.refreshStatus(1);
+    expect(mockPrisma.product.update).toHaveBeenCalledWith({
+      where: { id: 1 },
+      data: { status: "Sin Stock" },
+    });
+
+    mockPrisma.product.update.mockClear();
+    mockPrisma.product.findUnique.mockResolvedValue({ id: 1, stock: 0, status: "Sin Stock" });
+    await repo.refreshStatus(1);
+    expect(mockPrisma.product.update).not.toHaveBeenCalled();
+  });
+
+  it("refreshStatus() no falla si el producto ya no existe", async () => {
     mockPrisma.product.findUnique.mockResolvedValue(null);
-    await repo.applySaleImpact([{ productId: 999, quantity: 1 }], "2026-01-01");
+    await repo.refreshStatus(999);
     expect(mockPrisma.product.update).not.toHaveBeenCalled();
   });
 });
@@ -340,6 +409,29 @@ describe("DatabaseSaleRepository", () => {
   it("update() relanza errores no relacionados a 'no encontrado'", async () => {
     mockPrisma.sale.update.mockRejectedValue(otherPrismaError());
     await expect(repo.update(1, { status: "Anulada" })).rejects.toThrow("Connection lost");
+  });
+  it("cancel() anula con un UPDATE condicionado al estado actual", async () => {
+    // La condicion viaja en el UPDATE: dos anulaciones simultaneas no pueden
+    // ganar las dos, y por tanto el stock no se devuelve dos veces.
+    mockPrisma.sale.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.sale.findUnique.mockResolvedValue({ ...dbSale, status: "Anulada" });
+
+    const result = await repo.cancel(1);
+
+    expect(mockPrisma.sale.updateMany).toHaveBeenCalledWith({
+      where: { id: 1, status: { not: "Anulada" } },
+      data: { status: "Anulada" },
+    });
+    expect(result.status).toBe("Anulada");
+  });
+
+  it("cancel() retorna null si la venta no existe o ya estaba anulada", async () => {
+    mockPrisma.sale.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await repo.cancel(1);
+
+    expect(result).toBeNull();
+    expect(mockPrisma.sale.findUnique).not.toHaveBeenCalled();
   });
 });
 

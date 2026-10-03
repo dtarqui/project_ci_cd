@@ -388,7 +388,7 @@ describe("Componente CustomerForm", () => {
 
     it("debe llamar onClose al hacer clic en el overlay", async () => {
       const { container } = render(<CustomerForm {...defaultProps} />);
-      await userEvent.click(container.querySelector(".customer-form-overlay"));
+      await userEvent.click(container.querySelector(".form-modal-overlay"));
       expect(mockOnClose).toHaveBeenCalled();
     });
   });

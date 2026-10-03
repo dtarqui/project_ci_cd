@@ -68,7 +68,7 @@ describe("Componente SalesForm", () => {
     it("debe mostrar las secciones del formulario", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       expect(container.querySelector(".sales-items")).toBeInTheDocument();
-      expect(container.querySelector(".sales-summary")).toBeInTheDocument();
+      expect(container.querySelector(".sale-totals")).toBeInTheDocument();
     });
   });
 
@@ -82,7 +82,7 @@ describe("Componente SalesForm", () => {
       const { container } = render(
         <SalesForm {...defaultProps} error="Error de servidor" />
       );
-      expect(container.querySelector(".sales-form-error")).toBeInTheDocument();
+      expect(container.querySelector(".form-modal-alert")).toBeInTheDocument();
     });
   });
 
@@ -119,14 +119,14 @@ describe("Componente SalesForm", () => {
   describe("Estructura del formulario", () => {
     it("debe tener estructura correcta del modal", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
-      expect(container.querySelector(".sales-form-overlay")).toBeInTheDocument();
-      expect(container.querySelector(".sales-form-modal")).toBeInTheDocument();
-      expect(container.querySelector(".sales-form-header")).toBeInTheDocument();
+      expect(container.querySelector(".form-modal-overlay")).toBeInTheDocument();
+      expect(container.querySelector(".form-modal")).toBeInTheDocument();
+      expect(container.querySelector(".form-modal-header")).toBeInTheDocument();
     });
 
     it("debe tener form dentro del modal", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
-      const form = container.querySelector("form.sales-form");
+      const form = container.querySelector("form.form-modal-body");
       expect(form).toBeInTheDocument();
     });
 
@@ -147,7 +147,7 @@ describe("Componente SalesForm", () => {
   describe("Estructura de filas", () => {
     it("debe renderizar filas del formulario", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
-      const rows = container.querySelectorAll(".sales-form-row");
+      const rows = container.querySelectorAll(".form-field-row");
       expect(rows.length).toBeGreaterThan(0);
     });
   });
@@ -273,7 +273,7 @@ describe("Componente SalesForm", () => {
   describe("Cálculos del resumen", () => {
     it("debe mostrar sección de resumen", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
-      expect(container.querySelector(".sales-summary")).toBeInTheDocument();
+      expect(container.querySelector(".sale-totals")).toBeInTheDocument();
     });
 
     it("debe calcular el impuesto (13%)", () => {
@@ -290,7 +290,7 @@ describe("Componente SalesForm", () => {
     it("debe formatear montos como moneda boliviana", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       // Debe tener el formato de moneda
-      const summary = container.querySelector(".sales-summary");
+      const summary = container.querySelector(".sale-totals");
       expect(summary.textContent).toMatch(/Bs/);
     });
   });
@@ -307,6 +307,8 @@ describe("Componente SalesForm", () => {
   });
 
   describe("Validaciones adicionales", () => {
+    // El problema de una linea se marca en esa linea, no en un aviso general:
+    // con varias lineas, un unico mensaje arriba no decia cual corregir.
     it("debe mostrar error cuando item tiene cantidad inválida", async () => {
       const { container } = render(<SalesForm {...defaultProps} />);
       
@@ -326,10 +328,12 @@ describe("Componente SalesForm", () => {
       fireEvent.submit(form);
       
       await waitFor(() => {
-        const errorDiv = container.querySelector(".sales-form-error");
+        const errorDiv = container.querySelector(".sales-item-error");
         expect(errorDiv).toBeInTheDocument();
-        expect(errorDiv.textContent).toMatch(/agrega productos validos con cantidad mayor a 0/i);
+        expect(errorDiv.textContent).toMatch(/la cantidad debe ser mayor a 0/i);
       });
+      // Y no en el aviso general, que queda para los fallos al guardar.
+      expect(container.querySelector(".form-modal-alert")).not.toBeInTheDocument();
     });
 
     it("debe manejar error al guardar venta", async () => {
@@ -350,7 +354,7 @@ describe("Componente SalesForm", () => {
       fireEvent.submit(form);
       
       await waitFor(() => {
-        const errorDiv = container.querySelector(".sales-form-error");
+        const errorDiv = container.querySelector(".form-modal-alert");
         expect(errorDiv).toBeInTheDocument();
         expect(errorDiv.textContent).toMatch(/no se pudo guardar la venta/i);
       });
@@ -366,9 +370,9 @@ describe("Componente SalesForm", () => {
       
       // Esperar a que aparezca el error
       await waitFor(() => {
-        const errorDiv = container.querySelector(".sales-form-error");
+        const errorDiv = container.querySelector(".field-error");
         expect(errorDiv).toBeInTheDocument();
-        expect(errorDiv.textContent).toMatch(/selecciona un cliente/i);
+        expect(errorDiv.textContent).toMatch(/elige el cliente de la venta/i);
       });
       
       // Luego corregir el formulario
@@ -428,9 +432,11 @@ describe("Componente SalesForm", () => {
       fireEvent.submit(container.querySelector("form"));
 
       await waitFor(() => {
-        // Aparece dos veces a proposito: en el banner de arriba y en la linea.
-        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(2);
+        // Una sola vez, en la linea que hay que corregir. Antes salia tambien en
+        // el aviso de arriba: el mismo texto repetido a dos alturas.
+        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(1);
       });
+      expect(container.querySelector(".form-modal-alert")).not.toBeInTheDocument();
       expect(mockOnSave).not.toHaveBeenCalled();
     });
 
@@ -444,12 +450,11 @@ describe("Componente SalesForm", () => {
       fireEvent.submit(container.querySelector("form"));
 
       await waitFor(() => {
-        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(2);
+        expect(screen.getAllByText("Solo hay 5 en stock.")).toHaveLength(1);
       });
 
       fireEvent.change(quantity, { target: { value: "3" } });
 
-      // Se va tanto el aviso de la linea como el banner.
       await waitFor(() => {
         expect(screen.queryAllByText("Solo hay 5 en stock.")).toHaveLength(0);
       });
@@ -518,8 +523,8 @@ describe("Componente SalesForm", () => {
 
       await waitFor(() => {
         expect(
-          container.querySelector(".sales-form-error").textContent
-        ).toMatch(/El descuento no puede superar/i);
+          screen.getByLabelText(/Descuento/i).getAttribute("aria-invalid")
+        ).toBe("true");
       });
       expect(mockOnSave).not.toHaveBeenCalled();
     });
@@ -572,7 +577,7 @@ describe("Componente SalesForm", () => {
     // seleccionada a proposito (el select vuelve a lo que hubiera), y eso
     // confunde a userEvent.
     const openCustomerForm = async () =>
-      fireEvent.change(screen.getByLabelText("Cliente"), {
+      fireEvent.change(screen.getByLabelText(/^Cliente/), {
         target: { value: "__nuevo_cliente__" },
       });
 
@@ -592,7 +597,7 @@ describe("Componente SalesForm", () => {
     it("debe ofrecer el alta como primera opción del desplegable", () => {
       render(<Harness />);
 
-      const options = Array.from(screen.getByLabelText("Cliente").options);
+      const options = Array.from(screen.getByLabelText(/^Cliente/).options);
       expect(options[0].textContent).toMatch(/selecciona un cliente/i);
       expect(options[1].textContent).toMatch(/nuevo cliente/i);
       // Los clientes existentes van después, agrupados.
@@ -602,16 +607,18 @@ describe("Componente SalesForm", () => {
     it("debe dejar el cliente como estaba si se cancela el alta", async () => {
       render(<Harness />);
 
-      fireEvent.change(screen.getByLabelText("Cliente"), { target: { value: "1" } });
+      fireEvent.change(screen.getByLabelText(/^Cliente/), { target: { value: "1" } });
       await openCustomerForm();
 
-      const customerModal = document.querySelector(".customer-form-modal");
+      const customerModal = document
+        .getElementById("customer-form-title")
+        .closest(".form-modal");
       await userEvent.click(
         within(customerModal).getByRole("button", { name: /cancelar/i })
       );
 
       await waitFor(() => {
-        expect(screen.getByLabelText("Cliente")).toHaveValue("1");
+        expect(screen.getByLabelText(/^Cliente/)).toHaveValue("1");
       });
     });
 
@@ -652,7 +659,7 @@ describe("Componente SalesForm", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByLabelText("Cliente")).toHaveValue("99");
+        expect(screen.getByLabelText(/^Cliente/)).toHaveValue("99");
       });
     });
 
@@ -683,7 +690,7 @@ describe("Componente SalesForm", () => {
       await userEvent.click(screen.getByRole("button", { name: /crear/i }));
 
       await waitFor(() => {
-        expect(screen.getByLabelText("Cliente")).toHaveValue("99");
+        expect(screen.getByLabelText(/^Cliente/)).toHaveValue("99");
       });
       // La linea cargada antes de abrir el formulario sigue ahi.
       expect(container.querySelectorAll("select")[3]).toHaveValue("2");
@@ -694,7 +701,9 @@ describe("Componente SalesForm", () => {
       render(<Harness />);
 
       await openCustomerForm();
-      const customerModal = document.querySelector(".customer-form-modal");
+      const customerModal = document
+        .getElementById("customer-form-title")
+        .closest(".form-modal");
       await userEvent.click(
         within(customerModal).getByRole("button", { name: /cancelar/i })
       );

@@ -7,7 +7,7 @@ const { createSaleRepository } = require("../repositories/saleRepository");
 const { createProductRepository } = require("../repositories/productRepository");
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
-const { buildSaleFromRequest } = require("../services/salesService");
+const { buildSaleFromRequest, cancelSaleById } = require("../services/salesService");
 const { parsePagination, paginate } = require("../utils/queryHelpers");
 
 const saleRepository = createSaleRepository();
@@ -143,6 +143,30 @@ const updateSale = async (req, res) => {
     });
   }
 
+  // Anular por PUT es la misma operacion que el DELETE y tiene que devolver el
+  // stock igual; de lo contrario quedaba una segunda puerta que solo cambiaba el
+  // estado y dejaba el inventario descuadrado.
+  if (req.body.status && req.body.status.toLowerCase() === "anulada") {
+    const result = await cancelSaleById(saleId, {
+      productRepository,
+      customerRepository,
+      saleRepository,
+    });
+
+    if (result.error) {
+      return sendError(res, result.status, {
+        error: result.error,
+        code: result.code,
+      });
+    }
+
+    return sendSuccess(res, {
+      data: result.sale,
+      message: "Venta anulada exitosamente",
+      timestamp: result.sale.updatedAt,
+    });
+  }
+
   const updatedSale = await saleRepository.update(saleId, req.body);
 
   sendSuccess(res, {
@@ -157,21 +181,24 @@ const updateSale = async (req, res) => {
  */
 const cancelSale = async (req, res) => {
   const saleId = parseInt(req.params.id, 10);
-  const sale = await saleRepository.findById(saleId);
 
-  if (!sale) {
-    return sendError(res, 404, {
-      error: "Venta no encontrada",
-      code: "SALE_NOT_FOUND",
+  const result = await cancelSaleById(saleId, {
+    productRepository,
+    customerRepository,
+    saleRepository,
+  });
+
+  if (result.error) {
+    return sendError(res, result.status, {
+      error: result.error,
+      code: result.code,
     });
   }
 
-  const canceledSale = await saleRepository.update(saleId, { status: "Anulada" });
-
   sendSuccess(res, {
-    data: canceledSale,
+    data: result.sale,
     message: "Venta anulada exitosamente",
-    timestamp: canceledSale.updatedAt,
+    timestamp: result.sale.updatedAt,
   });
 };
 

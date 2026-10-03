@@ -36,8 +36,13 @@ const SalesSummary = ({ data }) => {
           className={`summary-card ${card.isMain ? "main-metric" : ""}`}
         >
           <span className="summary-card-icon">{card.icon}</span>
-          <h3>{card.value}</h3>
-          <p>{card.label}</p>
+          {/* Cifra y etiqueta van juntas al lado del icono, no apiladas debajo:
+              asi la tarjeta mide el alto de una linea doble en vez de tres
+              bloques centrados uno sobre otro. */}
+          <span className="summary-card-body">
+            <h3>{card.value}</h3>
+            <p>{card.label}</p>
+          </span>
         </div>
       ))}
     </div>

@@ -62,6 +62,29 @@ class InMemorySaleRepository {
     return sale;
   }
 
+  /**
+   * Anula la venta solo si estaba activa.
+   *
+   * La condicion va junto con la escritura para que dos anulaciones simultaneas
+   * no devuelvan el stock dos veces.
+   * @returns la venta anulada, o null si no existe o ya estaba anulada.
+   */
+  async cancel(id) {
+    const sales = getMockData().sales;
+    const saleIndex = sales.findIndex(
+      (sale) => sale.id === id && sale.status?.toLowerCase() !== "anulada"
+    );
+
+    if (saleIndex === -1) {
+      return null;
+    }
+
+    const nextSale = SaleDao.mergeUpdates(sales[saleIndex], { status: "Anulada" });
+    sales[saleIndex] = nextSale;
+
+    return nextSale;
+  }
+
   async update(id, updates) {
     const sales = getMockData().sales;
     const saleIndex = sales.findIndex((sale) => sale.id === id);
@@ -124,6 +147,26 @@ class DatabaseSaleRepository {
     });
 
     return mapSaleFromDb(sale);
+  }
+
+  /**
+   * Anula la venta solo si estaba activa.
+   *
+   * El filtro por estado viaja dentro del UPDATE: si dos anulaciones llegan a la
+   * vez, solo una obtiene count 1 y solo una devuelve el stock.
+   * @returns la venta anulada, o null si no existe o ya estaba anulada.
+   */
+  async cancel(id) {
+    const { count } = await getPrismaClient().sale.updateMany({
+      where: { id, status: { not: "Anulada" } },
+      data: { status: "Anulada" },
+    });
+
+    if (count === 0) {
+      return null;
+    }
+
+    return this.findById(id);
   }
 
   async update(id, updates) {

@@ -430,4 +430,96 @@ describe("Endpoints CRUD de ventas", () => {
     });
   });
 
+  // Anular tenia que dejar el inventario como estaba antes de la venta. Hasta
+  // ahora solo cambiaba el estado: el stock descontado no volvia nunca.
+  describe("PUT /api/sales/:id/cancel - reversion del inventario", () => {
+    const leerProducto = (id) =>
+      request(app).get(`/api/products/${id}`).set("Authorization", validToken);
+
+    it("devuelve el stock y descuenta la compra del cliente al anular", async () => {
+      const antesProducto = await leerProducto(3);
+      const antesCliente = await request(app)
+        .get("/api/customers/1")
+        .set("Authorization", validToken);
+
+      const stockInicial = antesProducto.body.data.stock;
+      const comprasIniciales = antesCliente.body.data.purchases;
+
+      const venta = await request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 3, quantity: 2 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201);
+
+      const trasVenta = await leerProducto(3);
+      expect(trasVenta.body.data.stock).toBe(stockInicial - 2);
+
+      await request(app)
+        .put(`/api/sales/${venta.body.data.id}/cancel`)
+        .set("Authorization", validToken)
+        .expect(200);
+
+      const trasAnular = await leerProducto(3);
+      expect(trasAnular.body.data.stock).toBe(stockInicial);
+
+      const clienteFinal = await request(app)
+        .get("/api/customers/1")
+        .set("Authorization", validToken);
+      expect(clienteFinal.body.data.purchases).toBe(comprasIniciales);
+    });
+
+    it("rechaza anular dos veces la misma venta", async () => {
+      const venta = await request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 3, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201);
+
+      await request(app)
+        .put(`/api/sales/${venta.body.data.id}/cancel`)
+        .set("Authorization", validToken)
+        .expect(200);
+
+      // El segundo intento no debe devolver el stock otra vez.
+      const segundo = await request(app)
+        .put(`/api/sales/${venta.body.data.id}/cancel`)
+        .set("Authorization", validToken)
+        .expect(409);
+
+      expect(segundo.body.code).toBe("SALE_ALREADY_CANCELED");
+    });
+
+    it("anular por PUT revierte el inventario igual que el endpoint de anulacion", async () => {
+      const antes = await leerProducto(3);
+      const stockInicial = antes.body.data.stock;
+
+      const venta = await request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: 3, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201);
+
+      await request(app)
+        .put(`/api/sales/${venta.body.data.id}`)
+        .set("Authorization", validToken)
+        .send({ status: "Anulada" })
+        .expect(200);
+
+      const despues = await leerProducto(3);
+      expect(despues.body.data.stock).toBe(stockInicial);
+    });
+  });
+
 });

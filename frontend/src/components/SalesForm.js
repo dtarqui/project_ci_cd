@@ -39,7 +39,11 @@ const SalesForm = ({
   const [discount, setDiscount] = useState("0");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
+  // El aviso de arriba queda solo para lo que no pertenece a ningun campo (un
+  // fallo al guardar). Lo que si pertenece a un campo se muestra debajo de el,
+  // igual que en los formularios de producto y de cliente.
   const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [itemErrors, setItemErrors] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [customerFormOpen, setCustomerFormOpen] = useState(false);
@@ -53,6 +57,7 @@ const SalesForm = ({
     setNotes("");
     setItems([{ ...EMPTY_ITEM }]);
     setFormError("");
+    setFieldErrors({});
     setItemErrors([]);
     setIsSubmitting(false);
     setCustomerFormOpen(false);
@@ -182,6 +187,7 @@ const SalesForm = ({
       return;
     }
     setCustomerId(value);
+    setFieldErrors((prev) => ({ ...prev, customerId: "" }));
   };
 
   const handleCustomerCreated = async (customerData) => {
@@ -191,45 +197,41 @@ const SalesForm = ({
     if (created && created.id !== undefined && created.id !== null) {
       setCustomerId(String(created.id));
       setFormError("");
+      setFieldErrors((prev) => ({ ...prev, customerId: "" }));
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Se revisa todo de una vez y cada problema se señala en su campo, en vez de
+    // ir soltando un mensaje por vez en el aviso de arriba: asi se ve de un
+    // vistazo todo lo que falta y donde esta.
+    const discountValue = Number(discount) || 0;
+    const nextFieldErrors = {};
+
     if (!customerId) {
-      setFormError("Selecciona un cliente.");
-      return;
+      nextFieldErrors.customerId = "Elige el cliente de la venta.";
     }
 
     if (!paymentMethod) {
-      setFormError("Selecciona un metodo de pago.");
-      return;
+      nextFieldErrors.paymentMethod = "Elige el metodo de pago.";
+    }
+
+    if (discountValue > summary.maxDiscount) {
+      nextFieldErrors.discount = `No puede superar ${formatCurrency(summary.maxDiscount)}.`;
     }
 
     const nextItemErrors = validateItems(items);
+
+    setFieldErrors(nextFieldErrors);
     setItemErrors(nextItemErrors);
 
-    const firstItemError = nextItemErrors.find((message) => message);
-    if (firstItemError) {
-      // El banner conserva el texto historico cuando el problema es el clasico
-      // (falta producto o cantidad <= 0) y muestra el detalle en los casos nuevos.
-      const isClassic =
-        firstItemError === "Selecciona un producto." ||
-        firstItemError === "La cantidad debe ser mayor a 0.";
-      setFormError(
-        isClassic
-          ? "Agrega productos validos con cantidad mayor a 0."
-          : firstItemError,
-      );
-      return;
-    }
-
-    const discountValue = Number(discount) || 0;
-    if (discountValue > summary.maxDiscount) {
-      setFormError(
-        `El descuento no puede superar ${formatCurrency(summary.maxDiscount)}.`,
-      );
+    if (
+      Object.values(nextFieldErrors).some((message) => message) ||
+      nextItemErrors.some((message) => message)
+    ) {
+      setFormError("");
       return;
     }
 
@@ -262,239 +264,288 @@ const SalesForm = ({
 
   const discountExceedsTotal = (Number(discount) || 0) > summary.maxDiscount;
 
+  // El mismo helper que usan ProductForm y CustomerForm, para que el error se
+  // vea igual en los tres formularios.
+  const errorFor = (field) => {
+    const message = fieldErrors[field];
+    if (!message) {
+      return null;
+    }
+    return (
+      <span className="field-error" id={`sale-${field}-error`} role="alert">
+        <MdErrorOutline aria-hidden="true" />
+        {message}
+      </span>
+    );
+  };
+
+  const a11y = (field) => ({
+    "aria-invalid": fieldErrors[field] ? "true" : undefined,
+    "aria-describedby": fieldErrors[field] ? `sale-${field}-error` : undefined,
+  });
+
   return (
-    <div
-      className="form-modal-overlay sales-form-overlay"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="form-modal form-modal--wide sales-form-modal">
-        <div className="form-modal-header sales-form-header">
-          <h2 className="form-modal-title">Nueva Venta</h2>
-          <button
-            className="form-modal-close"
-            onClick={onClose}
-            type="button"
-            aria-label="Cerrar formulario"
-          >
-            <MdClose />
-          </button>
-        </div>
-
-        <form
-          className="form-modal-body sales-form"
-          onSubmit={handleSubmit}
-          noValidate
+    // El alta de cliente va FUERA del overlay de la venta, no dentro: siendo hijo
+    // suyo, cualquier clic dentro de ese formulario subia hasta el overlay y
+    // cerraba la venta a medio cargar.
+    <>
+      <div
+        className="form-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sale-form-title"
+        onClick={onClose}
+      >
+        <div
+          className="form-modal form-modal--wide"
+          onClick={(event) => event.stopPropagation()}
         >
-          {(error || formError) && (
-            <div className="sales-form-error" role="alert">
-              {error || formError}
-            </div>
-          )}
+          <div className="form-modal-header">
+            <h2 className="form-modal-title" id="sale-form-title">
+              Nueva Venta
+            </h2>
+            <button
+              className="form-modal-close"
+              onClick={onClose}
+              type="button"
+              aria-label="Cerrar formulario"
+            >
+              <MdClose />
+            </button>
+          </div>
 
-          <div className="sales-form-row">
-            <div className="form-field sales-form-field">
-              <label htmlFor="sale-customer">Cliente</label>
-              <select
-                id="sale-customer"
-                value={customerId}
-                onChange={handleCustomerChange}
-                disabled={loading}
-                required
-              >
-                <option value="">Selecciona un cliente</option>
-                {onCreateCustomer && (
-                  <option value={NEW_CUSTOMER_OPTION}>+ Nuevo cliente…</option>
+          <form className="form-modal-body" onSubmit={handleSubmit} noValidate>
+            {(error || formError) && (
+              <div className="form-modal-alert" role="alert">
+                {error || formError}
+              </div>
+            )}
+
+            <div className="form-field-row">
+              <div className="form-field">
+                <label htmlFor="sale-customer">Cliente *</label>
+                <select
+                  id="sale-customer"
+                  value={customerId}
+                  onChange={handleCustomerChange}
+                  disabled={loading}
+                  required
+                  {...a11y("customerId")}
+                >
+                  <option value="">-- Selecciona un cliente --</option>
+                  {onCreateCustomer && (
+                    <option value={NEW_CUSTOMER_OPTION}>+ Nuevo cliente…</option>
+                  )}
+                  <optgroup label="Clientes">
+                    {customers.map((customer) => (
+                      <option key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                {errorFor("customerId")}
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="sale-payment">Metodo de pago *</label>
+                <select
+                  id="sale-payment"
+                  value={paymentMethod}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  {...a11y("paymentMethod")}
+                >
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Transferencia">Transferencia</option>
+                  <option value="QR">QR</option>
+                </select>
+                {errorFor("paymentMethod")}
+              </div>
+            </div>
+
+            <div className="form-field-row">
+              <div className="form-field">
+                <label htmlFor="sale-status">Estado</label>
+                <select
+                  id="sale-status"
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value)}
+                >
+                  <option value="Completada">Completada</option>
+                  <option value="Pendiente">Pendiente</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="sale-discount">Descuento (Bs.)</label>
+                <input
+                  id="sale-discount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={discount}
+                  onChange={(event) => setDiscount(event.target.value)}
+                  aria-invalid={
+                    discountExceedsTotal || fieldErrors.discount ? "true" : undefined
+                  }
+                  aria-describedby={
+                    discountExceedsTotal ? "sale-discount-error" : undefined
+                  }
+                />
+                {/* Se avisa mientras se escribe, sin esperar a enviar: el tope
+                    depende del total y cambia al agregar lineas. */}
+                {discountExceedsTotal && (
+                  <span className="field-error" id="sale-discount-error" role="alert">
+                    <MdErrorOutline aria-hidden="true" />
+                    No puede superar {formatCurrency(summary.maxDiscount)}.
+                  </span>
                 )}
-                <optgroup label="Clientes">
-                  {customers.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </optgroup>
-              </select>
+              </div>
             </div>
 
-            <div className="form-field sales-form-field">
-              <label htmlFor="sale-payment">Metodo de pago</label>
-              <select
-                id="sale-payment"
-                value={paymentMethod}
-                onChange={(event) => setPaymentMethod(event.target.value)}
-              >
-                <option value="Efectivo">Efectivo</option>
-                <option value="Tarjeta">Tarjeta</option>
-                <option value="Transferencia">Transferencia</option>
-                <option value="QR">QR</option>
-              </select>
-            </div>
-          </div>
+            <div className="sales-items">
+              <div className="sales-items-header">
+                <h3>Productos</h3>
+                <button
+                  type="button"
+                  className="sales-form-add"
+                  onClick={handleAddItem}
+                >
+                  <MdAdd /> Agregar item
+                </button>
+              </div>
 
-          <div className="sales-form-row">
-            <div className="form-field sales-form-field">
-              <label htmlFor="sale-status">Estado</label>
-              <select
-                id="sale-status"
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-              >
-                <option value="Completada">Completada</option>
-                <option value="Pendiente">Pendiente</option>
-              </select>
-            </div>
+              {items.map((item, index) => {
+                const product = productMap[item.productId];
+                const lineTotal = product ? product.price * item.quantity : 0;
+                const stock = stockOf(product);
+                const itemError = itemErrors[index] || "";
+                return (
+                  <div className="sales-item-row" key={`item-${index}`}>
+                    <div className="form-field">
+                      <label htmlFor={`sale-product-${index}`}>Producto *</label>
+                      <select
+                        id={`sale-product-${index}`}
+                        value={item.productId}
+                        onChange={(event) =>
+                          handleItemChange(index, "productId", event.target.value)
+                        }
+                        required
+                        aria-invalid={itemError ? "true" : undefined}
+                      >
+                        <option value="">-- Selecciona un producto --</option>
+                        {products.map((productOption) => {
+                          const optionStock = stockOf(productOption);
+                          return (
+                            <option key={productOption.id} value={productOption.id}>
+                              {optionStock === null
+                                ? productOption.name
+                                : `${productOption.name} (stock: ${optionStock})`}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
 
-            <div className="form-field sales-form-field">
-              <label htmlFor="sale-discount">Descuento (Bs.)</label>
-              <input
-                id="sale-discount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={discount}
-                onChange={(event) => setDiscount(event.target.value)}
-                aria-invalid={discountExceedsTotal ? "true" : undefined}
-              />
-              {discountExceedsTotal && (
-                <span className="field-error" role="alert">
-                  <MdErrorOutline aria-hidden="true" />
-                  No puede superar {formatCurrency(summary.maxDiscount)}
-                </span>
-              )}
-            </div>
-          </div>
+                    <div className="form-field">
+                      <label htmlFor={`sale-quantity-${index}`}>Cantidad *</label>
+                      <input
+                        id={`sale-quantity-${index}`}
+                        type="number"
+                        min="1"
+                        max={stock === null ? undefined : stock}
+                        value={item.quantity}
+                        onChange={(event) =>
+                          handleItemChange(index, "quantity", event.target.value)
+                        }
+                        aria-invalid={itemError ? "true" : undefined}
+                        aria-describedby={itemError ? `sale-item-${index}-error` : undefined}
+                        required
+                      />
+                      {/* La pista cede el sitio al error de la linea: "Disponible: 5"
+                          justo encima de "Solo hay 5 en stock." decia dos veces lo
+                          mismo. */}
+                      {!itemError && stock !== null && (
+                        <span className="field-hint">Disponible: {stock}</span>
+                      )}
+                    </div>
 
-          <div className="sales-items">
-            <div className="sales-items-header">
-              <h3>Productos</h3>
-              <button
-                type="button"
-                className="sales-form-add"
-                onClick={handleAddItem}
-              >
-                <MdAdd /> Agregar item
-              </button>
-            </div>
+                    <div className="sales-line-total">
+                      <span>Total</span>
+                      <strong>{formatCurrency(lineTotal)}</strong>
+                    </div>
 
-            {items.map((item, index) => {
-              const product = productMap[item.productId];
-              const lineTotal = product ? product.price * item.quantity : 0;
-              const stock = stockOf(product);
-              const itemError = itemErrors[index] || "";
-              return (
-                <div className="sales-item-row" key={`item-${index}`}>
-                  <div className="form-field sales-form-field">
-                    <label htmlFor={`sale-product-${index}`}>Producto</label>
-                    <select
-                      id={`sale-product-${index}`}
-                      value={item.productId}
-                      onChange={(event) =>
-                        handleItemChange(index, "productId", event.target.value)
-                      }
-                      required
+                    <button
+                      type="button"
+                      className="sales-item-remove"
+                      onClick={() => handleRemoveItem(index)}
+                      disabled={items.length === 1}
                     >
-                      <option value="">Selecciona un producto</option>
-                      {products.map((productOption) => {
-                        const optionStock = stockOf(productOption);
-                        return (
-                          <option key={productOption.id} value={productOption.id}>
-                            {optionStock === null
-                              ? productOption.name
-                              : `${productOption.name} (stock: ${optionStock})`}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
+                      <MdDelete />
+                    </button>
 
-                  <div className="form-field sales-form-field">
-                    <label htmlFor={`sale-quantity-${index}`}>Cantidad</label>
-                    <input
-                      id={`sale-quantity-${index}`}
-                      type="number"
-                      min="1"
-                      max={stock === null ? undefined : stock}
-                      value={item.quantity}
-                      onChange={(event) =>
-                        handleItemChange(index, "quantity", event.target.value)
-                      }
-                      aria-invalid={itemError ? "true" : undefined}
-                      required
-                    />
-                    {stock !== null && (
-                      <span className="field-hint">Disponible: {stock}</span>
+                    {itemError && (
+                      <span
+                        className="field-error sales-item-error"
+                        id={`sale-item-${index}-error`}
+                        role="alert"
+                      >
+                        <MdErrorOutline aria-hidden="true" />
+                        {itemError}
+                      </span>
                     )}
                   </div>
-
-                  <div className="sales-line-total">
-                    <span>Total</span>
-                    <strong>{formatCurrency(lineTotal)}</strong>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="sales-item-remove"
-                    onClick={() => handleRemoveItem(index)}
-                    disabled={items.length === 1}
-                  >
-                    <MdDelete />
-                  </button>
-
-                  {itemError && (
-                    <span className="field-error sales-item-error" role="alert">
-                      <MdErrorOutline aria-hidden="true" />
-                      {itemError}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="sales-summary">
-            <div>
-              <span>Subtotal</span>
-              <strong>{formatCurrency(summary.subtotal)}</strong>
+                );
+              })}
             </div>
-            <div>
-              <span>Impuesto (13%)</span>
-              <strong>{formatCurrency(summary.tax)}</strong>
-            </div>
-            <div>
-              <span>Descuento</span>
-              <strong>{formatCurrency(summary.discount)}</strong>
-            </div>
-            <div className="sales-summary-total">
-              <span>Total</span>
-              <strong>{formatCurrency(summary.total)}</strong>
-            </div>
-          </div>
 
-          <div className="form-field sales-form-field">
-            <label htmlFor="sale-notes">Notas</label>
-            <textarea
-              id="sale-notes"
-              rows="3"
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder="Notas adicionales"
-            />
-          </div>
+            <div className="sale-totals">
+              <div>
+                <span>Subtotal</span>
+                <strong>{formatCurrency(summary.subtotal)}</strong>
+              </div>
+              <div>
+                <span>Impuesto (13%)</span>
+                <strong>{formatCurrency(summary.tax)}</strong>
+              </div>
+              <div>
+                <span>Descuento</span>
+                <strong>{formatCurrency(summary.discount)}</strong>
+              </div>
+              <div className="sale-totals-final">
+                <span>Total</span>
+                <strong>{formatCurrency(summary.total)}</strong>
+              </div>
+            </div>
 
-          <div className="form-modal-actions sales-form-actions">
-            <Button type="submit" loading={isSubmitting} disabled={loading}>
-              Guardar venta
-            </Button>
-            <Button
-              variant="secondary"
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
+            <div className="form-field">
+              <label htmlFor="sale-notes">Notas</label>
+              <textarea
+                id="sale-notes"
+                rows="3"
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                placeholder="Notas adicionales"
+              />
+            </div>
+
+            <div className="form-modal-actions">
+              <Button type="submit" loading={isSubmitting} disabled={loading}>
+                Guardar venta
+              </Button>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+      </div>
+
       </div>
 
       {onCreateCustomer && (
@@ -505,7 +556,7 @@ const SalesForm = ({
           cities={cities}
         />
       )}
-    </div>
+    </>
   );
 };
 

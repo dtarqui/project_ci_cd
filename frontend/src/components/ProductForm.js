@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { MdErrorOutline } from "react-icons/md";
+import { MdClose, MdErrorOutline } from "react-icons/md";
 import Button from "./ui/Button";
 import {
   validateName,
@@ -165,65 +165,75 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
   });
 
   return (
-    <div className="form-modal-overlay" onClick={onClose}>
+    <div
+      className="form-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="product-form-title"
+      onClick={onClose}
+    >
       <div
         className="form-modal"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="form-modal-header">
-          <h2 className="form-modal-title">{title}</h2>
+          <h2 className="form-modal-title" id="product-form-title">
+            {title}
+          </h2>
           <button
             className="form-modal-close"
             onClick={onClose}
             type="button"
             aria-label="Cerrar formulario"
           >
-            ×
+            <MdClose />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="form-modal-body" noValidate>
-          <div className="form-field">
-            <label htmlFor="name">Nombre del Producto *</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="Ej: Laptop Dell XPS 13"
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.name = el;
-              }}
-              {...a11y("name")}
-            />
-            {errorFor("name")}
-          </div>
+          <div className="form-field-row">
+            <div className="form-field">
+              <label htmlFor="name">Nombre del Producto *</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Ej: Laptop Dell XPS 13"
+                disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.name = el;
+                }}
+                {...a11y("name")}
+              />
+              {errorFor("name")}
+            </div>
 
-          <div className="form-field">
-            <label htmlFor="category">Categoría *</label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              disabled={isSubmitting}
-              ref={(el) => {
-                fieldRefs.current.category = el;
-              }}
-              {...a11y("category")}
-            >
-              <option value="">-- Selecciona una categoría --</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            {errorFor("category")}
+            <div className="form-field">
+              <label htmlFor="category">Categoría *</label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                disabled={isSubmitting}
+                ref={(el) => {
+                  fieldRefs.current.category = el;
+                }}
+                {...a11y("category")}
+              >
+                <option value="">-- Selecciona una categoría --</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              {errorFor("category")}
+            </div>
           </div>
 
           <div className="form-field-row">
@@ -266,8 +276,14 @@ const ProductForm = ({ product, isOpen, onClose, onSubmit, categories }) => {
                 }}
                 {...a11y("stock")}
               />
-              <span className="field-hint">Unidades enteras</span>
-              {errorFor("stock")}
+              {/* La pista cede el sitio al error. Si se muestran las dos, el
+                  error baja una linea y queda a distinta altura que el del campo
+                  vecino de la misma fila. */}
+              {fieldError("stock") ? (
+                errorFor("stock")
+              ) : (
+                <span className="field-hint">Unidades enteras</span>
+              )}
             </div>
           </div>
 

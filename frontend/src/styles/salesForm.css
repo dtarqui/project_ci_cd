@@ -1,17 +1,8 @@
-.sales-form-error {
-  background: var(--color-danger-bg);
-  border: 1px solid var(--color-danger);
-  color: var(--color-danger);
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-}
-
-.sales-form-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
+/* El aviso de guardado y las parejas de campos de este formulario usaban clases
+   propias (.sales-form-error y .sales-form-row) que repetian .form-modal-alert y
+   .form-field-row con otros valores: el aviso salia en un rojo distinto al de los
+   errores de campo y las parejas se apilaban a 768 px en vez de a 640 px. Se
+   usan las comunes y estas se retiraron. */
 
 .sales-items {
   display: flex;
@@ -117,12 +108,20 @@
   color: var(--color-surface);
 }
 
-/* Resumen en una sola fila pegada a la derecha, como el pie de una factura: los
+/* Pie de totales de la venta.
+
+   Se llamaba .sales-summary, el mismo nombre que el resumen de tarjetas del
+   panel en styles.css. Como el CSS es global, abrir una vez el formulario de
+   venta dejaba cargada esta hoja y sus reglas pasaban a aplicarse tambien al
+   panel: `.sales-summary div` alcanzaba a cada tarjeta y le imponia 13px, color
+   atenuado y `nowrap`. Renombrado a .sale-totals, que ademas dice lo que es.
+
+   Resumen en una sola fila pegada a la derecha, como el pie de una factura: los
    importes terminan alineados con el borde del formulario en vez de repartirse
    por todo el ancho. Antes era una retícula de dos columnas con cada celda en
    `space-between`, que separaba la etiqueta de su importe hasta dejarlos en
    extremos opuestos de la celda. */
-.sales-summary {
+.sale-totals {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -137,7 +136,7 @@
 /* Cada concepto es "etiqueta importe" junto, con su propia separacion. El
    desglose va un punto mas pequeno que el total: son el camino, no el resultado,
    y asi ademas los cuatro entran en un solo renglon. */
-.sales-summary div {
+.sale-totals div {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -146,7 +145,7 @@
   white-space: nowrap;
 }
 
-.sales-summary strong {
+.sale-totals strong {
   color: var(--color-text);
   /* Cifras de ancho fijo: los importes no bailan al cambiar de digito. */
   font-variant-numeric: tabular-nums;
@@ -155,28 +154,18 @@
 /* El total cierra la fila. Se distingue por peso y color, sin linea divisoria:
    con la barra a la izquierda, cuando la fila no cabia y el total pasaba al
    renglon siguiente quedaba una rayita suelta colgando. */
-.sales-summary-total {
+.sale-totals-final {
   font-size: 15px;
   font-weight: 700;
   color: var(--color-text);
 }
 
-.sales-summary-total strong {
+.sale-totals-final strong {
   color: var(--color-primary);
-}@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
-@media (max-width: 768px) {
-  .sales-form-row {
-    grid-template-columns: 1fr;
-  }
-
+/* El mismo punto de corte que el resto del dialogo (ver formModal.css). */
+@media (max-width: 640px) {
   .sales-item-row {
     grid-template-columns: 1fr;
   }
@@ -197,17 +186,17 @@
   margin-top: 2px;
 }
 
-@media (max-width: 600px) {
-  .sales-summary {
+@media (max-width: 640px) {
+  .sale-totals {
     justify-content: space-between;
   }
 
-  .sales-summary div {
+  .sale-totals div {
     flex: 1 1 100%;
     justify-content: space-between;
   }
 
-  .sales-summary-total {
+  .sale-totals-final {
     padding-left: 0;
     padding-top: 10px;
     border-left: none;

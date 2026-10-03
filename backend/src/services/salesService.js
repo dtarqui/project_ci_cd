@@ -1,8 +1,7 @@
 /**
  * Sales Service
- * Lógica de negocio para construir una venta: valida stock, calcula
- * subtotal/impuesto/total y aplica el impacto en inventario y estadísticas
- * del cliente. No conoce `req`/`res`: en caso de fallo retorna un objeto
+ * Lógica de negocio para construir una venta: calcula subtotal/impuesto/total,
+ * reserva el stock de forma atómica y actualiza las estadísticas del cliente. No conoce `req`/`res`: en caso de fallo retorna un objeto
  * `{ error, code, status }` para que el controller lo traduzca con sendError.
  */
 
@@ -31,6 +30,9 @@ const buildSaleFromRequest = async (
     requestedByProduct.set(item.productId, requestedQty + item.quantity);
   }
 
+  // Comprobacion previa: sirve para rechazar temprano y con el nombre del
+  // producto a la vista. La garantia real esta en reserveStock, mas abajo; esta
+  // lectura por si sola no impide que otra venta se lleve la misma unidad.
   for (const [productId, requestedQty] of requestedByProduct.entries()) {
     const product = await productRepository.findById(productId);
 
@@ -102,25 +104,56 @@ const buildSaleFromRequest = async (
   const now = new Date().toISOString();
   const saleDate = now.split("T")[0];
   const finalStatus = status || "Completada";
-  const newSale = await saleRepository.create({
-    customerId: customer.id,
-    customerName: customer.name,
-    userId: user?.id ?? null,
-    userName: user?.name || user?.username || null,
-    items: saleItems,
-    subtotal,
-    tax,
-    discount,
-    total: total < 0 ? 0 : total,
-    status: finalStatus,
-    paymentMethod,
-    notes: notes || "",
-  });
+  const esActiva = finalStatus.toLowerCase() !== "anulada";
 
-  // Actualiza inventario y métricas del cliente solo para ventas activas.
-  if (finalStatus.toLowerCase() !== "anulada") {
-    await productRepository.applySaleImpact(saleItems, saleDate);
+  // El stock se reserva ANTES de registrar la venta, y cada linea en una sola
+  // operacion. Antes se validaba con una lectura y se descontaba despues de
+  // crear la venta: entre ambas cosas otra venta podia llevarse la misma unidad,
+  // y si el descuento fallaba la venta ya estaba registrada.
+  if (esActiva) {
+    const reserva = await productRepository.reserveStock(saleItems, saleDate);
 
+    if (!reserva.ok) {
+      const producto = await productRepository.findById(reserva.productId);
+      return {
+        error: `Stock insuficiente para ${producto ? producto.name : "el producto"}`,
+        code: "INSUFFICIENT_STOCK",
+        status: 400,
+        data: {
+          productId: reserva.productId,
+          availableStock: reserva.availableStock,
+          requestedQuantity: reserva.requestedQuantity,
+        },
+      };
+    }
+  }
+
+  let newSale;
+  try {
+    newSale = await saleRepository.create({
+      customerId: customer.id,
+      customerName: customer.name,
+      userId: user?.id ?? null,
+      userName: user?.name || user?.username || null,
+      items: saleItems,
+      subtotal,
+      tax,
+      discount,
+      total: total < 0 ? 0 : total,
+      status: finalStatus,
+      paymentMethod,
+      notes: notes || "",
+    });
+  } catch (error) {
+    // La venta no se registro: se devuelve el stock ya reservado.
+    if (esActiva) {
+      await productRepository.releaseStock(saleItems);
+    }
+    throw error;
+  }
+
+  // El inventario ya se desconto al reservar; aqui solo quedan las metricas.
+  if (esActiva) {
     await customerRepository.updateStats(customer.id, {
       totalSpentDelta: newSale.total,
       purchasesDelta: 1,
@@ -131,4 +164,44 @@ const buildSaleFromRequest = async (
   return { sale: newSale, timestamp: now };
 };
 
-module.exports = { buildSaleFromRequest };
+/**
+ * Anula una venta y deshace lo que su registro hizo.
+ *
+ * Antes anular solo cambiaba el estado: el stock descontado no volvia nunca y el
+ * cliente seguia contando una compra que ya no existia, asi que el inventario
+ * quedaba corto y sus estadisticas no cuadraban con el panel, que si descarta
+ * las ventas anuladas.
+ */
+const cancelSaleById = async (
+  saleId,
+  { productRepository, customerRepository, saleRepository }
+) => {
+  const sale = await saleRepository.findById(saleId);
+
+  if (!sale) {
+    return { error: "Venta no encontrada", code: "SALE_NOT_FOUND", status: 404 };
+  }
+
+  // El cambio de estado es condicional: si otra peticion anulo la misma venta
+  // primero, aqui se obtiene null y no se devuelve el stock por segunda vez.
+  const canceledSale = await saleRepository.cancel(saleId);
+
+  if (!canceledSale) {
+    return {
+      error: "La venta ya estaba anulada",
+      code: "SALE_ALREADY_CANCELED",
+      status: 409,
+    };
+  }
+
+  await productRepository.releaseStock(canceledSale.items || []);
+
+  await customerRepository.updateStats(canceledSale.customerId, {
+    totalSpentDelta: -canceledSale.total,
+    purchasesDelta: -1,
+  });
+
+  return { sale: canceledSale };
+};
+
+module.exports = { buildSaleFromRequest, cancelSaleById };
