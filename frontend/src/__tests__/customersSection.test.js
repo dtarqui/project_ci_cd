@@ -106,6 +106,22 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       });
     });
 
+
+    // Los dos listados comparten una sola definicion de tabla. Antes cada uno
+    // traia su copia de las mismas reglas y las tres habian divergido, que es
+    // justo lo que el requerimiento de usabilidad dice que no pasa.
+    it("usa la tabla compartida, no una propia", async () => {
+      const { container } = render(<CustomersSection />);
+
+      await waitFor(() => {
+        expect(container.querySelector("table.data-table")).toBeInTheDocument();
+      });
+      expect(container.querySelector(".data-table-container")).toBeInTheDocument();
+      expect(
+        container.querySelectorAll("[class*='customers-table']")
+      ).toHaveLength(0);
+    });
+
     it("debe mostrar botón de nuevo cliente", async () => {
       render(<CustomersSection />);
 

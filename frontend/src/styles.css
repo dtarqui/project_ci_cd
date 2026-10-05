@@ -1000,61 +1000,6 @@ body {
 }
 
 /* Products Table */
-.products-table-container {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  margin-bottom: 16px;
-  flex: 1;
-  overflow: auto;
-}
-
-.products-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.products-table thead {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: var(--color-surface);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: none;
-}
-
-.products-table th {
-  padding: 14px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: inherit;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.products-table tbody tr {
-  border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.2s ease;
-}
-
-.products-table tbody tr:hover {
-  background-color: var(--color-row);
-}
-
-.products-table tbody tr:nth-child(even) {
-  background-color: var(--color-row-alt);
-}
-
-.products-table td {
-  padding: 12px;
-  color: var(--color-text);
-  font-size: 13px;
-}
 
 .product-name {
   font-weight: 600;
@@ -1152,16 +1097,6 @@ body {
 }
 
 /* Responsive for Products Section */
-@media (max-width: 1024px) {
-  .products-table {
-    font-size: 0.9rem;
-  }
-
-  .products-table th,
-  .products-table td {
-    padding: 12px;
-  }
-}
 
 @media (max-width: 768px) {
   .products-filters {
@@ -1184,23 +1119,6 @@ body {
     width: 100%;
   }
 
-  .products-table {
-    font-size: 0.85rem;
-  }
-
-  .products-table th,
-  .products-table td {
-    padding: 10px;
-  }
-
-  .products-table-container {
-    overflow-x: auto;
-  }
-
-  .products-table th:nth-child(n + 5),
-  .products-table td:nth-child(n + 5) {
-    display: none;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1217,15 +1135,6 @@ body {
 
   .products-header p {
     font-size: 0.9rem;
-  }
-
-  .products-table {
-    font-size: 0.8rem;
-  }
-
-  .products-table th,
-  .products-table td {
-    padding: 8px;
   }
 
   .status-badge {

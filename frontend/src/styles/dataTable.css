@@ -1,0 +1,119 @@
+/* Tabla de datos: una sola definición para los listados de productos y clientes.
+
+   Por qué existe: cada listado traía su propia copia de las mismas reglas.
+   `.products-table` estaba declarada dos veces —en `styles.css` y en
+   `productsActions.css`— y `.customers-table` repetía ese mismo juego en un
+   tercer archivo. Las tres copias ya habían divergido entre sí: el color de la
+   cabecera (`var(--color-surface)` contra `#fff`), la transición de las filas
+   (0,2 s contra 0,15 s), un `border-bottom: none` que solo tenía una, y los
+   selectores (`th` y `td` sueltos contra `thead th` y `tbody td`). Cuál ganaba
+   dependía del orden en que el empaquetador inyectara las hojas, que no es algo
+   que convenga dejar al azar.
+
+   El requerimiento no funcional de usabilidad del perfil declara que la
+   aplicación usa componentes reutilizables «que garantizan una apariencia y un
+   comportamiento uniformes en todos los módulos»; con tres copias divergentes
+   eso no se sostenía.
+
+   El listado de ventas NO usa estas clases a propósito: no es una tabla sino una
+   lista de tarjetas junto a un panel de detalle (`.sales-table` en
+   `sales.css`). Es una diferencia buscada, no un resto de la duplicación. */
+
+.data-table-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+  flex: 1;
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* La cabecera acompaña al desplazamiento vertical del contenedor. */
+.data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  /* Blanco literal y no `var(--color-surface)`: el texto va sobre el degradado
+     verde, así que debe ser blanco aunque la superficie cambie. */
+  color: #fff;
+}
+
+.data-table thead th {
+  padding: 14px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.15s ease;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: var(--color-row-alt);
+}
+
+.data-table tbody tr:hover {
+  background-color: var(--color-row);
+}
+
+.data-table tbody td {
+  padding: 12px;
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .data-table-container {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table thead th,
+  .data-table tbody td {
+    padding: 10px 8px;
+  }
+
+  /* Las tablas anchas esconden sus columnas secundarias en pantallas estrechas
+     en vez de obligar a desplazar en horizontal. Lo pide la tabla que lo
+     necesita; no es el comportamiento por omisión. */
+  .data-table--hide-tail th:nth-child(n + 5),
+  .data-table--hide-tail td:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .data-table {
+    font-size: 11px;
+  }
+
+  .data-table thead th {
+    padding: 8px 4px;
+    font-size: 10px;
+  }
+
+  .data-table tbody td {
+    padding: 8px 4px;
+  }
+}

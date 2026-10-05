@@ -11,6 +11,7 @@ import EmptyState from "./ui/EmptyState";
 import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
+import "../styles/dataTable.css";
 import "../styles/customersActions.css";
 
 const CUSTOMER_STATUS_TONE = {
@@ -181,8 +182,8 @@ const CustomersSection = () => {
       </div>
 
       {loading ? (
-        <div className="customers-table-wrapper">
-          <table className="customers-table">
+        <div className="data-table-container">
+          <table className="data-table">
             {tableHead}
             <tbody>
               <SkeletonTableRows rows={5} columns={TABLE_COLUMNS} />
@@ -202,8 +203,8 @@ const CustomersSection = () => {
           }
         />
       ) : (
-        <div className="customers-table-wrapper">
-          <table className="customers-table">
+        <div className="data-table-container">
+          <table className="data-table">
             {tableHead}
             <tbody>
               {customers.map((customer) => (

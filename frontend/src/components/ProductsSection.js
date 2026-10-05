@@ -11,6 +11,7 @@ import EmptyState from "./ui/EmptyState";
 import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
+import "../styles/dataTable.css";
 import "../styles/productsActions.css";
 
 const PRODUCT_STATUS_TONE = {
@@ -216,8 +217,8 @@ const ProductsSection = () => {
       </div>
 
       {loading ? (
-        <div className="products-table-container">
-          <table className="products-table">
+        <div className="data-table-container">
+          <table className="data-table data-table--hide-tail">
             {tableHead}
             <tbody>
               <SkeletonTableRows rows={5} columns={TABLE_COLUMNS} />
@@ -239,8 +240,8 @@ const ProductsSection = () => {
           }
         />
       ) : (
-        <div className="products-table-container">
-          <table className="products-table">
+        <div className="data-table-container">
+          <table className="data-table data-table--hide-tail">
             {tableHead}
             <tbody>
               {products.map((product) => (

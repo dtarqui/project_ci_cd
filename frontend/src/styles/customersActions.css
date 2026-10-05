@@ -96,64 +96,6 @@
 
 /* Table */
 
-.customers-table-wrapper {
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-  margin-bottom: 16px;
-  flex: 1;
-  overflow: auto;
-}
-
-.customers-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.customers-table thead {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-primary-dark) 100%
-  );
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.customers-table thead th {
-  padding: 14px 12px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.customers-table tbody tr {
-  border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.15s ease;
-}
-
-.customers-table tbody tr:hover {
-  background-color: var(--color-row);
-}
-
-.customers-table tbody tr:nth-child(even) {
-  background-color: var(--color-row-alt);
-}
-
-.customers-table tbody td {
-  padding: 12px;
-  color: var(--color-text);
-  font-size: 13px;
-}
-
 /* Customer Actions */
 
 .customer-actions {
@@ -231,16 +173,6 @@
     width: 100%;
   }
 
-
-  .customers-table {
-    font-size: 12px;
-  }
-
-  .customers-table thead th,
-  .customers-table tbody td {
-    padding: 10px 8px;
-  }
-
   .btn-action {
     width: 40px;
     height: 40px;
@@ -273,19 +205,6 @@
   .filter-input,
   .filter-select {
     width: 100%;
-  }
-
-  .customers-table {
-    font-size: 11px;
-  }
-
-  .customers-table thead th {
-    padding: 8px 4px;
-    font-size: 10px;
-  }
-
-  .customers-table tbody td {
-    padding: 8px 4px;
   }
 
   .btn-action {
