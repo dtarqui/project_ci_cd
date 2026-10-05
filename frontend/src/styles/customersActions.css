@@ -72,8 +72,7 @@
   height: 16px;
 }
 
-.filter-input,
-.filter-select {
+.filter-input {
   flex: 1;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
@@ -83,8 +82,7 @@
   transition: border-color 0.2s ease;
 }
 
-.filter-input:focus,
-.filter-select:focus {
+.filter-input:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px var(--color-primary-soft);
@@ -106,39 +104,6 @@
 
 /* Compuesto con .ui-btn para no depender del orden de carga de CSS frente
    a .ui-btn-ghost (misma especificidad si se escribe como clase suelta). */
-.ui-btn.btn-action {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-row-alt);
-  color: var(--color-text);
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
-  font-size: 16px;
-}
-
-.ui-btn.btn-action:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.1);
-}
-
-.ui-btn.btn-edit {
-  color: var(--color-primary);
-}
-
-.ui-btn.btn-edit:hover:not(:disabled) {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-dark);
-}
-
-.ui-btn.btn-delete {
-  color: var(--color-danger);
-}
-
-.ui-btn.btn-delete:hover:not(:disabled) {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-dark);
-}
 
 .empty-state .btn-create-customer {
   margin-top: 16px;
@@ -169,14 +134,6 @@
     flex-direction: column;
   }
 
-  .btn-action {
-    width: 100%;
-  }
-
-  .btn-action {
-    width: 40px;
-    height: 40px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -202,18 +159,8 @@
     align-items: flex-start;
   }
 
-  .filter-input,
-  .filter-select {
+  .filter-input {
     width: 100%;
   }
 
-  .btn-action {
-    width: 32px;
-    height: 32px;
-  }
-
-  .btn-action svg {
-    width: 16px;
-    height: 16px;
-  }
 }

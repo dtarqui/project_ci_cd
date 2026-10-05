@@ -1,0 +1,94 @@
+/* Controles comunes a las secciones de productos y de clientes: el desplegable
+   de filtro y los botones de acción de cada fila.
+
+   Por qué existe: las dos hojas de sección traían estas mismas reglas copiadas.
+   Las de los botones eran idénticas, carácter por carácter; la del desplegable
+   ya no: la copia de clientes había perdido `background-color` y `cursor`, de
+   modo que ese control solo se veía bien porque la hoja de productos estaba
+   cargada en la página. Depender de que otra pantalla esté montada no es una
+   base sobre la que apoyar un estilo.
+
+   Es la misma unificación que `dataTable.css` hizo con la tabla. El requerimiento
+   no funcional de usabilidad del perfil declara que la aplicación usa componentes
+   reutilizables «que garantizan una apariencia y un comportamiento uniformes en
+   todos los módulos»; con dos copias divergentes eso no se sostenía. */
+
+/* ---------- Desplegable de filtro ---------- */
+
+.filter-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  background-color: var(--color-surface);
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+/* ---------- Botones de acción de cada fila ---------- */
+
+/* Va como `.ui-btn.btn-action` y no como `.btn-action` suelto para ganarle en
+   especificidad a `.ui-btn-ghost`, que es la variante con la que se renderizan. */
+.ui-btn.btn-action {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-row-alt);
+  color: var(--color-text);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+  font-size: 16px;
+}
+
+.ui-btn.btn-action:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.1);
+}
+
+.ui-btn.btn-edit {
+  color: var(--color-primary);
+}
+
+.ui-btn.btn-edit:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+
+.ui-btn.btn-delete {
+  color: var(--color-danger);
+}
+
+.ui-btn.btn-delete:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+}
+
+/* El mismo punto de corte que el resto de la aplicación. Las dos hojas traían
+   aquí un `.btn-action { width: 100% }` que la regla siguiente pisaba dos líneas
+   después; no se conserva. */
+@media (max-width: 768px) {
+  /* Apilado, el desplegable ocupa el ancho completo en las dos secciones. */
+  .filter-select {
+    width: 100%;
+  }
+
+  .btn-action {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn-action {
+    width: 32px;
+    height: 32px;
+  }
+}

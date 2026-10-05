@@ -1,3 +1,14 @@
+/* Ajustes de la cuenta.
+
+   `.form-group` y `.form-field` son nombres que tambien usan el formulario de
+   acceso (styles.css) y los tres dialogos (styles/formModal.css). Como el CSS es
+   global, las tres hojas se pisaban entre si: el dialogo heredaba de aqui un
+   `margin-bottom` bajo cada etiqueta y esta pantalla heredaba de alla un `gap`,
+   de modo que el espaciado dependia del orden en que el empaquetador inyectara
+   las hojas. Aqui van acotadas a `.settings-section`, que es el contenedor de
+   esta pantalla, y ya no salen de ella.
+
+*/
 /* ==================== SETTINGS CONTAINER ==================== */
 .settings-container {
   padding: 24px;
@@ -156,7 +167,7 @@
 }
 
 /* ==================== FORM STYLES ==================== */
-.form-group {
+.settings-section .form-group {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -172,19 +183,19 @@
   grid-template-columns: 1fr;
 }
 
-.form-field {
+.settings-section .form-field {
   display: flex;
   flex-direction: column;
 }
 
-.form-field label {
+.settings-section .form-field label {
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 10px;
   font-size: 14px;
 }
 
-.form-field small {
+.settings-section .form-field small {
   color: var(--color-muted);
   font-size: 12px;
   margin-top: 6px;
@@ -744,7 +755,7 @@
     font-size: 1.2rem;
   }
 
-  .form-field label {
+  .settings-section .form-field label {
     font-size: 0.9rem;
   }
 

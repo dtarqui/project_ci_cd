@@ -720,6 +720,10 @@ body {
   gap: 4px;
 }
 
+/* Lo usan la tabla de productos y la tarjeta de mas vendidos del tablero
+   (Charts.js), por eso vive aqui y no en la hoja de la seccion. Estaba
+   declarada tres veces, con tres cuerpos distintos; estas son las propiedades
+   que resultaban de la suma. */
 .product-name {
   font-weight: 600;
   color: var(--color-text);
@@ -916,109 +920,9 @@ body {
 
 /* Products Section Styles */
 
-.products-section {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.products-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.products-header h2 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 0;
-}
-
-.products-header p {
-  margin: 4px 0 0 0;
-  font-size: 14px;
-  color: var(--color-muted);
-}
-
 /* Filters */
-.products-filters {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 200px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
-}
-
-.search-icon {
-  color: var(--color-muted);
-  flex-shrink: 0;
-}
-
-.search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 0;
-  font-size: 13px;
-  font-family: inherit;
-  background: transparent;
-}
-
-.search-input::placeholder {
-  color: var(--color-muted);
-}
-
-.sort-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 200px;
-}
-
-.sort-icon {
-  color: var(--color-muted);
-  flex-shrink: 0;
-}
 
 /* Products Table */
-
-.product-name {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.product-price {
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.product-stock {
-  color: var(--color-muted);
-}
-
-.product-sales {
-  font-weight: 600;
-  color: var(--color-text);
-}
 
 /* Status Badge */
 .status-badge {
@@ -1098,43 +1002,12 @@ body {
 
 /* Responsive for Products Section */
 
-@media (max-width: 768px) {
-  .products-filters {
-    flex-direction: column;
-  }
-
-  .search-box {
-    min-width: 100%;
-  }
-
-  .filter-select {
-    width: 100%;
-  }
-
-  .sort-box {
-    width: 100%;
-  }
-
-  .sort-box .filter-select {
-    width: 100%;
-  }
-
-}
-
 @media (max-width: 480px) {
   /* En telefono las cuatro van una debajo de otra, pero siguen siendo tarjetas
      de una linea doble: el bloque entero mide menos que la antigua tarjeta
      principal ella sola. */
   .sales-summary {
     grid-template-columns: 1fr;
-  }
-
-  .products-header h2 {
-    font-size: 1.5rem;
-  }
-
-  .products-header p {
-    font-size: 0.9rem;
   }
 
   .status-badge {

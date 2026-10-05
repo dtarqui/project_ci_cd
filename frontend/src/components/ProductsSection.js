@@ -11,6 +11,7 @@ import EmptyState from "./ui/EmptyState";
 import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
+import "../styles/sectionControls.css";
 import "../styles/dataTable.css";
 import "../styles/productsActions.css";
 
