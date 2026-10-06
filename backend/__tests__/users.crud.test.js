@@ -20,7 +20,6 @@ describe("Users registration and profile CRUD", () => {
         email: "new.user@email.com",
         phone: "+591 70000001",
         city: "La Paz",
-        country: "Bolivia",
         address: "Av. Principal 123",
         postalCode: "LP-100",
       })
@@ -30,7 +29,7 @@ describe("Users registration and profile CRUD", () => {
     expect(response.body.user.username).toBe("new_user");
     expect(response.body.user.phone).toBe("+591 70000001");
     expect(response.body.user.city).toBe("La Paz");
-    expect(response.body.user.country).toBe("Bolivia");
+    expect(response.body.user.country).toBeUndefined();
     expect(response.body.user.password).toBeUndefined();
     expect(response.body.user.passwordHash).toBeUndefined();
     expect(response.body.token).toEqual(expect.any(String));
@@ -94,7 +93,6 @@ describe("Users registration and profile CRUD", () => {
         email: "profile.user@email.com",
         phone: "+591 70000002",
         city: "Cochabamba",
-        country: "Bolivia",
       })
       .expect(201);
 
@@ -117,7 +115,6 @@ describe("Users registration and profile CRUD", () => {
         phone: "+591 70000003",
         city: "Santa Cruz",
         state: "Andres Ibanez",
-        country: "Bolivia",
         postalCode: "SC-200",
         dateOfBirth: "1997-04-15",
       })

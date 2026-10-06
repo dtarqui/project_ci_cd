@@ -25,7 +25,6 @@ const UserDao = {
       address: normalizeText(payload.address),
       city: normalizeText(payload.city),
       state: normalizeText(payload.state),
-      country: normalizeText(payload.country),
       postalCode: normalizeText(payload.postalCode),
       dateOfBirth: normalizeText(payload.dateOfBirth),
     };

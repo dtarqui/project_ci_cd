@@ -13,11 +13,6 @@ const EMPTY_ITEM = { productId: "", quantity: 1 };
 // con un id real porque los ids son numericos.
 const NEW_CUSTOMER_OPTION = "__nuevo_cliente__";
 
-// Misma tasa que TAX_RATE en backend/src/config/constants.js. El backend recalcula
-// el total al guardar; esto es solo el avance que ve el usuario mientras carga la
-// venta. Si cambia alla, cambia aca.
-const TAX_RATE = 0.13;
-
 /** Stock declarado del producto, o null si el producto no lo informa. */
 const stockOf = (product) =>
   product && typeof product.stock === "number" ? product.stock : null;
@@ -77,17 +72,15 @@ const SalesForm = ({
       return acc + product.price * item.quantity;
     }, 0);
 
-    const tax = subtotal * TAX_RATE;
     const discountValue = Number(discount) || 0;
-    const total = Math.max(subtotal + tax - discountValue, 0);
+    const total = Math.max(subtotal - discountValue, 0);
 
     return {
       subtotal,
-      tax,
       discount: discountValue,
       // Tope del descuento: mas alla de esto el total se recortaba a 0 y la venta
       // se guardaba regalando la diferencia sin avisar.
-      maxDiscount: subtotal + tax,
+      maxDiscount: subtotal,
       total,
     };
   }, [items, productMap, discount]);
@@ -504,10 +497,6 @@ const SalesForm = ({
               <div>
                 <span>Subtotal</span>
                 <strong>{formatCurrency(summary.subtotal)}</strong>
-              </div>
-              <div>
-                <span>Impuesto (13%)</span>
-                <strong>{formatCurrency(summary.tax)}</strong>
               </div>
               <div>
                 <span>Descuento</span>

@@ -104,7 +104,9 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(result.data.requestedQuantity).toBe(4);
   });
 
-  it("calcula subtotal, impuesto (13%) y total correctamente sin descuento", async () => {
+  // El caso de estudio no hace facturacion: el total es subtotal menos descuento,
+  // sin tributos. Ver los limites del perfil.
+  it("calcula subtotal y total sin aplicar ningun impuesto", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 100, stock: 10 })] });
 
     const result = await buildSaleFromRequest(
@@ -115,8 +117,8 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(result.error).toBeUndefined();
     const createdPayload = repos.saleRepository.create.mock.calls[0][0];
     expect(createdPayload.subtotal).toBe(200);
-    expect(createdPayload.tax).toBe(26);
-    expect(createdPayload.total).toBe(226);
+    expect(createdPayload.total).toBe(200);
+    expect(createdPayload.tax).toBeUndefined();
   });
 
   it("aplica el descuento antes de calcular el total final", async () => {
@@ -128,14 +130,14 @@ describe("salesService.buildSaleFromRequest", () => {
     );
 
     const createdPayload = repos.saleRepository.create.mock.calls[0][0];
-    // subtotal 100 + tax 13 - discount 50 = 63
-    expect(createdPayload.total).toBe(63);
+    // subtotal 100 - descuento 50 = 50
+    expect(createdPayload.total).toBe(50);
   });
 
   // Este caso afirmaba que recortar el total a 0 estaba bien, y por eso el
   // defecto nunca salto: la venta quedaba en Bs 0 pero el stock se descontaba
   // igual. Ahora la venta se rechaza antes de llegar a registrarse.
-  it("rechaza un descuento mayor que subtotal + impuesto", async () => {
+  it("rechaza un descuento mayor que el subtotal", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 10, stock: 10 })] });
 
     const result = await buildSaleFromRequest(
@@ -145,17 +147,17 @@ describe("salesService.buildSaleFromRequest", () => {
 
     expect(result.code).toBe("INVALID_DISCOUNT");
     expect(result.status).toBe(400);
-    expect(result.data.maxDiscount).toBe(11.3);
+    expect(result.data.maxDiscount).toBe(10);
     // Lo importante: no se registra la venta ni se toca el inventario.
     expect(repos.saleRepository.create).not.toHaveBeenCalled();
     expect(repos.productRepository.reserveStock).not.toHaveBeenCalled();
   });
 
-  it("acepta un descuento exactamente igual a subtotal + impuesto", async () => {
+  it("acepta un descuento exactamente igual al subtotal", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 10, stock: 10 })] });
 
     await buildSaleFromRequest(
-      { customerId: 1, items: [{ productId: 1, quantity: 1 }], discount: 11.3, paymentMethod: "Efectivo" },
+      { customerId: 1, items: [{ productId: 1, quantity: 1 }], discount: 10, paymentMethod: "Efectivo" },
       repos
     );
 

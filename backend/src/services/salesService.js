@@ -1,11 +1,9 @@
 /**
  * Sales Service
- * Lógica de negocio para construir una venta: calcula subtotal/impuesto/total,
+ * Lógica de negocio para construir una venta: calcula subtotal, descuento y total,
  * reserva el stock de forma atómica y actualiza las estadísticas del cliente. No conoce `req`/`res`: en caso de fallo retorna un objeto
  * `{ error, code, status }` para que el controller lo traduzca con sendError.
  */
-
-const { TAX_RATE } = require("../config/constants");
 
 const buildSaleFromRequest = async (
   { customerId, items, discount = 0, paymentMethod, notes, status },
@@ -82,24 +80,27 @@ const buildSaleFromRequest = async (
   }
 
   subtotal = parseFloat(subtotal.toFixed(2));
-  const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
 
+  // El caso de estudio no hace facturacion: la venta registra subtotal, descuento
+  // y total, sin calculo de tributos ni emision de documentos fiscales. Queda
+  // declarado en los limites del perfil.
+  //
   // Un descuento mayor que el total se aceptaba y el total se recortaba a 0: la
   // venta quedaba registrada en Bs 0 pero el stock se descontaba igual, o sea
   // regalando la mercaderia sin que nada lo advirtiera. El formulario ya aplicaba
   // este tope; faltaba en la API, que es quien decide.
-  const maxDiscount = parseFloat((subtotal + tax).toFixed(2));
+  const maxDiscount = subtotal;
 
   if (discount > maxDiscount) {
     return {
       error: "El descuento no puede superar el total de la venta",
       code: "INVALID_DISCOUNT",
       status: 400,
-      data: { subtotal, tax, maxDiscount, requestedDiscount: discount },
+      data: { subtotal, maxDiscount, requestedDiscount: discount },
     };
   }
 
-  const total = parseFloat((subtotal + tax - discount).toFixed(2));
+  const total = parseFloat((subtotal - discount).toFixed(2));
 
   const now = new Date().toISOString();
   const saleDate = now.split("T")[0];
@@ -137,7 +138,6 @@ const buildSaleFromRequest = async (
       userName: user?.name || user?.username || null,
       items: saleItems,
       subtotal,
-      tax,
       discount,
       total: total < 0 ? 0 : total,
       status: finalStatus,

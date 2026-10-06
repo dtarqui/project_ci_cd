@@ -37,7 +37,6 @@ const register = async (req, res) => {
     address,
     city,
     state,
-    country,
     postalCode,
     dateOfBirth,
   } = normalizedPayload;
@@ -67,7 +66,6 @@ const register = async (req, res) => {
     address,
     city,
     state,
-    country,
     postalCode,
     dateOfBirth,
   });

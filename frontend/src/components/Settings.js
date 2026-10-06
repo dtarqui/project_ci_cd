@@ -21,7 +21,6 @@ const mapUserToProfileForm = (user = {}) => ({
   address: user.address || "",
   city: user.city || "",
   state: user.state || "",
-  country: user.country || "",
   postalCode: user.postalCode || "",
   dateOfBirth: user.dateOfBirth || "",
 });
@@ -43,7 +42,6 @@ const Settings = () => {
     address: "",
     city: "",
     state: "",
-    country: "",
     postalCode: "",
     dateOfBirth: "",
   });
@@ -89,7 +87,6 @@ const Settings = () => {
         address: profileData.address || undefined,
         city: profileData.city || undefined,
         state: profileData.state || undefined,
-        country: profileData.country || undefined,
         postalCode: profileData.postalCode || undefined,
         dateOfBirth: profileData.dateOfBirth || undefined,
       };
@@ -235,15 +232,6 @@ const Settings = () => {
 
           <div className="form-row">
             <div className="form-field">
-              <label>País</label>
-              <input
-                type="text"
-                value={profileData.country}
-                onChange={(e) => handleProfileChange("country", e.target.value)}
-                className="input-field"
-              />
-            </div>
-            <div className="form-field">
               <label>Código Postal</label>
               <input
                 type="text"
@@ -314,10 +302,6 @@ const Settings = () => {
           <div className="info-row">
             <span className="info-label">Estado / Provincia:</span>
             <span className="info-value">{profileData.state || "No definido"}</span>
-          </div>
-          <div className="info-row">
-            <span className="info-label">País:</span>
-            <span className="info-value">{profileData.country || "No definido"}</span>
           </div>
           <div className="info-row">
             <span className="info-label">Código Postal:</span>

@@ -137,7 +137,6 @@ const validateUserMetadata = (body) => {
     { key: "address", max: 180 },
     { key: "city", max: 80 },
     { key: "state", max: 80 },
-    { key: "country", max: 80 },
     { key: "postalCode", max: 20 },
   ];
 
@@ -268,7 +267,6 @@ const validateUserUpdate = (body) => {
     "address",
     "city",
     "state",
-    "country",
     "postalCode",
     "dateOfBirth",
   ];

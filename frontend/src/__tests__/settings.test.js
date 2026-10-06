@@ -26,7 +26,6 @@ const mockProfileUser = {
   address: "Santa Cruz",
   city: "Santa Cruz",
   state: "Santa Cruz",
-  country: "Bolivia",
   postalCode: "SC-01",
   dateOfBirth: "1990-10-15",
 };

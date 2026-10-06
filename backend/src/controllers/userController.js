@@ -74,7 +74,6 @@ const updateMyProfile = async (req, res) => {
     ...(req.body.address !== undefined ? { address: req.body.address } : {}),
     ...(req.body.city !== undefined ? { city: req.body.city } : {}),
     ...(req.body.state !== undefined ? { state: req.body.state } : {}),
-    ...(req.body.country !== undefined ? { country: req.body.country } : {}),
     ...(req.body.postalCode !== undefined ? { postalCode: req.body.postalCode } : {}),
     ...(req.body.dateOfBirth !== undefined ? { dateOfBirth: req.body.dateOfBirth } : {}),
   };

@@ -8,6 +8,24 @@ const { CITY_CATALOG, CITY_POSTAL_PREFIX } = require("../config/constants");
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
+// --- Catalogos ---
+//
+// Hasta ahora las ciudades eran una constante del codigo y las categorias no
+// existian como entidad: el desplegable se armaba con los valores distintos de
+// los productos cargados. Aqui se derivan de las mismas fuentes que ya habia,
+// para que la semilla siga teniendo un unico origen por dato.
+//
+// No hay catalogo de paises: el caso de estudio opera unicamente en Bolivia.
+
+// Las ciudades atendidas salen de CITY_CATALOG, que sigue siendo la fuente unica
+// mientras el catalogo no se administre desde la base.
+const cities = CITY_CATALOG.map((city, index) => ({
+  id: index + 1,
+  name: city.name,
+  postalPrefix: city.postalPrefix,
+  areaCode: city.areaCode,
+}));
+
 const mockData = {
   dailySales: "0.7M Bs.",
   totalOrders: 184,
@@ -213,9 +231,8 @@ const mockData = {
         },
       ],
       subtotal: 1299.97,
-      tax: 169,
       discount: 0,
-      total: 1468.97,
+      total: 1299.97,
       status: "Completada",
       paymentMethod: "Tarjeta",
       notes: "Entrega programada",
@@ -238,9 +255,8 @@ const mockData = {
         },
       ],
       subtotal: 699.99,
-      tax: 91.0,
       discount: 50,
-      total: 740.99,
+      total: 649.99,
       status: "Pendiente",
       paymentMethod: "Transferencia",
       notes: "Pendiente de confirmación",
@@ -263,9 +279,8 @@ const mockData = {
         },
       ],
       subtotal: 379.99,
-      tax: 49.4,
       discount: 0,
-      total: 429.39,
+      total: 379.99,
       status: "Anulada",
       paymentMethod: "Efectivo",
       notes: "Cliente canceló",
@@ -449,8 +464,7 @@ const buildGeneratedSales = (startId, count, products, customers) =>
       items.reduce((sum, item) => sum + item.total, 0).toFixed(2)
     );
     const discount = id % 6 === 0 ? parseFloat((subtotal * 0.05).toFixed(2)) : 0;
-    const tax = parseFloat((subtotal * 0.13).toFixed(2));
-    const total = parseFloat((subtotal + tax - discount).toFixed(2));
+    const total = parseFloat((subtotal - discount).toFixed(2));
     const status = SALE_STATUS_CYCLE[id % SALE_STATUS_CYCLE.length];
     const createdAt = saleDateMinusDays(daysAgo, 9 + (id % 9));
 
@@ -460,7 +474,6 @@ const buildGeneratedSales = (startId, count, products, customers) =>
       customerName: customer.name,
       items,
       subtotal,
-      tax,
       discount,
       total,
       status,
@@ -511,7 +524,15 @@ const users = [
   },
 ];
 
+// Se derivan de los productos de la semilla: la tabla nace con exactamente las
+// categorias en uso, sin inventar ninguna ni dejar productos huerfanos.
+const categories = [...new Set(mockData.products.map((p) => p.category))].map(
+  (name, index) => ({ id: index + 1, name, description: null })
+);
+
 module.exports = {
   mockData,
   users,
+  cities,
+  categories,
 };

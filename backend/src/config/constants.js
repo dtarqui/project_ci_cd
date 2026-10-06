@@ -4,8 +4,6 @@
  * en controllers, services y utils.
  */
 
-const TAX_RATE = 0.13;
-
 // Catalogo de ciudades atendidas. Es la fuente unica: la semilla deriva de aqui
 // los prefijos postales de cada cliente, el validador acepta solo estos nombres y
 // GET /api/customers/cities lo expone para que el formulario ofrezca la lista en
@@ -60,7 +58,6 @@ const DASHBOARD_SLICE_SIZES = {
 const TOP_PRODUCTS_TREND_FUDGE = -50;
 
 module.exports = {
-  TAX_RATE,
   CITY_CATALOG,
   CITY_NAMES,
   CITY_POSTAL_PREFIX,

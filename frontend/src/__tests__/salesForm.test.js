@@ -276,10 +276,13 @@ describe("Componente SalesForm", () => {
       expect(container.querySelector(".sale-totals")).toBeInTheDocument();
     });
 
-    it("debe calcular el impuesto (13%)", () => {
+    // El caso de estudio no hace facturacion: el pie de totales va de subtotal a
+    // total pasando por el descuento, sin linea de impuesto.
+    it("no muestra ninguna linea de impuesto", () => {
       const { container } = render(<SalesForm {...defaultProps} />);
-      // El resumen siempre está presente
-      expect(container.textContent).toContain("Impuesto (13%)");
+      expect(container.textContent).toContain("Subtotal");
+      expect(container.textContent).toContain("Descuento");
+      expect(container.textContent).not.toMatch(/impuesto/i);
     });
 
     it("debe mostrar el total", () => {
@@ -535,13 +538,13 @@ describe("Componente SalesForm", () => {
 
       fireEvent.change(container.querySelectorAll("select")[0], { target: { value: "1" } });
       fireEvent.change(container.querySelectorAll("select")[3], { target: { value: "1" } });
-      // 100 de subtotal + 13 de impuesto
-      fireEvent.change(screen.getByLabelText(/Descuento/i), { target: { value: "113" } });
+      // El tope es el subtotal: 100
+      fireEvent.change(screen.getByLabelText(/Descuento/i), { target: { value: "100" } });
       fireEvent.submit(container.querySelector("form"));
 
       await waitFor(() => {
         expect(mockOnSave).toHaveBeenCalledWith(
-          expect.objectContaining({ discount: 113 })
+          expect.objectContaining({ discount: 100 })
         );
       });
     });

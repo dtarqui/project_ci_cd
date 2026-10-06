@@ -408,10 +408,6 @@ const SalesSection = () => {
                   <strong>{formatCurrency(selectedSale.subtotal)}</strong>
                 </div>
                 <div>
-                  <span>Impuestos</span>
-                  <strong>{formatCurrency(selectedSale.tax)}</strong>
-                </div>
-                <div>
                   <span>Descuento</span>
                   <strong>{formatCurrency(selectedSale.discount)}</strong>
                 </div>

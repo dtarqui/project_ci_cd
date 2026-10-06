@@ -352,7 +352,7 @@ describe("Endpoints CRUD de ventas", () => {
         .expect(201)
         .end((err, res) => {
           if (err) return done(err);
-          const exacto = Number((res.body.data.subtotal + res.body.data.tax).toFixed(2));
+          const exacto = Number(res.body.data.subtotal.toFixed(2));
 
           request(app)
             .post("/api/sales")

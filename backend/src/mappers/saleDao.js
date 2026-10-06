@@ -15,7 +15,6 @@ const SaleDao = {
       userName: payload.userName ?? null,
       items: payload.items,
       subtotal: payload.subtotal,
-      tax: payload.tax,
       discount: payload.discount,
       total: payload.total,
       status: payload.status,
