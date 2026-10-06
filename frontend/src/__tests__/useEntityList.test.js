@@ -66,7 +66,9 @@ describe("useEntityList", () => {
     expect(result.current.items).toEqual([{ id: 1 }, { id: 2 }]);
   });
 
-  it("debe manejar el camino de error: vacía items y expone el error", async () => {
+  // Expone el mensaje y no el Error: las secciones lo pintan en pantalla, y un
+  // objeto Error no es un hijo valido de React.
+  it("debe manejar el camino de error: vacía items y expone el mensaje", async () => {
     const apiError = new Error("Network down");
     const fetchFn = jest.fn().mockRejectedValue(apiError);
     const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
@@ -78,7 +80,8 @@ describe("useEntityList", () => {
     });
 
     expect(result.current.items).toEqual([]);
-    expect(result.current.error).toBe(apiError);
+    expect(result.current.error).toBe("Network down");
+    expect(typeof result.current.error).toBe("string");
 
     consoleSpy.mockRestore();
   });

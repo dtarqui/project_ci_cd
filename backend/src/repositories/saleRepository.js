@@ -68,6 +68,32 @@ class InMemorySaleRepository {
    * no devuelvan el stock dos veces.
    * @returns la venta anulada, o null si no existe o ya estaba anulada.
    */
+  /**
+   * Cuenta las lineas de venta que referencian al producto.
+   *
+   * Incluye las ventas anuladas: la linea sigue existiendo y sigue nombrando al
+   * producto, de modo que para la integridad referencial cuenta igual. El
+   * contador `sales` del producto no sirve para esto, porque al anular una venta
+   * se decrementa y volveria a cero un producto que si tiene historial.
+   */
+  /**
+   * Cuenta las ventas registradas a nombre del cliente.
+   *
+   * Incluye las anuladas: la venta sigue existiendo y sigue apuntando al cliente,
+   * de modo que para la integridad referencial cuenta igual.
+   */
+  async countByCustomer(customerId) {
+    return getMockData().sales.filter((sale) => sale.customerId === customerId).length;
+  }
+
+  async countItemsByProduct(productId) {
+    return getMockData().sales.reduce(
+      (total, sale) =>
+        total + (sale.items || []).filter((item) => item.productId === productId).length,
+      0
+    );
+  }
+
   async cancel(id) {
     const sales = getMockData().sales;
     const saleIndex = sales.findIndex(
@@ -154,6 +180,26 @@ class DatabaseSaleRepository {
    * vez, solo una obtiene count 1 y solo una devuelve el stock.
    * @returns la venta anulada, o null si no existe o ya estaba anulada.
    */
+  /**
+   * Cuenta las lineas de venta que referencian al producto.
+   *
+   * Incluye las ventas anuladas, por el mismo motivo que la version en memoria:
+   * la fila de `sale_items` existe y referencia al producto.
+   */
+  /**
+   * Cuenta las ventas registradas a nombre del cliente.
+   *
+   * Incluye las anuladas, por el mismo motivo que la version en memoria: la fila
+   * de `sales` existe y referencia al cliente.
+   */
+  async countByCustomer(customerId) {
+    return getPrismaClient().sale.count({ where: { customerId } });
+  }
+
+  async countItemsByProduct(productId) {
+    return getPrismaClient().saleItem.count({ where: { productId } });
+  }
+
   async cancel(id) {
     const { count } = await getPrismaClient().sale.updateMany({
       where: { id, status: { not: "Anulada" } },

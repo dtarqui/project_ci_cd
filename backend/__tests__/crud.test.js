@@ -306,16 +306,78 @@ describe("Endpoints CRUD de productos", () => {
   });
 
   describe("DELETE /api/products/:id - Eliminar Producto", () => {
-    it("debe eliminar un producto", (done) => {
-      request(app)
+    // Todos los productos de la semilla figuran en alguna venta, asi que el unico
+    // borrable es uno recien creado. Es justo lo que la regla busca.
+    it("debe eliminar un producto que no figura en ninguna venta", async () => {
+      const creado = await request(app)
+        .post("/api/products")
+        .set("Authorization", validToken)
+        .send({ name: "Producto sin ventas", category: "Oficina", price: 10, stock: 5 })
+        .expect(201);
+
+      const res = await request(app)
+        .delete(`/api/products/${creado.body.data.id}`)
+        .set("Authorization", validToken)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+
+      await request(app)
+        .get(`/api/products/${creado.body.data.id}`)
+        .set("Authorization", validToken)
+        .expect(404);
+    });
+
+    // Integridad referencial: el historial de ventas nombra al producto, de modo
+    // que darlo de baja dejaria esas lineas apuntando a algo que la aplicacion ya
+    // no reconoce.
+    it("rechaza eliminar un producto que ya figura en una venta", async () => {
+      const res = await request(app)
         .delete("/api/products/2")
         .set("Authorization", validToken)
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          expect(res.body.success).toBe(true);
-          done();
-        });
+        .expect(409);
+
+      expect(res.body.code).toBe("PRODUCT_HAS_SALES");
+      expect(res.body.error).toMatch(/ya figura en una venta/i);
+      expect(res.body.data.saleItems).toBeGreaterThan(0);
+
+      // Y sigue estando en el catalogo.
+      await request(app)
+        .get("/api/products/2")
+        .set("Authorization", validToken)
+        .expect(200);
+    });
+
+    it("una venta anulada también impide la baja", async () => {
+      const creado = await request(app)
+        .post("/api/products")
+        .set("Authorization", validToken)
+        .send({ name: "Producto de venta anulada", category: "Oficina", price: 20, stock: 9 })
+        .expect(201);
+
+      const venta = await request(app)
+        .post("/api/sales")
+        .set("Authorization", validToken)
+        .send({
+          customerId: 1,
+          items: [{ productId: creado.body.data.id, quantity: 1 }],
+          paymentMethod: "Efectivo",
+        })
+        .expect(201);
+
+      await request(app)
+        .put(`/api/sales/${venta.body.data.id}/cancel`)
+        .set("Authorization", validToken)
+        .expect(200);
+
+      // El contador `sales` del producto vuelve a cero al anular, pero la linea de
+      // venta sigue existiendo: la baja se rechaza igual.
+      const res = await request(app)
+        .delete(`/api/products/${creado.body.data.id}`)
+        .set("Authorization", validToken)
+        .expect(409);
+
+      expect(res.body.code).toBe("PRODUCT_HAS_SALES");
     });
 
     it("debe retornar 404 para ID inexistente", (done) => {

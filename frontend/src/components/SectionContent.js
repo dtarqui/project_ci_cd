@@ -4,6 +4,7 @@ import Settings from "./Settings";
 import ProductsSection from "./ProductsSection";
 import CustomersSection from "./CustomersSection";
 import SalesSection from "./SalesSection";
+import CatalogsSection from "./CatalogsSection";
 
 const SectionContent = ({ type }) => {
   // Si es Productos, mostrar el componente ProductsSection
@@ -19,6 +20,12 @@ const SectionContent = ({ type }) => {
   // Si es Ventas, mostrar el componente SalesSection
   if (type === "Ventas") {
     return <SalesSection />;
+  }
+
+  // Catalogos administrables. El propio componente oculta el contenido a quien
+  // no sea admin, y el backend rechaza la escritura con 403.
+  if (type === "Catálogos") {
+    return <CatalogsSection />;
   }
 
   // Si es Configuraciones, mostrar el componente Settings

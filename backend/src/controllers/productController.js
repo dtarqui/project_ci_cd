@@ -7,11 +7,13 @@ const {
   validateProductUpdate,
 } = require("../utils/validators");
 const { createProductRepository } = require("../repositories/productRepository");
+const { createSaleRepository } = require("../repositories/saleRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
 const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
 
 const productRepository = createProductRepository();
+const saleRepository = createSaleRepository();
 
 const PRODUCT_SORTS = {
   price: (a, b) => a.price - b.price,
@@ -129,6 +131,24 @@ const updateProduct = async (req, res) => {
  */
 const deleteProduct = async (req, res) => {
   const productId = parseInt(req.params.id, 10);
+
+  // Integridad referencial: un producto que ya figura en una venta no se da de
+  // baja. Si se permitiera, el historial quedaria nombrando algo que el catalogo
+  // ya no ofrece, y el informe de ventas tendria que explicar un producto que
+  // para la aplicacion no existe. El borrado logico conserva la fila, pero el
+  // producto desaparece de los listados y del formulario de ventas igual.
+  const lineasDeVenta = await saleRepository.countItemsByProduct(productId);
+
+  if (lineasDeVenta > 0) {
+    return sendError(res, 409, {
+      error:
+        "No se puede eliminar un producto que ya figura en una venta. " +
+        "Para retirarlo del catálogo, deja su stock en cero.",
+      code: "PRODUCT_HAS_SALES",
+      data: { productId, saleItems: lineasDeVenta },
+    });
+  }
+
   const deletedProduct = await productRepository.delete(productId);
 
   if (!deletedProduct) {

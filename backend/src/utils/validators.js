@@ -131,6 +131,80 @@ const isValidDateString = (value) => {
   return !Number.isNaN(date.getTime());
 };
 
+/**
+ * Valida una entrada de catalogo (ciudad o categoria).
+ *
+ * Las reglas propias de cada uno se declaran aqui y no en el controlador, para
+ * que el mismo CRUD generico sirva a los dos sin ramificar por recurso.
+ * @param {string} recurso - "cities" o "categories"
+ * @param {Object} body - Datos recibidos
+ * @param {{parcial?: boolean}} opciones - En una actualizacion solo se valida lo enviado
+ */
+const CATALOG_FIELD_RULES = {
+  cities: [
+    { key: "name", max: 80, required: true, label: "El nombre de la ciudad" },
+    { key: "postalPrefix", max: 10, label: "El prefijo postal" },
+    { key: "areaCode", max: 10, label: "El codigo de area" },
+  ],
+  categories: [
+    { key: "name", max: 60, required: true, label: "El nombre de la categoria" },
+    { key: "description", max: 200, label: "La descripcion" },
+  ],
+};
+
+const validateCatalogEntry = (recurso, body, { parcial = false } = {}) => {
+  const rules = CATALOG_FIELD_RULES[recurso];
+
+  if (!rules) {
+    return { isValid: false, error: "Catalogo desconocido", code: "UNKNOWN_CATALOG" };
+  }
+
+  if (!body || typeof body !== "object") {
+    return { isValid: false, error: "Datos invalidos", code: "INVALID_BODY" };
+  }
+
+  for (const rule of rules) {
+    const value = body[rule.key];
+
+    if (value === undefined || value === null || value === "") {
+      if (rule.required && !parcial) {
+        return {
+          isValid: false,
+          error: `${rule.label} es requerido`,
+          code: "MISSING_FIELD",
+        };
+      }
+      // Un opcional vacio se acepta: significa "sin valor".
+      if (rule.required && parcial && value !== undefined) {
+        return {
+          isValid: false,
+          error: `${rule.label} es requerido`,
+          code: "MISSING_FIELD",
+        };
+      }
+      continue;
+    }
+
+    if (typeof value !== "string") {
+      return {
+        isValid: false,
+        error: `${rule.label} debe ser texto`,
+        code: "INVALID_TYPE",
+      };
+    }
+
+    if (value.trim().length === 0 || value.trim().length > rule.max) {
+      return {
+        isValid: false,
+        error: `${rule.label} no puede superar ${rule.max} caracteres`,
+        code: "INVALID_LENGTH",
+      };
+    }
+  }
+
+  return { isValid: true };
+};
+
 const validateUserMetadata = (body) => {
   const metadataRules = [
     { key: "phone", max: 25 },
@@ -380,7 +454,9 @@ const validateBolivianPhone = (phone) => {
 
 /**
  * La ciudad es opcional, pero cuando viene tiene que ser una de las que atiende
- * el negocio (CITY_CATALOG en config/constants.js, el mismo catalogo que sirve
+ * el negocio. La lista viene ahora de la tabla `cities`, que el admin administra
+ * desde la pantalla de configuracion; CITY_NAMES queda como valor por defecto
+ * para quien llame al validador sin pasarla (el mismo catalogo que sirve
  * GET /api/customers/cities y que ofrece el formulario). Antes era texto libre de
  * hasta 80 caracteres, asi que "La Paz", "la paz" y "LaPaz" entraban como tres
  * ciudades distintas y los agrupamientos por ciudad del dashboard las contaban
@@ -388,7 +464,7 @@ const validateBolivianPhone = (phone) => {
  * @param {*} city - Valor recibido; `undefined` y cadena vacia se aceptan.
  * @returns {Object} { isValid: boolean, error?: string, code?: string }
  */
-const validateCityAgainstCatalog = (city) => {
+const validateCityAgainstCatalog = (city, nombresValidos = CITY_NAMES) => {
   if (city === undefined || city === null) {
     return { isValid: true };
   }
@@ -402,10 +478,10 @@ const validateCityAgainstCatalog = (city) => {
   }
 
   const trimmed = city.trim();
-  if (trimmed && !CITY_NAMES.includes(trimmed)) {
+  if (trimmed && !nombresValidos.includes(trimmed)) {
     return {
       isValid: false,
-      error: `Ciudad no atendida. Valores válidos: ${CITY_NAMES.join(", ")}`,
+      error: `Ciudad no atendida. Valores válidos: ${nombresValidos.join(", ")}`,
       code: "INVALID_CITY",
     };
   }
@@ -414,7 +490,9 @@ const validateCityAgainstCatalog = (city) => {
 };
 
 const validateCustomerCreate = (body) => {
-  const { name, email, phone, address, city, postalCode } = body;
+  // `city` no se desestructura: el catalogo vive ahora en la tabla `cities` y lo
+  // comprueba el controlador contra la lista vigente.
+  const { name, email, phone, address, postalCode } = body;
 
   if (!name || !email || !phone) {
     return {
@@ -443,11 +521,6 @@ const validateCustomerCreate = (body) => {
       error: "La dirección debe ser texto de hasta 180 caracteres",
       code: "INVALID_ADDRESS",
     };
-  }
-
-  const cityCheck = validateCityAgainstCatalog(city);
-  if (!cityCheck.isValid) {
-    return cityCheck;
   }
 
   if (postalCode !== undefined && (typeof postalCode !== "string" || postalCode.length > 20)) {
@@ -480,11 +553,6 @@ const validateCustomerUpdate = (body) => {
     if (!phoneCheck.isValid) {
       return phoneCheck;
     }
-  }
-
-  const cityCheck = validateCityAgainstCatalog(body.city);
-  if (!cityCheck.isValid) {
-    return cityCheck;
   }
 
   return { isValid: true };
@@ -609,6 +677,8 @@ module.exports = {
   validateProductUpdate,
   validateLoginCredentials,
   validatePasswordStrength,
+  validateCatalogEntry,
+  CATALOG_FIELD_RULES,
   validateUserRegistration,
   validateUserUpdate,
   validateBolivianPhone,

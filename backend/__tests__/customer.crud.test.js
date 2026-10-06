@@ -673,30 +673,33 @@ describe("Endpoints CRUD de clientes", () => {
   });
 
   describe("Borrado logico", () => {
-    // El motivo del cambio: con borrado fisico, esta misma peticion fallaba con
-    // 500 en modo base de datos (P2003, sales_customer_id_fkey) y en memoria
-    // borraba al cliente dejando sus ventas apuntando a un id inexistente.
-    it("debe poder borrar un cliente que tiene ventas", (done) => {
-      request(app)
+    // La baja es logica porque con borrado fisico esta peticion fallaba con 500
+    // en modo base de datos (P2003, sales_customer_id_fkey) y en memoria dejaba
+    // las ventas apuntando a un id inexistente. Desde el 06-10-2026, ademas, un
+    // cliente con ventas no se da de baja en absoluto: se rechaza antes.
+    it("rechaza borrar un cliente que tiene ventas", async () => {
+      const ventas = await request(app)
         .get("/api/sales")
         .set("Authorization", validToken)
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          const venta = res.body.data.find((s) => s.customerId);
-          expect(venta).toBeDefined();
+        .expect(200);
 
-          request(app)
-            .delete(`/api/customers/${venta.customerId}`)
-            .set("Authorization", validToken)
-            .expect(200)
-            .end((deleteErr, deleteRes) => {
-              if (deleteErr) return done(deleteErr);
-              expect(deleteRes.body.success).toBe(true);
-              expect(deleteRes.body.data.id).toBe(venta.customerId);
-              done();
-            });
-        });
+      const venta = ventas.body.data.find((s) => s.customerId);
+      expect(venta).toBeDefined();
+
+      const res = await request(app)
+        .delete(`/api/customers/${venta.customerId}`)
+        .set("Authorization", validToken)
+        .expect(409);
+
+      expect(res.body.code).toBe("CUSTOMER_HAS_SALES");
+      expect(res.body.error).toMatch(/ya tiene ventas registradas/i);
+      expect(res.body.data.sales).toBeGreaterThan(0);
+
+      // Y sigue estando.
+      await request(app)
+        .get(`/api/customers/${venta.customerId}`)
+        .set("Authorization", validToken)
+        .expect(200);
     });
 
     it("no debe mostrar al cliente borrado en el listado", (done) => {
@@ -841,29 +844,43 @@ describe("Endpoints CRUD de clientes", () => {
   });
 
   describe("DELETE /api/customers/:id - Eliminar Cliente", () => {
-    it("debe eliminar un cliente", (done) => {
-      request(app)
-        .delete("/api/customers/3")
+    // Los veinte clientes de la semilla tienen ventas, asi que el unico borrable
+    // es uno recien creado. Es justo lo que la regla busca.
+    const crearCliente = async (sufijo) => {
+      const res = await request(app)
+        .post("/api/customers")
         .set("Authorization", validToken)
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          expect(res.body.success).toBe(true);
-          done();
-        });
+        .send({
+          name: `Cliente sin ventas ${sufijo}`,
+          email: `sin.ventas.${sufijo}@email.com`,
+          phone: "22123456",
+        })
+        .expect(201);
+
+      return res.body.data.id;
+    };
+
+    it("debe eliminar un cliente que no tiene ventas", async () => {
+      const id = await crearCliente("a");
+
+      const res = await request(app)
+        .delete(`/api/customers/${id}`)
+        .set("Authorization", validToken)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
     });
 
-    it("debe retornar el cliente eliminado", (done) => {
-      request(app)
-        .delete("/api/customers/4")
+    it("debe retornar el cliente eliminado", async () => {
+      const id = await crearCliente("b");
+
+      const res = await request(app)
+        .delete(`/api/customers/${id}`)
         .set("Authorization", validToken)
-        .expect(200)
-        .end((err, res) => {
-          if (err) return done(err);
-          expect(res.body.data).toBeDefined();
-          expect(res.body.data.id).toBe(4);
-          done();
-        });
+        .expect(200);
+
+      expect(res.body.data).toBeDefined();
+      expect(res.body.data.id).toBe(id);
     });
 
     it("debe retornar 404 para ID inexistente", (done) => {
@@ -874,20 +891,18 @@ describe("Endpoints CRUD de clientes", () => {
         .end(done);
     });
 
-    it("no debe permitir acceder a cliente eliminado", (done) => {
-      // Primero eliminar el cliente
-      request(app)
-        .delete("/api/customers/5")
+    it("no debe permitir acceder a cliente eliminado", async () => {
+      const id = await crearCliente("c");
+
+      await request(app)
+        .delete(`/api/customers/${id}`)
         .set("Authorization", validToken)
-        .expect(200)
-        .end(() => {
-          // Luego intentar obtenerlo
-          request(app)
-            .get("/api/customers/5")
-            .set("Authorization", validToken)
-            .expect(404)
-            .end(done);
-        });
+        .expect(200);
+
+      await request(app)
+        .get(`/api/customers/${id}`)
+        .set("Authorization", validToken)
+        .expect(404);
     });
 
     it("debe retornar 403 cuando el usuario no es admin", (done) => {

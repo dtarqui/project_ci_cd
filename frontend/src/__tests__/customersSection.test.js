@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import CustomersSection from "../components/CustomersSection";
 import * as apiService from "../services/api";
@@ -422,6 +422,66 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await waitFor(() => {
         expect(apiService.customerService.deleteCustomer).toHaveBeenCalledWith(1);
       });
+    });
+
+    // Integridad referencial: el backend rechaza con 409 la baja de un cliente que
+    // ya tiene ventas. Antes el motivo solo iba a la consola y el diálogo se
+    // quedaba quieto, sin decir nada.
+    it("muestra el motivo cuando el backend rechaza la eliminación", async () => {
+      const mensaje =
+        "No se puede eliminar un cliente que ya tiene ventas registradas. " +
+        "Para retirarlo de la operación, cámbialo a Inactivo.";
+      apiService.customerService.deleteCustomer.mockRejectedValue({
+        response: { data: { error: mensaje, code: "CUSTOMER_HAS_SALES" } },
+      });
+      apiService.handleApiError.mockReturnValue(mensaje);
+
+      render(<CustomersSection />);
+      await waitFor(() => {
+        expect(screen.getByText("Juan García")).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getAllByTitle("Eliminar")[0]);
+      const botones = screen.getAllByRole("button", { name: /Eliminar/i });
+      await userEvent.click(botones[botones.length - 1]);
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        /ya tiene ventas registradas/i
+      );
+      // El listado se queda donde está y ya no se ofrece reintentar. Se busca en
+      // la tabla: el nombre también aparece dentro del diálogo.
+      expect(
+        within(document.querySelector("table")).getByText("Juan García")
+      ).toBeInTheDocument();
+      // Dentro del diálogo ya no queda el botón de confirmar; los de cada fila
+      // llevan el mismo nombre accesible, por eso se busca acotado.
+      expect(
+        within(document.querySelector(".ui-modal")).queryByRole("button", {
+          name: /^Eliminar$/,
+        })
+      ).not.toBeInTheDocument();
+    });
+
+    it("al reabrir la confirmación no arrastra el error anterior", async () => {
+      apiService.customerService.deleteCustomer.mockRejectedValue({
+        response: { data: { error: "No se puede eliminar" } },
+      });
+      apiService.handleApiError.mockReturnValue("No se puede eliminar");
+
+      render(<CustomersSection />);
+      await waitFor(() => {
+        expect(screen.getByText("Juan García")).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getAllByTitle("Eliminar")[0]);
+      let botones = screen.getAllByRole("button", { name: /Eliminar/i });
+      await userEvent.click(botones[botones.length - 1]);
+      await screen.findByRole("alert");
+
+      await userEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+      await userEvent.click(screen.getAllByTitle("Eliminar")[0]);
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("no debe mostrar el botón de eliminar para un usuario vendedor", async () => {

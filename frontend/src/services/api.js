@@ -188,6 +188,31 @@ export const saleService = {
 };
 
 // Función de utilidad para manejar errores de API
+// Catalogos administrables (ciudades y categorias). La lectura la necesitan los
+// formularios de cliente y de producto; la escritura solo la acepta el backend
+// para el rol admin.
+export const catalogService = {
+  list: async (recurso) => {
+    const response = await api.get(`/api/catalogs/${recurso}`);
+    return response.data;
+  },
+
+  create: async (recurso, datos) => {
+    const response = await api.post(`/api/catalogs/${recurso}`, datos);
+    return response.data;
+  },
+
+  update: async (recurso, id, datos) => {
+    const response = await api.put(`/api/catalogs/${recurso}/${id}`, datos);
+    return response.data;
+  },
+
+  remove: async (recurso, id) => {
+    const response = await api.delete(`/api/catalogs/${recurso}/${id}`);
+    return response.data;
+  },
+};
+
 export const handleApiError = (error) => {
   if (error.response?.data?.error) {
     return error.response.data.error;

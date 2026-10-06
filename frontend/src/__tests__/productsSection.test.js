@@ -43,6 +43,10 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
     apiService.productService.getProducts.mockResolvedValue({
       data: mockProducts,
     });
+    // Las categorias ya no se derivan de los productos: vienen del catalogo.
+    apiService.catalogService.list.mockResolvedValue({
+      data: [{ id: 1, name: "Electrónica" }],
+    });
   });
 
   describe("Renderizado", () => {
@@ -346,6 +350,77 @@ describe("Componente ProductsSection - Operaciones CRUD", () => {
       await userEvent.click(allDeleteButtons[allDeleteButtons.length - 1]);
 
       expect(apiService.productService.deleteProduct).toHaveBeenCalled();
+    });
+
+    // Integridad referencial: el backend rechaza con 409 la baja de un producto
+    // que ya figura en una venta, y el motivo tiene que llegarle al usuario.
+    it("muestra el motivo cuando el backend rechaza la eliminación", async () => {
+      const mensaje =
+        "No se puede eliminar un producto que ya figura en una venta. " +
+        "Para retirarlo del catálogo, deja su stock en cero.";
+      apiService.productService.deleteProduct.mockRejectedValue({
+        response: { data: { error: mensaje, code: "PRODUCT_HAS_SALES" } },
+      });
+      apiService.handleApiError.mockReturnValue(mensaje);
+
+      render(<ProductsSection />);
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getAllByRole("button", { name: /eliminar/i })[0]);
+      const enModal = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(enModal[enModal.length - 1]);
+
+      expect(await screen.findByRole("alert")).toHaveTextContent(
+        /ya figura en una venta/i
+      );
+    });
+
+    it("un rechazo no reemplaza el listado por una pantalla de error", async () => {
+      apiService.productService.deleteProduct.mockRejectedValue({
+        response: { data: { error: "No se puede eliminar", code: "PRODUCT_HAS_SALES" } },
+      });
+      apiService.handleApiError.mockReturnValue("No se puede eliminar");
+
+      render(<ProductsSection />);
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getAllByRole("button", { name: /eliminar/i })[0]);
+      const enModal = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(enModal[enModal.length - 1]);
+
+      await screen.findByRole("alert");
+      // El producto sigue en pantalla: el intento fallido no vacía la sección.
+      expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      // Y ya no se ofrece reintentar lo que el backend acaba de rechazar.
+      expect(
+        screen.queryByRole("button", { name: /^eliminar$/i })
+      ).not.toBeInTheDocument();
+    });
+
+    it("al reabrir la confirmación no arrastra el error anterior", async () => {
+      apiService.productService.deleteProduct.mockRejectedValue({
+        response: { data: { error: "No se puede eliminar" } },
+      });
+      apiService.handleApiError.mockReturnValue("No se puede eliminar");
+
+      render(<ProductsSection />);
+      await waitFor(() => {
+        expect(screen.getByText("Laptop Dell XPS 13")).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getAllByRole("button", { name: /eliminar/i })[0]);
+      let enModal = screen.getAllByRole("button", { name: /eliminar/i });
+      await userEvent.click(enModal[enModal.length - 1]);
+      await screen.findByRole("alert");
+
+      await userEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+      await userEvent.click(screen.getAllByRole("button", { name: /eliminar/i })[0]);
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("debe cerrar el modal de confirmación al cancelar", async () => {

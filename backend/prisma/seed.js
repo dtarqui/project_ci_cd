@@ -7,7 +7,7 @@
 
 const { PrismaClient } = require("@prisma/client");
 const { hashPassword } = require("../src/repositories/userRepository");
-const { mockData, users, cities, categories } = require("../src/db/mockData");
+const { mockData, users } = require("../src/db/mockData");
 
 const prisma = new PrismaClient();
 
@@ -21,7 +21,7 @@ async function main() {
   await prisma.category.deleteMany();
 
   // --- Catalogos administrables ---
-  for (const city of cities) {
+  for (const city of mockData.cities) {
     await prisma.city.create({
       data: {
         name: city.name,
@@ -31,7 +31,7 @@ async function main() {
     });
   }
 
-  for (const category of categories) {
+  for (const category of mockData.categories) {
     await prisma.category.create({
       data: { name: category.name, description: category.description },
     });

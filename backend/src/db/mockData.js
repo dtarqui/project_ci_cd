@@ -17,9 +17,10 @@ const pad2 = (n) => String(n).padStart(2, "0");
 //
 // No hay catalogo de paises: el caso de estudio opera unicamente en Bolivia.
 
-// Las ciudades atendidas salen de CITY_CATALOG, que sigue siendo la fuente unica
-// mientras el catalogo no se administre desde la base.
-const cities = CITY_CATALOG.map((city, index) => ({
+// Las ciudades atendidas nacen de CITY_CATALOG. En modo base de datos la tabla
+// toma el relevo desde la primera siembra; CITY_CATALOG queda como semilla y como
+// lista por defecto del validador.
+const seedCities = CITY_CATALOG.map((city, index) => ({
   id: index + 1,
   name: city.name,
   postalPrefix: city.postalPrefix,
@@ -524,15 +525,19 @@ const users = [
   },
 ];
 
-// Se derivan de los productos de la semilla: la tabla nace con exactamente las
+// Se derivan de los productos de la semilla: el catalogo nace con exactamente las
 // categorias en uso, sin inventar ninguna ni dejar productos huerfanos.
-const categories = [...new Set(mockData.products.map((p) => p.category))].map(
+const seedCategories = [...new Set(mockData.products.map((p) => p.category))].map(
   (name, index) => ({ id: index + 1, name, description: null })
 );
+
+// Van dentro de mockData para que el almacen en memoria los clone y los pueda
+// reiniciar como al resto, y para que el CRUD opere sobre ellos igual que sobre
+// clientes o productos.
+mockData.cities = seedCities;
+mockData.categories = seedCategories;
 
 module.exports = {
   mockData,
   users,
-  cities,
-  categories,
 };

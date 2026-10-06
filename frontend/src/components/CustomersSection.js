@@ -11,6 +11,7 @@ import EmptyState from "./ui/EmptyState";
 import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
+import "../styles/formModal.css";
 import "../styles/sectionControls.css";
 import "../styles/dataTable.css";
 import "../styles/customersActions.css";
@@ -34,6 +35,7 @@ const CustomersSection = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   // Catalogo de ciudades para el formulario. Se pide una vez y no se reintenta:
   // si falla, CustomerForm cae a texto libre y la API sigue validando.
@@ -91,16 +93,25 @@ const CustomersSection = () => {
 
   const handleDeleteCustomer = async (id) => {
     setIsDeleting(true);
+    setDeleteError("");
 
     try {
       await customerService.deleteCustomer(id);
       await loadCustomers();
       setDeleteConfirm(null);
     } catch (error) {
-      console.error("Error deleting customer:", handleApiError(error));
+      // Antes el motivo solo iba a la consola y el usuario se quedaba mirando un
+      // dialogo que no hacia nada. El mas frecuente es que el cliente ya tenga
+      // ventas registradas.
+      setDeleteError(handleApiError(error));
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const cerrarConfirmacion = () => {
+    setDeleteConfirm(null);
+    setDeleteError("");
   };
 
   const tableHead = (
@@ -236,7 +247,10 @@ const CustomersSection = () => {
                         <Button
                           variant="ghost"
                           className="btn-action btn-delete"
-                          onClick={() => setDeleteConfirm(customer)}
+                          onClick={() => {
+                            setDeleteError("");
+                            setDeleteConfirm(customer);
+                          }}
                           title="Eliminar"
                         >
                           <MdDelete />
@@ -272,7 +286,7 @@ const CustomersSection = () => {
         cities={cities}
       />
 
-      <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
+      <Modal isOpen={!!deleteConfirm} onClose={cerrarConfirmacion}>
         <h3 className="ui-modal-danger-title">Eliminar Cliente</h3>
         <p>
           ¿Estás seguro de que deseas eliminar a{" "}
@@ -281,20 +295,27 @@ const CustomersSection = () => {
         <p className="ui-confirm-warning">
           Esta acción no se puede deshacer.
         </p>
+        {deleteError && (
+          <div className="form-modal-alert" role="alert">
+            {deleteError}
+          </div>
+        )}
         <div className="ui-confirm-actions">
-          <Button
-            variant="danger"
-            loading={isDeleting}
-            onClick={() => handleDeleteCustomer(deleteConfirm.id)}
-          >
-            Eliminar
-          </Button>
+          {!deleteError && (
+            <Button
+              variant="danger"
+              loading={isDeleting}
+              onClick={() => handleDeleteCustomer(deleteConfirm.id)}
+            >
+              Eliminar
+            </Button>
+          )}
           <Button
             variant="secondary"
-            onClick={() => setDeleteConfirm(null)}
+            onClick={cerrarConfirmacion}
             disabled={isDeleting}
           >
-            Cancelar
+            {deleteError ? "Cerrar" : "Cancelar"}
           </Button>
         </div>
       </Modal>

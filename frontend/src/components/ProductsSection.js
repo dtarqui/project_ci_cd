@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MdSearch, MdSort, MdEdit, MdDelete, MdAdd, MdInventory2 } from "react-icons/md";
-import { productService, handleApiError } from "../services/api";
+import { productService, catalogService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
 import { useAuth } from "../context/AuthContext";
 import ProductForm from "./ProductForm";
@@ -11,6 +11,7 @@ import EmptyState from "./ui/EmptyState";
 import Pagination from "./ui/Pagination";
 import { SkeletonTableRows } from "./ui/Skeleton";
 import { formatCurrency } from "../utils/format";
+import "../styles/formModal.css";
 import "../styles/sectionControls.css";
 import "../styles/dataTable.css";
 import "../styles/productsActions.css";
@@ -27,7 +28,6 @@ const PAGE_SIZE = 10;
 const ProductsSection = () => {
   const { user } = useAuth();
   const canDelete = user?.role === "admin";
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("name");
@@ -35,12 +35,14 @@ const ProductsSection = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     items: products,
     setItems: setProducts,
     loading,
+    error,
     meta,
     reload: loadProducts,
   } = useEntityList(productService.getProducts, {
@@ -57,16 +59,17 @@ const ProductsSection = () => {
     setPage(1);
   }, [searchTerm, selectedCategory, sortBy]);
 
-  // Categorías para el filtro: se piden sin paginar aparte, porque `products`
-  // ahora solo trae la página actual y dejaría el dropdown incompleto.
+  // Las categorías salen del catálogo, no de los productos cargados: antes una
+  // categoría solo existía mientras algún producto la usara, y un error de tipeo
+  // creaba una nueva sin que nada lo advirtiera. El administrador las gestiona
+  // desde la pantalla de Catálogos.
   const [allCategories, setAllCategories] = useState([]);
 
   useEffect(() => {
-    productService
-      .getProducts()
+    catalogService
+      .list("categories")
       .then((response) => {
-        const cats = [...new Set((response.data || []).map((p) => p.category))].sort();
-        setAllCategories(cats);
+        setAllCategories((response.data || []).map((c) => c.name).sort());
       })
       .catch(() => {});
   }, []);
@@ -119,17 +122,26 @@ const ProductsSection = () => {
    */
   const handleDeleteProduct = async (id) => {
     setIsDeleting(true);
+    setDeleteError("");
 
     try {
       await productService.deleteProduct(id);
       await loadProducts();
       setDeleteConfirm(null);
     } catch (err) {
-      console.error("Error deleting product:", err);
-      setError("No se pudo eliminar el producto");
+      // El motivo lo da el backend, y el mas frecuente es que el producto ya
+      // figure en una venta. Se muestra dentro del dialogo y no en lugar del
+      // listado: un intento rechazado no es motivo para vaciar la pantalla, y
+      // asi el mensaje queda junto a la accion que lo provoco.
+      setDeleteError(handleApiError(err));
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const cerrarConfirmacion = () => {
+    setDeleteConfirm(null);
+    setDeleteError("");
   };
 
   const categories = allCategories;
@@ -272,7 +284,10 @@ const ProductsSection = () => {
                       <Button
                         variant="ghost"
                         className="btn-action btn-delete"
-                        onClick={() => setDeleteConfirm(product.id)}
+                        onClick={() => {
+                          setDeleteError("");
+                          setDeleteConfirm(product.id);
+                        }}
                         title="Eliminar producto"
                         aria-label={`Eliminar ${product.name}`}
                       >
@@ -310,27 +325,34 @@ const ProductsSection = () => {
       />
 
       {/* Modal de Confirmación de Eliminación */}
-      <Modal isOpen={!!deleteConfirm} onClose={() => setDeleteConfirm(null)}>
+      <Modal isOpen={!!deleteConfirm} onClose={cerrarConfirmacion}>
         <h3 className="ui-modal-danger-title">Confirmar Eliminación</h3>
         <p>
           ¿Estás seguro de que deseas eliminar este producto? Esta acción no
           se puede deshacer.
         </p>
+        {deleteError && (
+          <div className="form-modal-alert" role="alert">
+            {deleteError}
+          </div>
+        )}
         <div className="ui-confirm-actions">
           <Button
             variant="secondary"
-            onClick={() => setDeleteConfirm(null)}
+            onClick={cerrarConfirmacion}
             disabled={isDeleting}
           >
-            Cancelar
+            {deleteError ? "Cerrar" : "Cancelar"}
           </Button>
-          <Button
-            variant="danger"
-            loading={isDeleting}
-            onClick={() => handleDeleteProduct(deleteConfirm)}
-          >
-            Eliminar
-          </Button>
+          {!deleteError && (
+            <Button
+              variant="danger"
+              loading={isDeleting}
+              onClick={() => handleDeleteProduct(deleteConfirm)}
+            >
+              Eliminar
+            </Button>
+          )}
         </div>
       </Modal>
     </div>

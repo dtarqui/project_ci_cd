@@ -1,0 +1,113 @@
+/* Pantalla de catálogos (solo administradores).
+
+   Las pestañas llevan nombres propios (`.catalog-tabs`, `.catalog-tab`) y no
+   reutilizan las de Ajustes: aquellas viven en `settings.css`, que solo se carga
+   cuando se monta esa pantalla, de modo que apoyarse en ellas haría que el
+   aspecto de esta dependiera de si el usuario visitó la otra antes. Es el mismo
+   acoplamiento que se retiró de las tablas y de los formularios.
+
+   La tabla y el diálogo sí son los compartidos: `dataTable.css` y
+   `formModal.css`. */
+
+.catalogs-section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.catalogs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.catalogs-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--color-text);
+}
+
+.catalogs-header p {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+/* ---------- Pestañas ---------- */
+
+.catalog-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 16px;
+}
+
+.catalog-tab {
+  padding: 10px 18px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  /* El borde inferior se dibuja siempre, para que activar una pestaña no
+     desplace la fila un par de píxeles. */
+  margin-bottom: -1px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.catalog-tab:hover {
+  color: var(--color-text);
+}
+
+.catalog-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.catalogs-description {
+  margin: 0 0 16px;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.catalogs-error {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger-dark);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Los botones de fila usan `.btn-action` de sectionControls.css; aquí solo se
+   los agrupa. */
+.catalog-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .catalogs-section {
+    padding: 12px;
+  }
+
+  .catalogs-header {
+    align-items: flex-start;
+  }
+
+  .catalog-tab {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+  }
+}

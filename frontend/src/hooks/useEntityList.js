@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { handleApiError } from "../services/api";
 
 /**
  * Encapsula el patrón de carga de listas filtradas/ordenadas que se repetía
@@ -43,7 +44,9 @@ const useEntityList = (fetchFn, filters) => {
       console.error("Error loading list:", err);
       setItems([]);
       setMeta(null);
-      setError(err);
+      // Se guarda el mensaje, no el Error: quien lo consuma lo pinta en pantalla,
+      // y un objeto Error no es un hijo valido de React.
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }

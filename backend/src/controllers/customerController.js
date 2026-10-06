@@ -5,14 +5,36 @@
 const {
   validateCustomerCreate,
   validateCustomerUpdate,
+  validateCityAgainstCatalog,
 } = require("../utils/validators");
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
 const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
-const { CITY_CATALOG } = require("../config/constants");
+const { createCatalogRepository } = require("../repositories/catalogRepository");
+const { createSaleRepository } = require("../repositories/saleRepository");
 
 const customerRepository = createCustomerRepository();
+const cityRepository = createCatalogRepository("cities");
+const saleRepository = createSaleRepository();
+
+/**
+ * Comprueba la ciudad contra el catalogo vigente.
+ *
+ * No lo hace el validador sincrono porque la lista ya no es una constante: vive
+ * en la tabla `cities` y el admin la edita desde la pantalla de configuracion.
+ * @returns {null|{error: string, code: string}} null si es valida
+ */
+const revisarCiudad = async (city) => {
+  if (city === undefined || city === null || city === "") {
+    return null;
+  }
+
+  const ciudades = await cityRepository.list();
+  const check = validateCityAgainstCatalog(city, ciudades.map((c) => c.name));
+
+  return check.isValid ? null : { error: check.error, code: check.code };
+};
 
 const CUSTOMER_SORTS = {
   email: (a, b) => a.email.localeCompare(b.email),
@@ -33,6 +55,11 @@ const createCustomer = async (req, res) => {
       error: validation.error,
       code: validation.code,
     });
+  }
+
+  const ciudadInvalida = await revisarCiudad(req.body.city);
+  if (ciudadInvalida) {
+    return sendError(res, 400, ciudadInvalida);
   }
 
   const newCustomer = await customerRepository.create(req.body);
@@ -123,6 +150,11 @@ const updateCustomer = async (req, res) => {
     });
   }
 
+  const ciudadInvalida = await revisarCiudad(req.body.city);
+  if (ciudadInvalida) {
+    return sendError(res, 400, ciudadInvalida);
+  }
+
   const updatedCustomer = await customerRepository.update(customerId, req.body);
 
   sendSuccess(res, {
@@ -137,6 +169,23 @@ const updateCustomer = async (req, res) => {
  */
 const deleteCustomer = async (req, res) => {
   const customerId = parseInt(req.params.id, 10);
+
+  // Integridad referencial, igual que en productos: un cliente con ventas a su
+  // nombre no se da de baja. La venta guarda `customerName` como copia, asi que
+  // el historial seguiria legible, pero el vinculo quedaria apuntando a alguien
+  // que la aplicacion ya no reconoce.
+  const ventas = await saleRepository.countByCustomer(customerId);
+
+  if (ventas > 0) {
+    return sendError(res, 409, {
+      error:
+        "No se puede eliminar un cliente que ya tiene ventas registradas. " +
+        "Para retirarlo de la operación, cámbialo a Inactivo.",
+      code: "CUSTOMER_HAS_SALES",
+      data: { customerId, sales: ventas },
+    });
+  }
+
   const deletedCustomer = await customerRepository.delete(customerId);
 
   if (!deletedCustomer) {
@@ -161,9 +210,13 @@ const deleteCustomer = async (req, res) => {
  * usuario y lo que acepta la API no pueden separarse.
  */
 const getCities = async (req, res) => {
+  // Sale de la tabla, no de la constante: lo que el admin agregue o retire en la
+  // pantalla de configuracion tiene que verse aqui.
+  const ciudades = await cityRepository.list();
+
   sendSuccess(res, {
-    data: CITY_CATALOG,
-    count: CITY_CATALOG.length,
+    data: ciudades,
+    count: ciudades.length,
   });
 };
 
