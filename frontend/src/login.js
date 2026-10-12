@@ -90,8 +90,8 @@ export default function Login({ onLogin, mode }) {
   const handleDemoLogin = () => {
     setCredentials((prev) => ({
       ...prev,
-      username: "demo",
-      password: "demo123",
+      username: "admin",
+      password: "admin123",
       confirmPassword: "",
     }));
   };

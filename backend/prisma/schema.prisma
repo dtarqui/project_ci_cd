@@ -84,6 +84,7 @@ model Customer {
   deletedAt      DateTime? @map("deleted_at")
   sales          Sale[]
 
+  @@index([deletedAt])
   @@map("customers")
 }
 
@@ -104,6 +105,7 @@ model Product {
   // referencia productos y la BD no deja borrar la fila referenciada.
   deletedAt DateTime? @map("deleted_at")
 
+  @@index([deletedAt])
   @@map("products")
 }
 
@@ -125,6 +127,7 @@ model Sale {
   updatedAt     DateTime   @updatedAt @map("updated_at")
   items         SaleItem[]
 
+  @@index([userId])
   @@map("sales")
 }
 

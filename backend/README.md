@@ -17,7 +17,7 @@ backend/
   src/
     index.js              # Factory real de la app Express (createApp)
     config/
-      constants.js         # Constantes de negocio (TAX_RATE, umbrales, tamaños de slice, etc.)
+      constants.js         # Constantes de negocio (umbrales de stock, tramos de cliente, tamaños de slice, etc.)
       cors.js               # Configuracion CORS (unica fuente de verdad)
     controllers/
       authController.js
@@ -125,10 +125,10 @@ Qué cambia en la práctica:
 Los repositorios exponen `findByIdIncludingDeleted(id)` para leer los datos de un
 cliente o un producto desde una venta del histórico.
 
-**Al desplegar este cambio hay que aplicar la migración**
-(`20261001120000_add_soft_delete`) con `npm run prisma:migrate` en desarrollo o
-`npx prisma migrate deploy` en el entorno desplegado. Sin ella, la columna no
-existe y las consultas fallan.
+La columna `deleted_at` la crea la migración base (`0_init`), de modo que una
+base recién migrada ya la tiene. Si una base quedó en un estado anterior, se
+pone al día con `npx prisma migrate deploy`; sin la columna, las consultas
+fallan con `P2022`.
 
 ## Endpoints
 

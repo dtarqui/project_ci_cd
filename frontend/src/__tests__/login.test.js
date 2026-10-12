@@ -92,8 +92,8 @@ describe("Pruebas de Login", () => {
 
       await user.click(screen.getByRole("button", { name: "Llenar datos de demo" }));
 
-      expect(screen.getByPlaceholderText("Usuario")).toHaveValue("demo");
-      expect(screen.getByPlaceholderText("Contraseña")).toHaveValue("demo123");
+      expect(screen.getByPlaceholderText("Usuario")).toHaveValue("admin");
+      expect(screen.getByPlaceholderText("Contraseña")).toHaveValue("admin123");
     });
 
     test("debe llamar authService.login y onLogin en login exitoso", async () => {
