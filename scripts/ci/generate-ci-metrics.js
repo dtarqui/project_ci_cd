@@ -175,9 +175,14 @@ function metricFromCoverageSummary(summary, key) {
   };
 }
 
+// Un junit.xml ausente significa que ese componente no ejecuto pruebas en este build: el
+// Jenkinsfile borra los reportes de la ejecucion anterior al iniciar, de modo que un archivo
+// presente siempre es de esta ejecucion. Antes no se borraban y un build detenido en el lint
+// (ejecucion 21) archivaba como propias las 608 pruebas del build anterior.
 function parseJUnit(xmlPath) {
   if (!fs.existsSync(xmlPath)) {
     return {
+      executed: false,
       tests: 0,
       failures: 0,
       skipped: 0,
@@ -233,6 +238,7 @@ function parseJUnit(xmlPath) {
   const durationFromSuites = suites.reduce((acc, s) => acc + s.durationSeconds, 0);
 
   return {
+    executed: true,
     tests,
     failures,
     skipped,
@@ -336,17 +342,46 @@ const backendThresholds = readCoverageThresholds(path.join(rootDir, "backend"));
 const frontendJunit = parseJUnit(path.join(rootDir, "frontend", "junit.xml"));
 const backendJunit = parseJUnit(path.join(rootDir, "backend", "junit.xml"));
 
-const totalTests = frontendJunit.tests + backendJunit.tests;
-const failedTests = frontendJunit.failures + backendJunit.failures;
-const skippedTests = frontendJunit.skipped + backendJunit.skipped;
-const passedTests = Math.max(totalTests - failedTests - skippedTests, 0);
-const failureRatePct = totalTests > 0 ? Number(((failedTests / totalTests) * 100).toFixed(2)) : 0;
-const passRatePct = totalTests > 0 ? Number(((passedTests / totalTests) * 100).toFixed(2)) : 0;
-const skippedRatePct = totalTests > 0 ? Number(((skippedTests / totalTests) * 100).toFixed(2)) : 0;
+// Sin ningun reporte, las pruebas no se ejecutaron: los totales quedan en null ("no
+// ejecutadas") en lugar de 0, que se leia como "0 pruebas, 0 fallos". Si solo corrio un
+// componente (el pipeline se detuvo en las pruebas del frontend), los totales son los de ese
+// componente y el otro figura como no ejecutado.
+const testsExecuted = frontendJunit.executed || backendJunit.executed;
+const executedJunits = [frontendJunit, backendJunit].filter((junit) => junit.executed);
+const sumExecuted = (pick) => executedJunits.reduce((acc, junit) => acc + pick(junit), 0);
 
-const frontendSuiteCount = frontendJunit.suites.length;
-const backendSuiteCount = backendJunit.suites.length;
-const totalSuites = frontendSuiteCount + backendSuiteCount;
+const totalTests = testsExecuted ? sumExecuted((junit) => junit.tests) : null;
+const failedTests = testsExecuted ? sumExecuted((junit) => junit.failures) : null;
+const skippedTests = testsExecuted ? sumExecuted((junit) => junit.skipped) : null;
+const passedTests = testsExecuted ? Math.max(totalTests - failedTests - skippedTests, 0) : null;
+
+function ratePct(count) {
+  if (!testsExecuted) {
+    return null;
+  }
+  return totalTests > 0 ? Number(((count / totalTests) * 100).toFixed(2)) : 0;
+}
+
+const failureRatePct = ratePct(failedTests);
+const passRatePct = ratePct(passedTests);
+const skippedRatePct = ratePct(skippedTests);
+
+const frontendSuiteCount = frontendJunit.executed ? frontendJunit.suites.length : null;
+const backendSuiteCount = backendJunit.executed ? backendJunit.suites.length : null;
+const totalSuites = testsExecuted ? sumExecuted((junit) => junit.suites.length) : null;
+
+// La duracion de cada etapa de pruebas solo tiene sentido si esa etapa genero su reporte.
+const frontendTestDuration = frontendJunit.executed ? frontendTestDurationSeconds : null;
+const backendTestDuration = backendJunit.executed ? backendTestDurationSeconds : null;
+
+// Barreras que no son pruebas: la etapa en la que se detuvo un build fallido y el estado de
+// las etapas de migraciones y de verificacion posterior al despliegue, que el Jenkinsfile
+// exporta en CURRENT_STAGE, DB_MIGRATION_STATUS y POST_DEPLOY_CHECK. No entran en el CSV:
+// se publican en el JSON y en los resumenes de cada build.
+const buildSucceeded = String(result).toUpperCase() === "SUCCESS";
+const stoppedAtStage = buildSucceeded ? null : process.env.CURRENT_STAGE || null;
+const dbMigrationStatus = process.env.DB_MIGRATION_STATUS || null;
+const postDeployCheck = process.env.POST_DEPLOY_CHECK || null;
 
 const frontendFailedTestcases = frontendJunit.failedTestcases;
 const backendFailedTestcases = backendJunit.failedTestcases;
@@ -371,8 +406,8 @@ function meetsAllThresholds(coverage, thresholds) {
   return comparable.every((k) => coverage[k].pct >= thresholds[k]);
 }
 
-const frontendTests = frontendJunit.tests;
-const backendTests = backendJunit.tests;
+const frontendTests = frontendJunit.executed ? frontendJunit.tests : null;
+const backendTests = backendJunit.executed ? backendJunit.tests : null;
 
 const frontendLinesDeltaVsThreshold = coverageDelta(frontendCoverage.lines.pct, frontendThresholds.lines);
 const backendLinesDeltaVsThreshold = coverageDelta(backendCoverage.lines.pct, backendThresholds.lines);
@@ -389,8 +424,8 @@ const row = {
   commitToStagingSeconds,
   manualSteps,
   automationLevelPct,
-  frontendTestDurationSeconds,
-  backendTestDurationSeconds,
+  frontendTestDurationSeconds: frontendTestDuration,
+  backendTestDurationSeconds: backendTestDuration,
   totalTests,
   frontendTests,
   backendTests,
@@ -420,6 +455,9 @@ const row = {
   commit,
   author,
   buildUrl,
+  stoppedAtStage,
+  dbMigrationStatus,
+  postDeployCheck,
 };
 
 const csvPath = path.join(metricsDir, HISTORY_CSV);
@@ -468,28 +506,39 @@ row.rolling5AvgFailureRatePct = rolling5AvgFailureRatePct;
 row.rolling5AvgFrontendLineCoverage = rolling5AvgFrontendLineCoverage;
 row.rolling5AvgBackendLineCoverage = rolling5AvgBackendLineCoverage;
 
+// Detalle por componente. Si el componente no ejecuto pruebas, los recuentos quedan en null
+// y `executed` en false, para que el JSON no pueda leerse como "0 pruebas, 0 fallos".
+function testBreakdownOf(junit) {
+  if (!junit.executed) {
+    return {
+      executed: false,
+      tests: null,
+      failures: null,
+      skipped: null,
+      passed: null,
+      durationSeconds: null,
+      suites: [],
+      failedTestcases: [],
+    };
+  }
+  return {
+    executed: true,
+    tests: junit.tests,
+    failures: junit.failures,
+    skipped: junit.skipped,
+    passed: Math.max(junit.tests - junit.failures - junit.skipped, 0),
+    durationSeconds: junit.durationSeconds,
+    suites: junit.suites,
+    failedTestcases: junit.failedTestcases,
+  };
+}
+
 const jsonPath = path.join(metricsDir, `build-metrics-${buildNumber}.json`);
 const detailedPayload = {
   build: row,
   testBreakdown: {
-    frontend: {
-      tests: frontendJunit.tests,
-      failures: frontendJunit.failures,
-      skipped: frontendJunit.skipped,
-      passed: Math.max(frontendJunit.tests - frontendJunit.failures - frontendJunit.skipped, 0),
-      durationSeconds: frontendJunit.durationSeconds,
-      suites: frontendJunit.suites,
-      failedTestcases: frontendFailedTestcases,
-    },
-    backend: {
-      tests: backendJunit.tests,
-      failures: backendJunit.failures,
-      skipped: backendJunit.skipped,
-      passed: Math.max(backendJunit.tests - backendJunit.failures - backendJunit.skipped, 0),
-      durationSeconds: backendJunit.durationSeconds,
-      suites: backendJunit.suites,
-      failedTestcases: backendFailedTestcases,
-    },
+    frontend: testBreakdownOf(frontendJunit),
+    backend: testBreakdownOf(backendJunit),
   },
   coverageBreakdown: {
     frontend: {
@@ -624,6 +673,41 @@ function formatDelta(delta) {
   return `${sign}${delta} pts`;
 }
 
+const TESTS_NOT_EXECUTED = "no ejecutadas (el pipeline se detuvo antes de las etapas de pruebas)";
+
+function componentCount(value) {
+  return value === null ? "no ejecutado" : value;
+}
+
+const DB_MIGRATION_LABELS = {
+  OK: "aplicadas sin errores; el esquema de la base coincide con el del codigo",
+  FAILED: "fallidas; el pipeline se detuvo antes de desplegar",
+};
+
+const POST_DEPLOY_LABELS = {
+  PASSED: "superada; la version publicada respondio como se esperaba",
+  FAILED: "fallida; la version publicada no respondio como se esperaba",
+};
+
+function statusLabel(labels, status, fallback) {
+  if (!status) {
+    return fallback;
+  }
+  return labels[status] || status;
+}
+
+function failedTestcaseLines(junit, failedTestcases, component) {
+  if (!junit.executed) {
+    return [`- Pruebas del ${component} no ejecutadas en este build`];
+  }
+  if (!failedTestcases.length) {
+    return [`- Sin fallos en ${component}`];
+  }
+  return failedTestcases.map(
+    (t, idx) => `${idx + 1}. ${t.classname} :: ${t.name} (${t.durationSeconds}s) - ${t.message}`
+  );
+}
+
 const isFirstBuild = historicalRows.length === 0;
 const trendNote = isFirstBuild ? " _(N/A: este es el primer build registrado, aun no hay build previo con que comparar)_" : "";
 
@@ -639,18 +723,21 @@ const md = [
   `- Ultima actualizacion: ${timestamp}`,
   `- Build: #${buildNumber}`,
   `- Resultado: ${result}`,
+  ...(stoppedAtStage ? [`- Etapa en la que se detuvo: ${stoppedAtStage}`] : []),
   `- Duracion total (s): ${durationSeconds}`,
   `- Tiempo commit -> staging (s): ${commitToStagingSeconds ?? `N/A (${commitToStagingNote})`}`,
-  `- Duracion tests frontend (s): ${frontendTestDurationSeconds}`,
-  `- Duracion tests backend (s): ${backendTestDurationSeconds}`,
-  `- Tests totales: ${totalTests} (frontend: ${frontendTests}, backend: ${backendTests})`,
-  `- Tests aprobados: ${passedTests}`,
-  `- Tests fallidos: ${failedTests}`,
-  `- Tests omitidos: ${skippedTests}`,
-  `- Tasa de aprobacion (%): ${passRatePct}`,
-  `- Tasa de fallos (%): ${failureRatePct}`,
-  `- Tasa de omitidos (%): ${skippedRatePct}`,
-  `- Archivos de prueba ejecutados: ${totalSuites} (frontend: ${frontendSuiteCount}, backend: ${backendSuiteCount})`,
+  `- Duracion tests frontend (s): ${frontendTestDuration ?? "N/A"}`,
+  `- Duracion tests backend (s): ${backendTestDuration ?? "N/A"}`,
+  `- Tests totales: ${testsExecuted ? `${totalTests} (frontend: ${componentCount(frontendTests)}, backend: ${componentCount(backendTests)})` : TESTS_NOT_EXECUTED}`,
+  `- Tests aprobados: ${passedTests ?? "N/A"}`,
+  `- Tests fallidos: ${failedTests ?? "N/A"}`,
+  `- Tests omitidos: ${skippedTests ?? "N/A"}`,
+  `- Tasa de aprobacion (%): ${passRatePct ?? "N/A"}`,
+  `- Tasa de fallos (%): ${failureRatePct ?? "N/A"}`,
+  `- Tasa de omitidos (%): ${skippedRatePct ?? "N/A"}`,
+  `- Archivos de prueba ejecutados: ${testsExecuted ? `${totalSuites} (frontend: ${componentCount(frontendSuiteCount)}, backend: ${componentCount(backendSuiteCount)})` : TESTS_NOT_EXECUTED}`,
+  `- Migraciones de base de datos: ${statusLabel(DB_MIGRATION_LABELS, dbMigrationStatus, "no ejecutadas en este build")}`,
+  `- Verificacion posterior al despliegue: ${statusLabel(POST_DEPLOY_LABELS, postDeployCheck, "no ejecutada en este build")}`,
   "",
   "## Cobertura (vs. objetivo real de cada jest.config.js)",
   `${verdictIcon(frontendMeetsThreshold)} **Frontend** — lineas ${frontendLineCoverage ?? "N/A"}% / objetivo ${frontendThresholds.lines ?? "N/A"}% (${formatDelta(frontendLinesDeltaVsThreshold)})`,
@@ -666,7 +753,7 @@ const md = [
   `- M1 — Tiempo total de ejecucion del pipeline (s): ${durationSeconds}`,
   `- M2 — Tiempo desde el commit hasta la version en staging (s): ${commitToStagingSeconds ?? `N/A — ${commitToStagingNote}`} _(incluye la latencia del polling SCM; solo se publica en builds exitosos disparados por un commit reciente)_`,
   `- M3 — Pasos manuales por despliegue: ${manualSteps} de ${PROCESS_STEPS_TOTAL} _(propiedad del proceso modelado en el BPMN, no medida por build)_`,
-  `- M4 — Errores detectados antes del despliegue: ${failedTests} de ${totalTests} pruebas (${failureRatePct}%)`,
+  `- M4 — Errores detectados antes del despliegue: ${testsExecuted ? `${failedTests} de ${totalTests} pruebas (${failureRatePct}%)` : "N/A — no se ejecutaron pruebas"}${stoppedAtStage ? ` _(el pipeline se detuvo en la etapa ${stoppedAtStage})_` : ""}`,
   `- M5 — Nivel de automatizacion (%): ${automationLevelPct} _(${automatedSteps} de ${PROCESS_STEPS_TOTAL} pasos automatizados)_`,
   `- M6 — Frecuencia de despliegues: ${deploymentFrequency.successfulBuilds} builds exitosos en ${deploymentFrequency.daysObserved} dia(s) (~${deploymentFrequency.perWeek}/semana)`,
   "",
@@ -702,21 +789,9 @@ const md = [
   "",
   "## Casos de prueba fallidos",
   "### Frontend",
-  ...(
-    frontendFailedTestcases.length
-      ? frontendFailedTestcases.map(
-          (t, idx) => `${idx + 1}. ${t.classname} :: ${t.name} (${t.durationSeconds}s) - ${t.message}`
-        )
-      : ["- Sin fallos en frontend"]
-  ),
+  ...failedTestcaseLines(frontendJunit, frontendFailedTestcases, "frontend"),
   "### Backend",
-  ...(
-    backendFailedTestcases.length
-      ? backendFailedTestcases.map(
-          (t, idx) => `${idx + 1}. ${t.classname} :: ${t.name} (${t.durationSeconds}s) - ${t.message}`
-        )
-      : ["- Sin fallos en backend"]
-  ),
+  ...failedTestcaseLines(backendJunit, backendFailedTestcases, "backend"),
   "",
   "## Fuente de datos",
   "- JUnit: `frontend/junit.xml`, `backend/junit.xml`",

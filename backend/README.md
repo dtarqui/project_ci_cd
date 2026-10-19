@@ -168,6 +168,9 @@ Ventas (protegido):
 Dashboard y estado:
 - `GET /api/dashboard/data` (protegido)
 - `GET /health`
+- `GET /health/ready`: disponibilidad del almacenamiento. En modo `database` consulta cada
+  tabla con las columnas que espera Prisma; 503 si alguna falla (lo usa el pipeline despues
+  de desplegar)
 
 Ejemplos de uso en `ENDPOINTS_EJEMPLOS.md`.
 

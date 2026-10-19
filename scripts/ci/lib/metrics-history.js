@@ -114,7 +114,15 @@ function parseCsvRows(csvPath) {
   return rows;
 }
 
+/**
+ * Numero de una celda del CSV, o null si la celda esta vacia. `Number("")` vale 0: sin el
+ * chequeo de vacio, una celda sin dato (pruebas no ejecutadas, cobertura no medida) entraba
+ * como 0 en los promedios y en los deltas.
+ */
 function toNumberOrNull(value) {
+  if (value === null || value === undefined || String(value).trim() === "") {
+    return null;
+  }
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }

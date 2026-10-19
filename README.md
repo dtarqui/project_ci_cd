@@ -129,13 +129,17 @@ Frontend (`frontend/package.json`):
 - Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/sales`
   (una venta se anula con `cancel`; no hay borrado)
 - `GET /health`
+- `GET /health/ready`: en modo `database` consulta cada tabla con las columnas que espera
+  Prisma y responde 503 si alguna falla. La usa la verificacion posterior al despliegue del
+  pipeline
 
 Listado por recurso en `backend/README.md`; ejemplos de uso en
 `backend/ENDPOINTS_EJEMPLOS.md`.
 
 ## CI/CD (Jenkins)
 El pipeline definido en `Jenkinsfile` incluye:
-- Checkout desde GitHub (`main`).
+- Checkout desde GitHub (`main`) y limpieza de los reportes de pruebas y cobertura del build
+  anterior.
 - Instalacion de dependencias frontend/backend.
 - Lint frontend y backend (bloqueante).
 - Tests frontend y backend con publicacion JUnit + coverage HTML (bloqueante).
@@ -144,10 +148,17 @@ El pipeline definido en `Jenkinsfile` incluye:
   `jest.config.js` de cada componente y detiene el pipeline antes de desplegar si alguna
   metrica queda por debajo.
 - Validacion basica del backend (`/health`).
-- Build frontend (`webpack`).
-- Deploy opcional a Vercel (backend y frontend).
+- Migraciones de base de datos (`prisma migrate deploy`) y comparacion del esquema de la base
+  con `schema.prisma`, antes de desplegar (bloqueante).
+- Deploy a Vercel del backend, build del frontend (`webpack`) y deploy del frontend.
+- Verificacion de la version publicada con `scripts/ci/smoke-test.js` (`/health`,
+  `/health/ready` y la pagina del frontend); si falla, el build termina en FAILURE.
 - Archivado de artefactos.
 - Generacion automatica de metricas y reportes en `docs/metrics/`.
+
+Lo que depende del proyecto (rutas, comandos, credenciales, variables de Vercel,
+comprobaciones) esta agrupado en el bloque `environment` del Jenkinsfile, bajo
+**PARAMETROS DEL PROYECTO**. Como armarlo y adaptarlo: `jenkins/GUIA_PIPELINE.md`.
 
 ## Estructura del repositorio
 - `backend/`: API y logica de negocio.

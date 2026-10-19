@@ -13,6 +13,8 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const salesRoutes = require("./routes/salesRoutes");
 const userRoutes = require("./routes/userRoutes");
 const catalogRoutes = require("./routes/catalogRoutes");
+const { asyncHandler } = require("./utils/asyncHandler");
+const { checkReadiness } = require("./services/readinessService");
 
 /**
  * Crea una aplicación Express configurada con todas las rutas y middleware
@@ -43,6 +45,24 @@ const createApp = () => {
       environment: process.env.NODE_ENV || "development",
     });
   });
+
+  /**
+   * GET /health/ready - Verifica que la app pueda operar con su almacenamiento.
+   * En modo database consulta cada tabla con las columnas que espera el
+   * cliente de Prisma; responde 503 si alguna comprobacion falla. Lo usa la
+   * etapa "Post-Deploy Smoke Test" del pipeline (ver services/readinessService.js).
+   */
+  app.get(
+    "/health/ready",
+    asyncHandler(async (req, res) => {
+      const readiness = await checkReadiness();
+      res.status(readiness.ready ? 200 : 503).json({
+        status: readiness.ready ? "ok" : "error",
+        repositoryMode: readiness.repositoryMode,
+        checks: readiness.checks,
+      });
+    })
+  );
 
   // ==================== ROUTES ====================
 
