@@ -31,7 +31,7 @@ describe("formatDate", () => {
   });
 
   it("debe retornar '-' cuando la fecha es inválida", () => {
-    expect(formatDate("no-es-una-fecha")).toBe("Fecha invalida");
+    expect(formatDate("no-es-una-fecha")).toBe("-");
   });
 
   it("debe retornar '-' cuando la fecha es undefined", () => {
