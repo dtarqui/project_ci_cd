@@ -69,8 +69,9 @@ Para activar el modo `database`:
    DATABASE_URL=postgresql://postgres.xxxxxxxx:password@aws-0-<region>.pooler.supabase.com:5432/postgres
    ```
 
-3. Aplicar el schema (`backend/prisma/schema.prisma`, con las 5 entidades
-   `users`, `customers`, `products`, `sales`, `sale_items`):
+3. Aplicar el schema (`backend/prisma/schema.prisma`, con las 7 entidades
+   `users`, `customers`, `products`, `sales`, `sale_items`, `cities` y
+   `categories`):
 
    ```bash
    cd backend
@@ -82,8 +83,11 @@ Para activar el modo `database`:
    backend ahora persiste en Postgres en vez de memoria.
 
 Para desplegar el backend en Vercel con BD real, `REPOSITORY_MODE` y
-`DATABASE_URL` pueden inyectarse igual que `JWT_SECRET` usando la variable
-`BACKEND_ENV_VARS` del `Jenkinsfile`, sin modificar el pipeline.
+`DATABASE_URL` se configuran, igual que `JWT_SECRET`, como variables de entorno
+del proyecto backend en Vercel; el pipeline necesita ademas `DATABASE_URL` como
+credencial de Jenkins para aplicar las migraciones. No se escriben en el
+`Jenkinsfile`, porque el repositorio es publico (ver `jenkins/GUIA_PIPELINE.md`,
+seccion 3).
 
 ## Roles de usuario
 Cada usuario tiene un `role`: `admin` o `vendedor` (default). Ambos roles

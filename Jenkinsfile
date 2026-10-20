@@ -182,7 +182,7 @@ pipeline {
         //   post-cicd = este pipeline (proceso automatizado, TO-BE)
         //   pre-cicd  = linea base manual, que se genera aparte ejecutando el
         //               script con METRICS_PROFILE=pre-cicd y los tiempos
-        //               cronometrados del proceso manual (ver Notas/README.md).
+        //               cronometrados del proceso manual (ver Notas/ESPECIFICACION_METRICAS.md).
         METRICS_PROFILE = "post-cicd"
         // No cambiar: .gitignore solo ignora docs/metrics/. En otra ruta, los reportes
         // dejarian de estar ignorados y acabarian subidos al repositorio.

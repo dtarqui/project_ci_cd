@@ -718,7 +718,7 @@ const md = [
     : "# Metricas de la linea base manual (AS-IS)",
   "",
   "Este archivo se actualiza automaticamente en Jenkins al finalizar cada build.",
-  "Guia de lectura completa en `Documentos/Notas/README.md` del repositorio de la tesis.",
+  "Guia de lectura completa en `Documentos/Notas/ESPECIFICACION_METRICAS.md` del repositorio de la tesis.",
   "",
   `- Ultima actualizacion: ${timestamp}`,
   `- Build: #${buildNumber}`,

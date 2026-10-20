@@ -12,7 +12,7 @@
  *      antiguas: con el parser ingenuo esas filas salian descuadradas y se corrompia el
  *      archivo que sostiene los anexos D, E y F del perfil.
  *   2. La tasa de fallo por cambio. Un script dividia entre los builds con resultado
- *      conocido (la definicion documentada en `Documentos/Notas/README.md`) y el otro entre
+ *      conocido (la definicion documentada en `Documentos/Notas/ESPECIFICACION_METRICAS.md`) y el otro entre
  *      todas las filas, asi que el reporte por build y el comparativo podian publicar dos
  *      cifras distintas del mismo indicador.
  *
