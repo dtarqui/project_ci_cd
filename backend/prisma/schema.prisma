@@ -77,8 +77,6 @@ model Customer {
   totalSpent     Float     @default(0) @map("total_spent")
   purchases      Int       @default(0)
   lastPurchase   String?   @map("last_purchase")
-  // Escenario controlado E5: campo sin su migracion.
-  notes          String?
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   // Borrado logico: la fila se conserva para que las ventas que la referencian
