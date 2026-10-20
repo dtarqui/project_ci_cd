@@ -15,6 +15,7 @@ const userRoutes = require("./routes/userRoutes");
 const catalogRoutes = require("./routes/catalogRoutes");
 const { asyncHandler } = require("./utils/asyncHandler");
 const { checkReadiness } = require("./services/readinessService");
+const { version } = require("../package.json");
 
 /**
  * Crea una aplicación Express configurada con todas las rutas y middleware
@@ -40,6 +41,7 @@ const createApp = () => {
   app.get("/health", (req, res) => {
     res.json({
       status: "ok",
+      version,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || "development",

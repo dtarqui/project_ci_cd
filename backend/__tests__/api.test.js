@@ -34,6 +34,12 @@ describe("Pruebas de API Backend", () => {
       expect(timestamp).toBeInstanceOf(Date);
       expect(timestamp.getTime()).not.toBeNaN();
     });
+
+    test("GET /health - debe informar la versión del backend", async () => {
+      const response = await request(app).get("/health").expect(200);
+
+      expect(response.body.version).toBe(require("../package.json").version);
+    });
   });
 
   describe("Endpoints de autenticación", () => {
