@@ -347,16 +347,45 @@ Respuesta esperada: metricas agregadas de dashboard (cards, series y distribucio
 
 ### GET `/health`
 
-Respuesta esperada:
+Respuesta esperada (`version` es la de `backend/package.json`):
 
 ```json
 {
   "status": "ok",
+  "version": "1.0.0",
   "timestamp": "2026-03-09T12:00:00.000Z",
   "uptime": 123.45,
   "environment": "development"
 }
 ```
+
+### GET `/health/ready`
+
+Comprueba que la app pueda operar con su almacenamiento. En modo `database` consulta cada tabla con
+las columnas que espera el cliente de Prisma; en modo `memory` responde `ok` sin comprobaciones. La usa
+la etapa "Post-Deploy Smoke Test" del pipeline.
+
+Respuesta esperada (200):
+
+```json
+{
+  "status": "ok",
+  "repositoryMode": "database",
+  "checks": [
+    { "model": "user", "ok": true },
+    { "model": "customer", "ok": true },
+    { "model": "product", "ok": true },
+    { "model": "sale", "ok": true },
+    { "model": "saleItem", "ok": true },
+    { "model": "city", "ok": true },
+    { "model": "category", "ok": true }
+  ]
+}
+```
+
+Si alguna comprobacion falla responde 503 con `"status": "error"` y el codigo de Prisma en la
+comprobacion afectada, por ejemplo `{ "model": "sale", "ok": false, "code": "P2022" }` cuando falta una
+columna.
 
 ## Formato de error comun
 
