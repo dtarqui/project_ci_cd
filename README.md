@@ -132,7 +132,11 @@ Frontend (`frontend/package.json`):
   de clientes rechaza cualquier otra ciudad
 - Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/sales`
   (una venta se anula con `cancel`; no hay borrado)
-- `GET /health`
+- Catalogos administrables: `GET`, `POST`, `PUT /:id` y `DELETE /:id` sobre
+  `/api/catalogs/cities` y `/api/catalogs/categories`. La lectura esta abierta a cualquier
+  usuario autenticado; la escritura exige rol `admin`, y la baja es logica
+- `GET /health`: estado del servicio y version del backend (`version`, tomada de
+  `backend/package.json`)
 - `GET /health/ready`: en modo `database` consulta cada tabla con las columnas que espera
   Prisma y responde 503 si alguna falla. La usa la verificacion posterior al despliegue del
   pipeline
