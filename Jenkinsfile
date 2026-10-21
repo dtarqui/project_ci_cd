@@ -672,7 +672,7 @@ pipeline {
                     script {
                         env.DB_MIGRATION_STATUS = 'FAILED'
                     }
-                    echo "Migraciones o comparacion de esquema fallidas: no se despliega. Revisa que exista la credencial '${env.DB_URL_CREDENTIAL_ID}' (Secret text) con la cadena de conexion de staging. Si el error es P3005, la base ya tiene el esquema pero no su historial: ver jenkins/GUIA_PIPELINE.md."
+                    echo "Migraciones o comparacion de esquema fallidas: no se despliega. El registro de esta etapa indica cual de los tres pasos fallo: 'Could not find credentials' (falta la credencial '${env.DB_URL_CREDENTIAL_ID}', tipo Secret text), P3005 en migrate deploy (la base tiene el esquema pero no su historial de migraciones) o diferencias listadas por la comparacion (falta una migracion o la base se modifico a mano). Ver jenkins/GUIA_PIPELINE.md, apartado 7."
                 }
             }
         }
