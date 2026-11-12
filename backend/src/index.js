@@ -2,6 +2,15 @@
  * Express App Factory - Crea la aplicación Express configurada
  */
 
+// Carga backend/.env también cuando la app se construye sin pasar por index.js
+// (scripts que usan app.js). Sin esto, en modo database JWT_SECRET aparecía recién
+// cuando el cliente de Prisma cargaba el .env, y los tokens firmados antes con el
+// secreto de desarrollo dejaban de ser válidos. En las pruebas no se carga, para
+// que Jest use el modo memoria aunque el .env local apunte a la base de datos.
+if (process.env.NODE_ENV !== "test") {
+  require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+}
+
 const express = require("express");
 const cors = require("cors");
 const { corsOptions } = require("./config/cors");
