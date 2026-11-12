@@ -5,6 +5,30 @@ carpeta (ver `.env.example`) y accesible en `http://localhost:8080` con el
 usuario admin. El tool `Node18` y los plugins base quedan configurados por
 `casc.yaml`; falta configurar las credenciales y el correo, y crear el job.
 
+Las versiones del entorno estan fijadas en las que uso la serie de validacion
+(ejecuciones n.o 37 a 47):
+
+| Componente | Version | Donde se fija |
+|---|---|---|
+| Jenkins | 2.541.3 LTS con Java 17 (imagen `jenkins/jenkins:2.541.3-lts-jdk17` y su digest) | `Dockerfile` |
+| Plugins | Los 10 que usa el Jenkinsfile y sus 72 dependencias, cada uno con su version | `plugins.txt` |
+| Node.js | 18.20.4 (tool `Node18`) | `casc.yaml` |
+| Vercel CLI | 65.0.0 | `VERCEL_CLI_VERSION` en el Jenkinsfile |
+
+Node.js 18 esta fuera de soporte desde el 30-04-2025. Para actualizar cualquier
+version se cambia en su archivo, se reconstruye la imagen
+(`docker compose up -d --build`) y se lanza una serie nueva de ejecuciones.
+Los paquetes `git` y `curl` se instalan desde los repositorios de Debian de la
+imagen base, sin version fija.
+
+**Riesgo conocido.** Al construir la imagen, `jenkins-plugin-cli` informa 13
+avisos de seguridad publicados en septiembre de 2026 para cuatro de los plugins
+fijados: `script-security` (9, entre ellos varios de evasion del sandbox),
+`pipeline-groovy-lib` (2), `pipeline-build-step` (1) y `workflow-multibranch`
+(1). Se mantienen para que el entorno sea el mismo de la serie de validacion.
+Antes de usar este Jenkins fuera de un entorno local, se actualizan esos plugins
+a sus versiones corregidas y se lanza una serie nueva.
+
 ## 1. Credenciales obligatorias
 
 ### 1.1 `vercel-token`
@@ -271,7 +295,7 @@ mano no produce un valor valido de M2 (tiempo desde el commit hasta staging).
 - Descarga Node 18.20.4 (tool `Node18`), lo que puede tardar un minuto mas la
   primera vez.
 - Los stages de despliegue (`Deploy Backend Vercel`, `Deploy Vercel`) instalan
-  el CLI de Vercel (`npm install -g vercel`) en cada build. Si el proyecto de
+  el CLI de Vercel en la version de `VERCEL_CLI_VERSION` en cada build. Si el proyecto de
   Vercel no esta vinculado (seccion 3), el CLI pide vincularlo de forma
   interactiva y el build queda colgado hasta el timeout de 20 min
   (`options.timeout`); por eso la seccion 3 debe resolverse antes del primer

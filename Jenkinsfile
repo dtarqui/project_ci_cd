@@ -169,6 +169,9 @@ pipeline {
         // ====================================================================
         NODE_VERSION = "18"
         CI = "true"
+        // Version fija de Vercel CLI, la de las ejecuciones n.o 46 y 47. Sin version, cada build
+        // instalaba la ultima publicada (la serie de validacion paso de 64.7.0 a 65.0.0).
+        VERCEL_CLI_VERSION = "65.0.0"
 
         // Métricas y monitoreo
         //
@@ -693,7 +696,7 @@ pipeline {
                                 def backendDeployOutput = sh(
                                     script: '''
                                         set -e
-                                        npm install -g vercel 1>&2
+                                        npm install -g vercel@$VERCEL_CLI_VERSION 1>&2
 
                                         PROJECT_ARGS=""
                                         if [ -n "$VERCEL_BACKEND_PROJECT" ] && [ -n "$VERCEL_BACKEND_ORG" ]; then
@@ -762,7 +765,7 @@ pipeline {
                                 env.BACKEND_VERCEL_URL = backendDeployOutput.readLines().last().trim()
                             } else {
                                 bat '''
-                                    npm install -g vercel
+                                    npm install -g vercel@%VERCEL_CLI_VERSION%
                                     vercel pull --yes --environment=production --token %VERCEL_TOKEN%
                                     vercel build --prod --token %VERCEL_TOKEN%
                                     vercel deploy --prebuilt --prod --token %VERCEL_TOKEN%
@@ -878,7 +881,7 @@ pipeline {
                                 def frontendDeployOutput = sh(
                                     script: '''
                                         set -e
-                                        npm install -g vercel 1>&2
+                                        npm install -g vercel@$VERCEL_CLI_VERSION 1>&2
                                         PROJECT_ARGS=""
                                         if [ -n "$VERCEL_FRONTEND_PROJECT" ] && [ -n "$VERCEL_FRONTEND_ORG" ]; then
                                             PROJECT_ARGS="--project $VERCEL_FRONTEND_PROJECT --org $VERCEL_FRONTEND_ORG"
@@ -913,7 +916,7 @@ pipeline {
                                 env.VERCEL_URL = frontendDeployOutput.readLines().last().trim()
                             } else {
                                 bat '''
-                                    npm install -g vercel
+                                    npm install -g vercel@%VERCEL_CLI_VERSION%
                                     set PROJECT_ARGS=
                                     if not "%VERCEL_FRONTEND_PROJECT%"=="" if not "%VERCEL_FRONTEND_ORG%"=="" (
                                         set PROJECT_ARGS=--project %VERCEL_FRONTEND_PROJECT% --org %VERCEL_FRONTEND_ORG%

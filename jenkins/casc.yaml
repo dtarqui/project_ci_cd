@@ -13,6 +13,9 @@ jenkins:
 
 # Nombre 'Node18' debe coincidir con `tools { nodejs 'Node18' }` en el
 # Jenkinsfile. Se descarga solo la primera vez que un pipeline lo requiere.
+# Node.js 18 esta fuera de soporte desde el 30-04-2025. Se mantiene la version
+# exacta con la que se valido el pipeline; migrar a una LTS vigente obliga a
+# renombrar la herramienta aqui y en el Jenkinsfile y a lanzar una serie nueva.
 tool:
   nodejs:
     installations:
