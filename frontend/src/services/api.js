@@ -18,6 +18,16 @@ const api = axios.create({
   withCredentials: false,
 });
 
+/**
+ * Cabecera If-Match con la version del registro que el usuario abrio para editar
+ * (su fecha de ultima modificacion). Si otro usuario lo guardo antes, la API
+ * responde 412 en lugar de pisar sus cambios.
+ */
+export const ifMatchFor = (updatedAt) => {
+  const version = updatedAt ? Date.parse(updatedAt) : NaN;
+  return Number.isFinite(version) ? { headers: { "If-Match": `"${version}"` } } : undefined;
+};
+
 // Interceptor para agregar token de autorización
 api.interceptors.request.use(
   (config) => {
@@ -54,34 +64,34 @@ api.interceptors.response.use(
 export const authService = {
   // payload: username, password, name, email
   register: async (payload) => {
-    const response = await api.post("/api/auth/register", payload);
+    const response = await api.post("/api/v1/auth/register", payload);
     return response.data;
   },
 
   login: async (credentials) => {
-    const response = await api.post("/api/auth/login", credentials);
+    const response = await api.post("/api/v1/auth/login", credentials);
     return response.data;
   },
 
   logout: async () => {
-    const response = await api.post("/api/auth/logout");
+    const response = await api.post("/api/v1/auth/logout");
     return response.data;
   },
 
   getMe: async () => {
-    const response = await api.get("/api/auth/me");
+    const response = await api.get("/api/v1/auth/me");
     return response.data;
   },
 };
 
 export const userService = {
   getMyProfile: async () => {
-    const response = await api.get("/api/users/me");
+    const response = await api.get("/api/v1/users/me");
     return response.data;
   },
 
   updateMyProfile: async (payload) => {
-    const response = await api.put("/api/users/me", payload);
+    const response = await api.put("/api/v1/users/me", payload);
     return response.data;
   },
 };
@@ -89,7 +99,7 @@ export const userService = {
 // Datos agregados del dashboard (métricas, gráficos)
 export const dashboardService = {
   getData: async () => {
-    const response = await api.get("/api/dashboard/data");
+    const response = await api.get("/api/v1/dashboard/data");
     return response.data;
   },
 };
@@ -97,29 +107,30 @@ export const dashboardService = {
 // CRUD de productos
 export const productService = {
   getProducts: async (params = "") => {
-    const response = await api.get(`/api/products${params ? "?" + params : ""}`);
+    const response = await api.get(`/api/v1/products${params ? "?" + params : ""}`);
     // El backend retorna { success, data: [], count, timestamp }
     // Retornamos la respuesta completa para que el componente pueda acceder a .data
     return response.data;
   },
 
   getProduct: async (id) => {
-    const response = await api.get(`/api/products/${id}`);
+    const response = await api.get(`/api/v1/products/${id}`);
     return response.data;
   },
 
   createProduct: async (productData) => {
-    const response = await api.post("/api/products", productData);
+    const response = await api.post("/api/v1/products", productData);
     return response.data;
   },
 
-  updateProduct: async (id, productData) => {
-    const response = await api.put(`/api/products/${id}`, productData);
+  /** @param {string} [updatedAt] - version leida del producto (concurrencia optimista) */
+  updateProduct: async (id, productData, updatedAt) => {
+    const response = await api.put(`/api/v1/products/${id}`, productData, ifMatchFor(updatedAt));
     return response.data;
   },
 
   deleteProduct: async (id) => {
-    const response = await api.delete(`/api/products/${id}`);
+    const response = await api.delete(`/api/v1/products/${id}`);
     return response.data;
   },
 };
@@ -127,34 +138,35 @@ export const productService = {
 // CRUD de clientes
 export const customerService = {
   getCustomers: async (params = "") => {
-    const response = await api.get(`/api/customers${params ? "?" + params : ""}`);
+    const response = await api.get(`/api/v1/customers${params ? "?" + params : ""}`);
     return response.data;
   },
 
   // Catalogo de ciudades atendidas. Lo sirve el backend para que la lista del
   // formulario y lo que acepta la API sean lo mismo.
   getCities: async () => {
-    const response = await api.get("/api/customers/cities");
+    const response = await api.get("/api/v1/customers/cities");
     return response.data;
   },
 
   getCustomer: async (id) => {
-    const response = await api.get(`/api/customers/${id}`);
+    const response = await api.get(`/api/v1/customers/${id}`);
     return response.data;
   },
 
   createCustomer: async (customerData) => {
-    const response = await api.post("/api/customers", customerData);
+    const response = await api.post("/api/v1/customers", customerData);
     return response.data;
   },
 
-  updateCustomer: async (id, customerData) => {
-    const response = await api.put(`/api/customers/${id}`, customerData);
+  /** @param {string} [updatedAt] - version leida del cliente (concurrencia optimista) */
+  updateCustomer: async (id, customerData, updatedAt) => {
+    const response = await api.put(`/api/v1/customers/${id}`, customerData, ifMatchFor(updatedAt));
     return response.data;
   },
 
   deleteCustomer: async (id) => {
-    const response = await api.delete(`/api/customers/${id}`);
+    const response = await api.delete(`/api/v1/customers/${id}`);
     return response.data;
   },
 };
@@ -162,12 +174,12 @@ export const customerService = {
 // CRUD de ventas
 export const saleService = {
   getSales: async (params = "") => {
-    const response = await api.get(`/api/sales${params ? "?" + params : ""}`);
+    const response = await api.get(`/api/v1/sales${params ? "?" + params : ""}`);
     return response.data;
   },
 
   getSale: async (id) => {
-    const response = await api.get(`/api/sales/${id}`);
+    const response = await api.get(`/api/v1/sales/${id}`);
     return response.data;
   },
 
@@ -178,7 +190,7 @@ export const saleService = {
    */
   createSale: async (saleData, idempotencyKey) => {
     const response = await api.post(
-      "/api/sales",
+      "/api/v1/sales",
       saleData,
       idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined
     );
@@ -186,12 +198,12 @@ export const saleService = {
   },
 
   updateSale: async (id, saleData) => {
-    const response = await api.put(`/api/sales/${id}`, saleData);
+    const response = await api.put(`/api/v1/sales/${id}`, saleData);
     return response.data;
   },
 
   cancelSale: async (id) => {
-    const response = await api.put(`/api/sales/${id}/cancel`);
+    const response = await api.put(`/api/v1/sales/${id}/cancel`);
     return response.data;
   },
 };
@@ -202,22 +214,22 @@ export const saleService = {
 // para el rol admin.
 export const catalogService = {
   list: async (recurso) => {
-    const response = await api.get(`/api/catalogs/${recurso}`);
+    const response = await api.get(`/api/v1/catalogs/${recurso}`);
     return response.data;
   },
 
   create: async (recurso, datos) => {
-    const response = await api.post(`/api/catalogs/${recurso}`, datos);
+    const response = await api.post(`/api/v1/catalogs/${recurso}`, datos);
     return response.data;
   },
 
   update: async (recurso, id, datos) => {
-    const response = await api.put(`/api/catalogs/${recurso}/${id}`, datos);
+    const response = await api.put(`/api/v1/catalogs/${recurso}/${id}`, datos);
     return response.data;
   },
 
   remove: async (recurso, id) => {
-    const response = await api.delete(`/api/catalogs/${recurso}/${id}`);
+    const response = await api.delete(`/api/v1/catalogs/${recurso}/${id}`);
     return response.data;
   },
 };

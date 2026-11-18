@@ -64,6 +64,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    // Las lecturas guardadas para trabajar sin conexion no quedan en el
+    // dispositivo despues de cerrar sesion (ver webpack.config.js).
+    if (typeof window !== "undefined" && window.caches) {
+      window.caches.delete("api-lecturas").catch(() => {});
+    }
   };
 
   return (

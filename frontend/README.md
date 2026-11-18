@@ -140,8 +140,20 @@ Reportes de cobertura:
 ## Integracion con backend
 - Servicios disponibles: `authService`, `userService`, `dashboardService`,
   `productService`, `customerService` y `saleService`, mas el helper `handleApiError`.
-- Endpoints consumidos: autenticacion, perfil (`/api/users/me`), dashboard y CRUD de productos/clientes/ventas.
+- Endpoints consumidos: autenticacion, perfil (`/api/v1/users/me`), dashboard y CRUD de productos/clientes/ventas, todos con el prefijo de version `/api/v1`.
 - Ante `401`, el frontend limpia sesion y dispara evento `unauthorized` para forzar re-login.
+- Al editar un producto o un cliente se envia `If-Match` con la version leida; si otro
+  usuario lo guardo antes, la API responde `412` y el formulario muestra el aviso.
+
+## Aplicacion instalable y modo sin conexion
+- `public/manifest.webmanifest` y los iconos de `public/icons/` permiten instalarla en la
+  pantalla de inicio del movil.
+- En el build de produccion, Workbox genera `sw.js` (ver `webpack.config.js`): guarda la
+  aplicacion para abrirla sin red y las ultimas lecturas de productos, clientes y catalogos
+  (cache `api-lecturas`, que se borra al cerrar sesion).
+- `src/utils/offlineSales.js`: si al registrar una venta no hay red, la venta queda en el
+  dispositivo con su clave de idempotencia y se envia al volver la conexion, sin
+  duplicarse. La cola es de cada usuario.
 
 ## Licencia
 MIT, igual que el repositorio raiz — ver `../LICENSE`. Todas las dependencias

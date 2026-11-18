@@ -1,7 +1,9 @@
+const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const dotenv = require("dotenv");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { GenerateSW } = require("workbox-webpack-plugin");
 
 const env = dotenv.config().parsed || {};
 const envKeys = Object.keys(env).reduce((acc, key) => {
@@ -9,7 +11,69 @@ const envKeys = Object.keys(env).reduce((acc, key) => {
   return acc;
 }, {});
 
-module.exports = {
+// Archivos de la aplicacion instalable que no pasan por el empaquetado: se copian
+// tal cual a dist/ antes de generar el service worker, para que este los incluya.
+const PWA_FILES = [
+  "manifest.webmanifest",
+  "icons/icon-192.png",
+  "icons/icon-512.png",
+  "icons/icon-maskable-512.png",
+];
+
+class CopyPublicFilesPlugin {
+  constructor(files) {
+    this.files = files;
+  }
+
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap("CopyPublicFilesPlugin", (compilation) => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: "CopyPublicFilesPlugin",
+          stage: webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        () => {
+          for (const file of this.files) {
+            const content = fs.readFileSync(path.resolve(__dirname, "public", file));
+            compilation.emitAsset(file, new webpack.sources.RawSource(content));
+          }
+        }
+      );
+    });
+  }
+}
+
+// Service worker (solo en produccion). Guarda la aplicacion para abrirla sin red y
+// las ultimas lecturas de productos, clientes y catalogos, que el formulario de
+// venta necesita sin conexion. Las ventas no pasan por aqui: las guarda la cola
+// de src/utils/offlineSales.js, con su clave de idempotencia.
+const serviceWorker = () =>
+  new GenerateSW({
+    swDest: "sw.js",
+    clientsClaim: true,
+    skipWaiting: true,
+    cleanupOutdatedCaches: true,
+    // Los avisos de licencia acompanan al codigo, pero el navegador no los usa.
+    exclude: [/\.LICENSE\.txt$/],
+    navigateFallback: "/index.html",
+    navigateFallbackDenylist: [/^\/api\//],
+    runtimeCaching: [
+      {
+        // La API esta en otro dominio: el patron debe cubrir la URL completa.
+        urlPattern: /^https?:\/\/[^/]+\/api\/v1\/(products|customers|catalogs)(\/|\?|$)/,
+        method: "GET",
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "api-lecturas",
+          networkTimeoutSeconds: 5,
+          expiration: { maxEntries: 60, maxAgeSeconds: 24 * 60 * 60 },
+          cacheableResponse: { statuses: [200] },
+        },
+      },
+    ],
+  });
+
+module.exports = (_env, argv = {}) => ({
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -40,6 +104,8 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({ template: "./public/index.html", favicon: "./public/favicon.svg" }),
     new webpack.DefinePlugin(envKeys),
+    new CopyPublicFilesPlugin(PWA_FILES),
+    ...(argv.mode === "production" ? [serviceWorker()] : []),
   ],
   devServer: {
     static: "./dist",
@@ -48,4 +114,4 @@ module.exports = {
     hot: true,
   },
   resolve: { extensions: [".js", ".jsx"] },
-};
+});

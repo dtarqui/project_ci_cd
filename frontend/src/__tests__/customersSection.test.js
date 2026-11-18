@@ -341,11 +341,14 @@ describe("Componente CustomersSection - Operaciones CRUD", () => {
       await userEvent.click(updateButton);
 
       await waitFor(() => {
+        // El tercer argumento es la version leida (If-Match); los datos de
+        // prueba no traen updatedAt.
         expect(apiService.customerService.updateCustomer).toHaveBeenCalledWith(
           1,
           expect.objectContaining({
             name: "Updated Name",
-          })
+          }),
+          undefined
         );
       });
     });

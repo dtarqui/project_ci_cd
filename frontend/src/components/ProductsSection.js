@@ -97,9 +97,12 @@ const ProductsSection = () => {
     try {
       if (editingProduct) {
         // Actualizar producto existente
+        // Con la version leida: si otro usuario lo guardo antes, la API responde
+        // 412 y el formulario muestra el aviso en vez de pisar sus cambios.
         const response = await productService.updateProduct(
           editingProduct.id,
           productData,
+          editingProduct.updatedAt,
         );
         setProducts(
           products.map((p) => (p.id === editingProduct.id ? response.data : p)),

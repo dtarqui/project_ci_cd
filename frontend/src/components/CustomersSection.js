@@ -79,7 +79,11 @@ const CustomersSection = () => {
   const handleSaveCustomer = async (customerData) => {
     try {
       if (editingCustomer) {
-        await customerService.updateCustomer(editingCustomer.id, customerData);
+        await customerService.updateCustomer(
+          editingCustomer.id,
+          customerData,
+          editingCustomer.updatedAt,
+        );
       } else {
         await customerService.createCustomer(customerData);
       }

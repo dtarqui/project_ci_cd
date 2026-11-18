@@ -8,11 +8,20 @@ import {
   MdPendingActions,
   MdRefresh,
   MdVisibility,
+  MdCloudOff,
 } from "react-icons/md";
 import { saleService, customerService, productService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
 import { formatCurrency, formatDate } from "../utils/format";
 import { newIdempotencyKey } from "../utils/idempotency";
+import {
+  PENDING_SALES_EVENT,
+  currentUserId,
+  enqueueSale,
+  isNetworkError,
+  pendingSales,
+  syncPendingSales,
+} from "../utils/offlineSales";
 import SalesForm from "./SalesForm";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
@@ -45,6 +54,11 @@ const SalesSection = () => {
   // Venta pendiente de confirmar su anulacion. null = no hay dialogo abierto.
   const [cancelConfirm, setCancelConfirm] = useState(null);
   const [actionError, setActionError] = useState(null);
+  // Ventas guardadas en este dispositivo por falta de conexion.
+  const [pendingCount, setPendingCount] = useState(
+    () => pendingSales(currentUserId()).length
+  );
+  const [offlineNotice, setOfflineNotice] = useState("");
 
   const salesFilters = { status: selectedStatus, search: searchTerm };
 
@@ -66,6 +80,40 @@ const SalesSection = () => {
     saleService.getSales,
     salesFilters,
   );
+
+  const reloadRef = useRef(null);
+  reloadRef.current = () => Promise.all([loadSales(), reloadMetrics()]);
+
+  // Las ventas guardadas sin conexion se envian al abrir la seccion y cada vez
+  // que vuelve la red (startOfflineSync, en index.js). Aqui se refleja el resultado.
+  useEffect(() => {
+    const onSync = (event) => {
+      const { sent = [], rejected = [], remaining = 0 } = event.detail || {};
+      setPendingCount(remaining);
+
+      const partes = [];
+      if (sent.length > 0) {
+        partes.push(`Se enviaron ${sent.length} venta(s) guardada(s) sin conexión.`);
+      }
+      if (rejected.length > 0) {
+        partes.push(
+          `${rejected.length} no se pudo registrar: ${rejected.map((r) => r.error).join("; ")}.`
+        );
+      }
+      if (partes.length > 0) {
+        setOfflineNotice(partes.join(" "));
+        reloadRef.current();
+      }
+    };
+
+    window.addEventListener(PENDING_SALES_EVENT, onSync);
+    syncPendingSales({ send: saleService.createSale }).catch(() => {});
+    return () => window.removeEventListener(PENDING_SALES_EVENT, onSync);
+  }, []);
+
+  const handleRetryPending = () => {
+    syncPendingSales({ send: saleService.createSale }).catch(() => {});
+  };
 
   // Volver a la pagina 1 cuando cambian filtro de estado o busqueda.
   useEffect(() => {
@@ -176,6 +224,24 @@ const SalesSection = () => {
       setFormOpen(false);
       setFormError("");
     } catch (err) {
+      if (isNetworkError(err)) {
+        // Sin conexion: la venta queda guardada en este dispositivo, con su
+        // clave, y se envia al volver la red sin riesgo de duplicarse.
+        setPendingCount(
+          enqueueSale({
+            userId: currentUserId(),
+            sale: saleData,
+            idempotencyKey: saleKeyRef.current,
+          })
+        );
+        saleKeyRef.current = null;
+        setOfflineNotice(
+          "Sin conexión: la venta quedó guardada en este dispositivo y se enviará al recuperar la señal."
+        );
+        setFormOpen(false);
+        setFormError("");
+        return;
+      }
       const message = handleApiError(err);
       setFormError(message);
       throw err;
@@ -200,6 +266,26 @@ const SalesSection = () => {
           </button>
         </div>
       </div>
+
+      {(pendingCount > 0 || offlineNotice) && (
+        <div className="sales-offline" role="status">
+          <MdCloudOff aria-hidden="true" />
+          <div className="sales-offline-text">
+            {pendingCount > 0 && (
+              <p>
+                <strong>{pendingCount} venta(s) pendiente(s) de envío.</strong> Se enviarán
+                solas al recuperar la conexión.
+              </p>
+            )}
+            {offlineNotice && <p>{offlineNotice}</p>}
+          </div>
+          {pendingCount > 0 && (
+            <button type="button" className="sales-btn sales-btn-ghost" onClick={handleRetryPending}>
+              Reintentar ahora
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="sales-metrics">
         <div className="sales-card accent">
