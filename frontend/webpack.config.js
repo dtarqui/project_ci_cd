@@ -44,8 +44,8 @@ class CopyPublicFilesPlugin {
 }
 
 // Service worker (solo en produccion). Guarda la aplicacion para abrirla sin red y
-// las ultimas lecturas de productos, clientes y catalogos, que el formulario de
-// venta necesita sin conexion. Las ventas no pasan por aqui: las guarda la cola
+// las ultimas lecturas (tablero, ventas, productos, clientes y catalogos); el
+// formulario de venta necesita las de productos y clientes sin conexion. Las ventas no pasan por aqui: las guarda la cola
 // de src/utils/offlineSales.js, con su clave de idempotencia.
 const serviceWorker = () =>
   new GenerateSW({
@@ -60,7 +60,7 @@ const serviceWorker = () =>
     runtimeCaching: [
       {
         // La API esta en otro dominio: el patron debe cubrir la URL completa.
-        urlPattern: /^https?:\/\/[^/]+\/api\/v1\/(products|customers|catalogs)(\/|\?|$)/,
+        urlPattern: /^https?:\/\/[^/]+\/api\/v1\/(products|customers|catalogs|dashboard|sales)(\/|\?|$)/,
         method: "GET",
         handler: "NetworkFirst",
         options: {

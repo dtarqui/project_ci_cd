@@ -149,8 +149,10 @@ Reportes de cobertura:
 - `public/manifest.webmanifest` y los iconos de `public/icons/` permiten instalarla en la
   pantalla de inicio del movil.
 - En el build de produccion, Workbox genera `sw.js` (ver `webpack.config.js`): guarda la
-  aplicacion para abrirla sin red y las ultimas lecturas de productos, clientes y catalogos
-  (cache `api-lecturas`, que se borra al cerrar sesion).
+  aplicacion para abrirla sin red y las ultimas lecturas del tablero, ventas, productos,
+  clientes y catalogos (cache `api-lecturas`, que se borra al cerrar sesion).
+- Sin conexion al abrir la aplicacion, se conserva la sesion guardada; el servidor la
+  vuelve a comprobar en cada peticion y la cierra con un 401 si ya no es valida.
 - `src/utils/offlineSales.js`: si al registrar una venta no hay red, la venta queda en el
   dispositivo con su clave de idempotencia y se envia al volver la conexion, sin
   duplicarse. La cola es de cada usuario.

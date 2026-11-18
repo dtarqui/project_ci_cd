@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { authService } from "../services/api";
+import { isNetworkError } from "../utils/offlineSales";
+
+const readSavedUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+};
 
 const AuthContext = createContext(null);
 
@@ -26,9 +35,17 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem("user");
           localStorage.removeItem("token");
         }
-      } catch (_error) {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+      } catch (error) {
+        // Sin conexion no se puede validar la sesion: se conserva la guardada para
+        // trabajar sin red (modo sin conexion). El servidor la vuelve a comprobar en
+        // cada peticion y, si ya no es valida, responde 401 y la sesion se cierra.
+        const savedUser = readSavedUser();
+        if (isNetworkError(error) && savedUser?.id) {
+          setUser(savedUser);
+        } else {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+        }
       } finally {
         setLoading(false);
       }
