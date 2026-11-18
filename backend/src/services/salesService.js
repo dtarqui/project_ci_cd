@@ -7,7 +7,14 @@
 
 const buildSaleFromRequest = async (
   { customerId, items, discount = 0, paymentMethod, notes, status },
-  { productRepository, customerRepository, saleRepository, user = null, idempotencyKey = null }
+  {
+    productRepository,
+    customerRepository,
+    saleRepository,
+    user = null,
+    idempotencyKey = null,
+    inTransaction = false,
+  }
 ) => {
   const customer = await customerRepository.findById(customerId);
 
@@ -144,8 +151,13 @@ const buildSaleFromRequest = async (
       ...(idempotencyKey ? { idempotencyKey } : {}),
     });
   } catch (error) {
-    // La venta no se registro: se devuelve el stock ya reservado.
-    if (esActiva) {
+    // La venta no se registro: hay que devolver el stock ya reservado. Dentro de
+    // una transaccion de la base lo hace el ROLLBACK; ademas, despues de un error
+    // PostgreSQL rechaza cualquier otra sentencia de la transaccion (25P02), y ese
+    // rechazo ocultaria el error original (por ejemplo, la clave de idempotencia
+    // duplicada que el controlador convierte en la venta ya registrada). En
+    // memoria no hay transaccion y se compensa a mano.
+    if (esActiva && !inTransaction) {
       await productRepository.releaseStock(saleItems);
     }
     throw error;

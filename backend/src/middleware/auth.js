@@ -6,14 +6,18 @@
 const { extractToken, verifyAuthToken } = require("../utils/helpers");
 const { sendError } = require("../utils/httpResponses");
 const { logEvent } = require("../utils/logger");
+const { checkSession } = require("../services/sessionService");
 
 /**
- * Middleware para validar token Bearer
+ * Middleware para validar token Bearer.
+ * Ademas de la firma y el vencimiento, comprueba que la sesion siga vigente
+ * (que el token no se haya revocado al cerrar sesion) y toma el rol actual del
+ * usuario, no el que llevaba el token (ver services/sessionService.js).
  * @param {Object} req - Request object
  * @param {Object} res - Response object
  * @param {Function} next - Next middleware
  */
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -41,14 +45,34 @@ const authenticateToken = (req, res, next) => {
     });
   }
 
+  let session;
+  try {
+    session = await checkSession(payload);
+  } catch (error) {
+    return next(error);
+  }
+
+  if (!session.active) {
+    logEvent("warn", "auth.session_rejected", {
+      userId: Number(payload.sub),
+      reason: session.reason,
+    });
+    return sendError(res, 401, {
+      error: "La sesión ya no es válida. Inicia sesión de nuevo.",
+      code: "SESSION_REVOKED",
+    });
+  }
+
   req.user = {
     id: Number(payload.sub),
     username: payload.username,
     name: payload.name,
-    role: payload.role,
+    role: session.role || payload.role,
+    jti: payload.jti,
+    tokenExp: payload.exp,
   };
 
-  next();
+  return next();
 };
 
 /**

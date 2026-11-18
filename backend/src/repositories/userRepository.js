@@ -5,7 +5,7 @@
 
 const crypto = require("crypto");
 const { UserDao } = require("../mappers/userDao");
-const { getUsers, resetDataStore } = require("../db/dataStore");
+const { getUsers, getMockData, resetDataStore } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 const { resolveRepositoryMode } = require("./factory");
 
@@ -67,8 +67,22 @@ const verifyPassword = (password, storedHash) => {
 };
 
 const sanitizeUser = (user) => {
-  const { passwordHash: _passwordHash, password: _legacyPassword, ...safeUser } = user;
+  const {
+    passwordHash: _passwordHash,
+    password: _legacyPassword,
+    tokenVersion: _tokenVersion,
+    ...safeUser
+  } = user;
   return safeUser;
+};
+
+/** Tokens revocados en modo memoria: jti -> { userId, expiresAt (ms) }. */
+const revokedTokens = () => {
+  const data = getMockData();
+  if (!data.revokedTokens) {
+    data.revokedTokens = new Map();
+  }
+  return data.revokedTokens;
 };
 
 const ensureUsersNormalized = () => {
@@ -170,6 +184,50 @@ class InMemoryUserRepository {
     return deletedUser;
   }
 
+  /**
+   * Estado de la sesion de un token: version de sesiones y rol actuales del
+   * usuario, y si el token fue revocado. null si el usuario ya no existe.
+   */
+  async getSessionState(userId, jti) {
+    const user = getUsers().find((item) => item.id === userId);
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      tokenVersion: user.tokenVersion ?? 0,
+      role: user.role,
+      revoked: Boolean(jti) && revokedTokens().has(jti),
+    };
+  }
+
+  /** Revoca un token hasta su vencimiento y descarta los ya vencidos. */
+  async revokeToken({ jti, userId, expiresAt }) {
+    const tokens = revokedTokens();
+    const now = Date.now();
+
+    for (const [key, entry] of tokens) {
+      if (entry.expiresAt <= now) {
+        tokens.delete(key);
+      }
+    }
+
+    tokens.set(jti, { userId, expiresAt: new Date(expiresAt).getTime() });
+  }
+
+  /** Invalida todos los tokens del usuario. Devuelve la nueva version, o null. */
+  async revokeAllSessions(userId) {
+    const user = getUsers().find((item) => item.id === userId);
+
+    if (!user) {
+      return null;
+    }
+
+    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+    return user.tokenVersion;
+  }
+
   sanitizeUser(user) {
     return sanitizeUser(user);
   }
@@ -249,6 +307,56 @@ class DatabaseUserRepository {
   async deleteUser(id) {
     try {
       return await getPrismaClient().user.delete({ where: { id } });
+    } catch (error) {
+      if (isRecordNotFoundError(error)) return null;
+      throw error;
+    }
+  }
+
+  /**
+   * Una sola consulta: version de sesiones y rol del usuario, y si el token
+   * esta revocado. null si el usuario ya no existe.
+   */
+  async getSessionState(userId, jti) {
+    const rows = await getPrismaClient().$queryRaw`
+      SELECT u.token_version AS "tokenVersion",
+             u.role AS "role",
+             EXISTS (SELECT 1 FROM revoked_tokens r WHERE r.jti = ${jti || ""}) AS "revoked"
+      FROM users u
+      WHERE u.id = ${userId}`;
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    const [row] = rows;
+    return {
+      tokenVersion: Number(row.tokenVersion),
+      role: row.role,
+      revoked: Boolean(row.revoked),
+    };
+  }
+
+  /** Revoca un token hasta su vencimiento y descarta los ya vencidos. */
+  async revokeToken({ jti, userId, expiresAt }) {
+    const prisma = getPrismaClient();
+
+    await prisma.revokedToken.createMany({
+      data: [{ jti, userId, expiresAt: new Date(expiresAt) }],
+      skipDuplicates: true,
+    });
+    await prisma.revokedToken.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+  }
+
+  /** Invalida todos los tokens del usuario. Devuelve la nueva version, o null. */
+  async revokeAllSessions(userId) {
+    try {
+      const user = await getPrismaClient().user.update({
+        where: { id: userId },
+        data: { tokenVersion: { increment: 1 } },
+        select: { tokenVersion: true },
+      });
+      return user.tokenVersion;
     } catch (error) {
       if (isRecordNotFoundError(error)) return null;
       throw error;

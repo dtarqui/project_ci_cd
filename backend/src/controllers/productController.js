@@ -9,6 +9,11 @@ const {
 const { createProductRepository } = require("../repositories/productRepository");
 const { createSaleRepository } = require("../repositories/saleRepository");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const {
+  PreconditionFailedError,
+  etagOf,
+  resolvePrecondition,
+} = require("../utils/concurrency");
 const { parsePagination } = require("../utils/queryHelpers");
 const { filterSortProducts } = require("../utils/listQueries");
 
@@ -84,7 +89,18 @@ const getProduct = async (req, res) => {
     });
   }
 
+  res.setHeader("ETag", etagOf(product));
   sendSuccess(res, { data: product, timestamp: new Date().toISOString() });
+};
+
+
+/** 412: el registro cambio desde que el cliente lo leyo. */
+const sendPreconditionFailed = (res, current) => {
+  res.setHeader("ETag", etagOf(current));
+  return sendError(res, 412, {
+    error: "El producto cambió desde que lo abriste. Recarga los datos y vuelve a intentarlo.",
+    code: "PRECONDITION_FAILED",
+  });
 };
 
 /**
@@ -101,6 +117,13 @@ const updateProduct = async (req, res) => {
     });
   }
 
+  // Concurrencia optimista: con If-Match, solo se guarda si nadie modifico el
+  // registro desde que el cliente lo leyo (412 si no).
+  const precondition = resolvePrecondition(product, req.get("If-Match"));
+  if (!precondition.ok) {
+    return sendPreconditionFailed(res, product);
+  }
+
   const validation = validateProductUpdate(req.body);
 
   if (!validation.isValid) {
@@ -110,8 +133,19 @@ const updateProduct = async (req, res) => {
     });
   }
 
-  const updatedProduct = await productRepository.update(productId, req.body);
+  let updatedProduct;
+  try {
+    updatedProduct = await productRepository.update(productId, req.body, {
+      expectedVersion: precondition.expectedVersion,
+    });
+  } catch (error) {
+    if (error instanceof PreconditionFailedError) {
+      return sendPreconditionFailed(res, error.current);
+    }
+    throw error;
+  }
 
+  res.setHeader("ETag", etagOf(updatedProduct));
   sendSuccess(res, {
     data: updatedProduct,
     message: "Producto actualizado exitosamente",

@@ -16,16 +16,16 @@ describe("Pruebas de middleware de auth - Cobertura extendida", () => {
       next = jest.fn();
     });
 
-    it("debe llamar next() cuando token es válido", () => {
+    it("debe llamar next() cuando token es válido", async () => {
       req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
-      authenticateToken(req, res, next);
+      await authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalled();
     });
 
-    it("debe llamar next() para tokens mock JWT válidos", () => {
+    it("debe llamar next() para tokens mock JWT válidos", async () => {
       req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
-      authenticateToken(req, res, next);
+      await authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
     });
 
@@ -74,10 +74,10 @@ describe("Pruebas de middleware de auth - Cobertura extendida", () => {
       expect(res.status).toHaveBeenCalledWith(401);
     });
 
-    it("debe extraer token sin trim automático", () => {
+    it("debe extraer token sin trim automático", async () => {
       // Token con espacios extras - la implementación no hace trim
       req.headers.authorization = `Bearer ${createAuthToken(1, { username: "admin" })}`;
-      authenticateToken(req, res, next);
+      await authenticateToken(req, res, next);
       expect(next).toHaveBeenCalled();
     });
   });

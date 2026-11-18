@@ -3,6 +3,7 @@
  * Capa de acceso a datos de productos (memory/database).
  */
 
+const { assertVersion, updateIfUnchanged } = require("../utils/concurrency");
 const { ProductDao } = require("../mappers/productDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
@@ -58,13 +59,15 @@ class InMemoryProductRepository {
     return product;
   }
 
-  async update(id, updates) {
+  async update(id, updates, options = {}) {
     const products = getMockData().products;
     const productIndex = products.findIndex((product) => product.id === id);
 
     if (productIndex === -1) {
       return null;
     }
+
+    assertVersion(products[productIndex], options.expectedVersion);
 
     const nextProduct = ProductDao.mergeUpdates(
       products[productIndex],
@@ -201,7 +204,7 @@ class DatabaseProductRepository {
     });
   }
 
-  async update(id, updates) {
+  async update(id, updates, options = {}) {
     const data = {};
 
     if (updates.name) data.name = updates.name;
@@ -211,6 +214,10 @@ class DatabaseProductRepository {
     if (updates.stock !== undefined) {
       data.stock = parseInt(updates.stock, 10);
       data.status = calculateProductStatus(data.stock);
+    }
+
+    if (options.expectedVersion !== undefined) {
+      return updateIfUnchanged(this.db().product, id, data, options.expectedVersion);
     }
 
     try {

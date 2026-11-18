@@ -45,23 +45,41 @@ model Category {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  email        String?  @unique
-  passwordHash String   @map("password_hash")
-  role         String   @default("vendedor")
-  name         String?
-  phone        String?
-  address      String?
-  city         String?
-  state        String?
-  postalCode   String?  @map("postal_code")
-  dateOfBirth  String?  @map("date_of_birth")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  sales        Sale[]
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  email         String?        @unique
+  passwordHash  String         @map("password_hash")
+  role          String         @default("vendedor")
+  name          String?
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  postalCode    String?        @map("postal_code")
+  dateOfBirth   String?        @map("date_of_birth")
+  // Version de las sesiones: cerrar todas las sesiones la incrementa e invalida
+  // los tokens emitidos con la version anterior.
+  tokenVersion  Int            @default(0) @map("token_version")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  sales         Sale[]
+  revokedTokens RevokedToken[]
 
   @@map("users")
+}
+
+// Tokens revocados al cerrar sesion. Cada fila se conserva hasta que el token
+// vence; despues ya no hace falta, porque la firma tambien lo rechaza.
+model RevokedToken {
+  jti       String   @id
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("revoked_tokens")
 }
 
 model Customer {

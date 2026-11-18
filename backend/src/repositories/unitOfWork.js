@@ -37,6 +37,7 @@ const runInTransaction = (work) => {
           productRepository: new products.DatabaseProductRepository(tx),
           customerRepository: new customers.DatabaseCustomerRepository(tx),
           saleRepository: new sales.DatabaseSaleRepository(tx),
+          inTransaction: true,
         }),
       TRANSACTION_OPTIONS
     );
@@ -46,6 +47,7 @@ const runInTransaction = (work) => {
     productRepository: products.createProductRepository(),
     customerRepository: customers.createCustomerRepository(),
     saleRepository: sales.createSaleRepository(),
+    inTransaction: false,
   });
 };
 

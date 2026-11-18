@@ -132,11 +132,31 @@ fallan con `P2022`.
 
 ## Endpoints
 
+La API se publica versionada en `/api/v1`. Las rutas sin version (`/api/...`) siguen
+respondiendo igual para los clientes anteriores, con las cabeceras `Deprecation`
+(RFC 9745) y `Link: <...>; rel="successor-version"` (RFC 8288) que indican la ruta
+nueva. Abajo se listan sin el prefijo de version.
+
 Autenticacion:
 - `POST /api/auth/register`
 - `POST /api/auth/login`
-- `POST /api/auth/logout`
+- `POST /api/auth/logout`: revoca en el servidor el token de la peticion (responde 200
+  tambien sin token, para que el cliente siempre pueda limpiar su sesion)
+- `POST /api/auth/logout-all`: cierra todas las sesiones del usuario (por ejemplo, si
+  pierde un dispositivo)
 - `GET /api/auth/me`
+
+Cada token lleva un identificador (`jti`) y la version de sesiones del usuario (`ver`).
+El middleware comprueba en cada peticion que el usuario exista, que el token no este
+revocado y que su version sea la vigente, y toma el rol del usuario de la base, no del
+token. Cada instancia guarda el resultado `SESSION_CHECK_TTL_MS` (15 s por defecto):
+la instancia que revoca lo aplica de inmediato y las demas, como maximo, en ese plazo.
+
+Concurrencia optimista en productos y clientes: `GET /:id` y `PUT /:id` devuelven
+`ETag` (la fecha de ultima modificacion, en ms). Un `PUT` con `If-Match` solo se aplica
+si el registro sigue en esa version (`UPDATE ... WHERE id = ? AND updated_at = ?`); si
+otro usuario guardo antes, responde `412 PRECONDITION_FAILED`. Sin `If-Match` no hay
+precondicion.
 
 Perfil de usuario autenticado:
 - `GET /api/users/me`
@@ -192,13 +212,19 @@ Copia `sample.env` a `.env` y ajusta lo necesario — cada variable ahi indica s
   rechaza el arranque. En desarrollo tiene un fallback inseguro solo-local.
 - `DATABASE_URL` es obligatoria unicamente cuando `REPOSITORY_MODE=database`.
 - El resto (`PORT`, `NODE_ENV`, `REPOSITORY_MODE`, `CORS_*`, `JWT_EXPIRES_IN`,
-  `JWT_ALGORITHM`, `JWT_ISSUER`, `JWT_AUDIENCE`) es opcional: cada una cae a un
-  valor por defecto seguro para desarrollo si no se define.
+  `JWT_ALGORITHM`, `JWT_ISSUER`, `JWT_AUDIENCE`, `SESSION_CHECK_TTL_MS`) es opcional:
+  cada una cae a un valor por defecto seguro para desarrollo si no se define.
+- `CORS_ALLOW_ORIGIN` admite varios origenes separados por coma; `*` (por defecto)
+  permite cualquiera. En staging el pipeline fija el dominio publico del frontend.
 
 ## Scripts npm
 - `npm start` - ejecutar API.
 - `npm run dev` - ejecutar con nodemon.
-- `npm test` - pruebas Jest.
+- `npm test` - pruebas Jest. Incluye `__tests__/postgres.integration.test.js`, que arranca
+  un PostgreSQL 17 local (paquete `embedded-postgres`), aplica las migraciones y prueba la
+  API en modo `database`: ventas simultaneas por el mismo stock, transacciones,
+  idempotencia, concurrencia optimista y revocacion de sesiones. No usa ninguna base
+  externa ni credenciales.
 - `npm run test:watch` - pruebas en modo watch.
 - `npm run test:coverage` - cobertura local.
 - `npm run test:ci` - pruebas CI con cobertura y reportes.

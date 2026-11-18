@@ -9,6 +9,11 @@ const {
 } = require("../utils/validators");
 const { createCustomerRepository } = require("../repositories/customerRepository");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const {
+  PreconditionFailedError,
+  etagOf,
+  resolvePrecondition,
+} = require("../utils/concurrency");
 const { parsePagination } = require("../utils/queryHelpers");
 const { filterSortCustomers } = require("../utils/listQueries");
 const { createCatalogRepository } = require("../repositories/catalogRepository");
@@ -108,7 +113,18 @@ const getCustomer = async (req, res) => {
     });
   }
 
+  res.setHeader("ETag", etagOf(customer));
   sendSuccess(res, { data: customer, timestamp: new Date().toISOString() });
+};
+
+
+/** 412: el registro cambio desde que el cliente lo leyo. */
+const sendPreconditionFailed = (res, current) => {
+  res.setHeader("ETag", etagOf(current));
+  return sendError(res, 412, {
+    error: "El cliente cambió desde que lo abriste. Recarga los datos y vuelve a intentarlo.",
+    code: "PRECONDITION_FAILED",
+  });
 };
 
 /**
@@ -125,6 +141,13 @@ const updateCustomer = async (req, res) => {
     });
   }
 
+  // Concurrencia optimista: con If-Match, solo se guarda si nadie modifico el
+  // registro desde que el cliente lo leyo (412 si no).
+  const precondition = resolvePrecondition(customer, req.get("If-Match"));
+  if (!precondition.ok) {
+    return sendPreconditionFailed(res, customer);
+  }
+
   const validation = validateCustomerUpdate(req.body);
 
   if (!validation.isValid) {
@@ -139,8 +162,19 @@ const updateCustomer = async (req, res) => {
     return sendError(res, 400, ciudadInvalida);
   }
 
-  const updatedCustomer = await customerRepository.update(customerId, req.body);
+  let updatedCustomer;
+  try {
+    updatedCustomer = await customerRepository.update(customerId, req.body, {
+      expectedVersion: precondition.expectedVersion,
+    });
+  } catch (error) {
+    if (error instanceof PreconditionFailedError) {
+      return sendPreconditionFailed(res, error.current);
+    }
+    throw error;
+  }
 
+  res.setHeader("ETag", etagOf(updatedCustomer));
   sendSuccess(res, {
     data: updatedCustomer,
     message: "Cliente actualizado exitosamente",

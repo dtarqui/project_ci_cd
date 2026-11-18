@@ -3,6 +3,7 @@
  * Capa de acceso a datos de clientes (memory/database).
  */
 
+const { assertVersion, updateIfUnchanged } = require("../utils/concurrency");
 const { CustomerDao } = require("../mappers/customerDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
@@ -57,13 +58,15 @@ class InMemoryCustomerRepository {
     return customer;
   }
 
-  async update(id, updates) {
+  async update(id, updates, options = {}) {
     const customers = getMockData().customers;
     const customerIndex = customers.findIndex((customer) => customer.id === id);
 
     if (customerIndex === -1) {
       return null;
     }
+
+    assertVersion(customers[customerIndex], options.expectedVersion);
 
     const nextCustomer = CustomerDao.mergeUpdates(customers[customerIndex], updates);
     customers[customerIndex] = nextCustomer;
@@ -160,7 +163,7 @@ class DatabaseCustomerRepository {
     });
   }
 
-  async update(id, updates) {
+  async update(id, updates, options = {}) {
     const data = {};
 
     if (updates.name) data.name = updates.name;
@@ -170,6 +173,10 @@ class DatabaseCustomerRepository {
     if (updates.city !== undefined) data.city = updates.city;
     if (updates.postalCode !== undefined) data.postalCode = updates.postalCode;
     if (updates.status) data.status = updates.status;
+
+    if (options.expectedVersion !== undefined) {
+      return updateIfUnchanged(this.db().customer, id, data, options.expectedVersion);
+    }
 
     try {
       return await this.db().customer.update({ where: { id }, data });

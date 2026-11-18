@@ -28,6 +28,11 @@ const { asyncHandler } = require("./utils/asyncHandler");
 const { checkReadiness } = require("./services/readinessService");
 const { version } = require("../package.json");
 
+const API_PREFIX = "/api/v1";
+const API_LEGACY_PREFIX = "/api";
+// Fecha desde la que /api sin version se considera obsoleta (RFC 9745: @segundos).
+const LEGACY_API_DEPRECATION = `@${Math.floor(Date.parse("2026-11-18T00:00:00Z") / 1000)}`;
+
 /**
  * Crea una aplicación Express configurada con todas las rutas y middleware
  * @returns {express.Application} Aplicación Express
@@ -86,24 +91,26 @@ const createApp = () => {
 
   // ==================== ROUTES ====================
 
-  // Rutas de autenticación
-  app.use("/api/auth", authRoutes);
+  // La API se publica versionada en /api/v1. /api queda como alias de la misma
+  // version para los clientes anteriores, con las cabeceras Deprecation y Link
+  // (RFC 9745 y RFC 8288) que indican la ruta que la sustituye.
+  app.use(API_LEGACY_PREFIX, (req, res, next) => {
+    if (req.path !== "/v1" && !req.path.startsWith("/v1/")) {
+      res.setHeader("Deprecation", LEGACY_API_DEPRECATION);
+      res.setHeader("Link", `<${API_PREFIX}${req.path}>; rel="successor-version"`);
+    }
+    next();
+  });
 
-  // Rutas de productos
-  app.use("/api/products", productRoutes);
-
-  // Rutas de clientes
-  app.use("/api/customers", customerRoutes);
-
-  // Rutas del dashboard
-  app.use("/api/dashboard", dashboardRoutes);
-
-  // Rutas de ventas
-  app.use("/api/sales", salesRoutes);
-
-  // Rutas de usuarios autenticados
-  app.use("/api/users", userRoutes);
-  app.use("/api/catalogs", catalogRoutes);
+  for (const prefix of [API_PREFIX, API_LEGACY_PREFIX]) {
+    app.use(`${prefix}/auth`, authRoutes);
+    app.use(`${prefix}/products`, productRoutes);
+    app.use(`${prefix}/customers`, customerRoutes);
+    app.use(`${prefix}/dashboard`, dashboardRoutes);
+    app.use(`${prefix}/sales`, salesRoutes);
+    app.use(`${prefix}/users`, userRoutes);
+    app.use(`${prefix}/catalogs`, catalogRoutes);
+  }
 
   // ==================== ERROR HANDLING ====================
 
@@ -117,3 +124,5 @@ const createApp = () => {
 };
 
 module.exports = createApp;
+module.exports.API_PREFIX = API_PREFIX;
+module.exports.API_LEGACY_PREFIX = API_LEGACY_PREFIX;

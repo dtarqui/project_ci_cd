@@ -11,6 +11,7 @@ const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
 const { UserDao } = require("../mappers/userDao");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const { checkSession, revokeToken, revokeAllSessions } = require("../services/sessionService");
 const { createLoginAttemptLimiter, clientIp } = require("../middleware/security");
 const { logEvent } = require("../utils/logger");
 
@@ -78,6 +79,7 @@ const register = async (req, res) => {
     username: safeUser.username,
     name: safeUser.name,
     role: safeUser.role,
+    ver: createdUser.tokenVersion ?? 0,
   });
 
   return sendSuccess(
@@ -136,6 +138,7 @@ const login = async (req, res) => {
     username: user.username,
     name: user.name,
     role: user.role,
+    ver: user.tokenVersion ?? 0,
   });
 
   sendSuccess(res, {
@@ -148,9 +151,48 @@ const login = async (req, res) => {
 /**
  * Maneja el logout de usuarios
  */
-const logout = (req, res) => {
+const logout = async (req, res) => {
+  // Con un token vigente, este deja de servir en el servidor y no solo en el
+  // navegador. Sin token, o con uno ya invalido, no hay nada que revocar: la
+  // respuesta es la misma, para que el cliente siempre pueda limpiar su sesion.
+  const authHeader = req.headers.authorization || "";
+  const payload = authHeader.startsWith("Bearer ")
+    ? verifyAuthToken(extractToken(authHeader))
+    : null;
+
+  if (payload) {
+    const session = await checkSession(payload);
+    if (session.active) {
+      const userId = Number(payload.sub);
+      await revokeToken({ id: userId, jti: payload.jti, tokenExp: payload.exp });
+      logEvent("info", "auth.logout", { userId });
+    }
+  }
+
   sendSuccess(res, {
     message: "Sesión cerrada correctamente",
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Cierra todas las sesiones del usuario (por ejemplo, si pierde un dispositivo):
+ * invalida todos los tokens emitidos hasta ahora, incluido el de la peticion.
+ */
+const logoutAll = async (req, res) => {
+  const version = await revokeAllSessions(req.user.id);
+
+  if (version === null) {
+    return sendError(res, 404, {
+      error: "Usuario no encontrado",
+      code: "USER_NOT_FOUND",
+    });
+  }
+
+  logEvent("info", "auth.sessions_revoked", { userId: req.user.id });
+
+  return sendSuccess(res, {
+    message: "Se cerraron todas las sesiones",
     timestamp: new Date().toISOString(),
   });
 };
@@ -195,6 +237,14 @@ const getMe = async (req, res) => {
     });
   }
 
+  const session = await checkSession(payload);
+
+  if (!session.active) {
+    return sendError(res, 401, session.reason === "USER_NOT_FOUND"
+      ? { error: "Token inválido", code: "INVALID_TOKEN" }
+      : { error: "La sesión ya no es válida. Inicia sesión de nuevo.", code: "SESSION_REVOKED" });
+  }
+
   const user = await userRepository.findById(userId);
 
   if (!user) {
@@ -212,5 +262,6 @@ module.exports = {
   register,
   login,
   logout,
+  logoutAll,
   getMe,
 };

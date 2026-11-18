@@ -2,6 +2,7 @@
  * Utilities - Funciones reutilizables
  */
 
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { STOCK_THRESHOLDS } = require("../config/constants");
 
@@ -119,6 +120,9 @@ const createAuthToken = (userId, extraPayload = {}) => {
     sub: userId,
     ...extraPayload,
   };
+
+  // Identificador unico del token: permite revocarlo al cerrar sesion.
+  signOptions.jwtid = crypto.randomUUID();
 
   return jwt.sign(payload, getJwtSecret(), signOptions);
 };

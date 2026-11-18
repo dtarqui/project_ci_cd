@@ -213,24 +213,26 @@ describe("Pruebas adicionales de cobertura de API", () => {
       expect(response.body.code).toBe("INVALID_TOKEN");
     });
 
-    test("debe manejar usuario inexistente en token de dashboard", async () => {
+    // Un token bien firmado de un usuario que ya no existe deja de servir: el
+    // middleware comprueba la sesion contra el repositorio (sessionService).
+    test("debe rechazar un token de usuario inexistente en el dashboard", async () => {
       const unknownUserToken = createAuthToken(9999, { username: "unknown" });
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", `Bearer ${unknownUserToken}`)
-        .expect(200);
+        .expect(401);
 
-      expect(response.body).toHaveProperty("dailySales");
+      expect(response.body.code).toBe("SESSION_REVOKED");
     });
 
-    test("debe manejar ID de usuario cero en token de dashboard", async () => {
+    test("debe rechazar un token con ID de usuario cero en el dashboard", async () => {
       const zeroIdToken = createAuthToken(0, { username: "zero" });
       const response = await request(app)
         .get("/api/dashboard/data")
         .set("Authorization", `Bearer ${zeroIdToken}`)
-        .expect(200);
+        .expect(401);
 
-      expect(response.body).toHaveProperty("dailySales");
+      expect(response.body.code).toBe("SESSION_REVOKED");
     });
   });
 

@@ -249,6 +249,25 @@ describe("salesService.buildSaleFromRequest", () => {
     expect(repos.customerRepository.updateStats).not.toHaveBeenCalled();
   });
 
+  it("dentro de una transaccion no compensa a mano: el ROLLBACK devuelve el stock", async () => {
+    // En PostgreSQL, tras un error la transaccion queda abortada y rechaza otra
+    // sentencia (25P02); compensar ocultaria el error original.
+    const fallo = Object.assign(new Error("clave de idempotencia duplicada"), { code: "P2002" });
+    const repos = makeRepos({
+      products: [makeProduct({ price: 100, stock: 10 })],
+      createThrows: fallo,
+    });
+
+    await expect(
+      buildSaleFromRequest(
+        { customerId: 1, items: [{ productId: 1, quantity: 1 }], paymentMethod: "Efectivo" },
+        { ...repos, inTransaction: true }
+      )
+    ).rejects.toBe(fallo);
+
+    expect(repos.productRepository.releaseStock).not.toHaveBeenCalled();
+  });
+
   it("no reserva ni devuelve stock cuando la venta nace anulada", async () => {
     const repos = makeRepos({ products: [makeProduct({ price: 100, stock: 10 })] });
 

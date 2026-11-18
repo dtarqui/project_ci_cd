@@ -126,6 +126,10 @@ pipeline {
         // despues el esquema de la base con el que espera el codigo y falla si difieren.
         // Vaciar DB_MIGRATE_CMD desactiva la etapa (proyectos sin base de datos).
         DB_URL_CREDENTIAL_ID = "database-url"
+
+        // Severidad minima que detiene el pipeline en la auditoria de dependencias de
+        // produccion (npm audit, etapas Frontend y Backend Dependencies).
+        NPM_AUDIT_LEVEL = "high"
         DB_MIGRATE_CMD = "npx prisma migrate deploy"
         DB_SCHEMA_CHECK_CMD = "npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --exit-code"
 
@@ -145,9 +149,10 @@ pipeline {
         // Variables que deben existir en Vercel antes de desplegar el backend (separadas por coma).
         BACKEND_REQUIRED_ENV = "JWT_SECRET"
         // Variables que el pipeline reemplaza en cada despliegue del backend (KEY=VALUE por linea).
-        // En este caso de estudio abren CORS a cualquier origen, porque el frontend llama al
-        // backend en otro dominio. Es una decision del caso, no de la plantilla.
-        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=*\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key"
+        // En este caso de estudio limitan CORS al dominio publico del frontend y al servidor
+        // de desarrollo: otro sitio no puede llamar a la API desde el navegador de un usuario.
+        // Son valores del caso, no de la plantilla.
+        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=https://frontend-rho-ruby-19.vercel.app,http://localhost:3000\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key, If-Match"
 
         // Conexion del frontend con el backend desplegado (etapas Frontend Build y Deploy Vercel)
         // FRONTEND_API_URL_VAR: variable de build del frontend que recibe la URL del backend.
@@ -334,11 +339,19 @@ pipeline {
                             sh '''
                                 npm ci --cache .npm --prefer-offline
 
+                                # Compuerta de seguridad: falla si alguna dependencia de produccion
+                                # tiene una vulnerabilidad conocida de severidad alta o critica.
+                                npm audit --omit=dev --audit-level="$NPM_AUDIT_LEVEL"
+
                                 echo "Dependencias frontend instaladas correctamente"
                             '''
                         } else {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
+                                if errorlevel 1 exit /b 1
+
+                                npm audit --omit=dev --audit-level=%NPM_AUDIT_LEVEL%
+                                if errorlevel 1 exit /b 1
 
                                 echo Dependencias frontend instaladas correctamente
                             '''
@@ -368,11 +381,19 @@ pipeline {
                             sh '''
                                 npm ci --cache .npm --prefer-offline
 
+                                # Compuerta de seguridad: falla si alguna dependencia de produccion
+                                # tiene una vulnerabilidad conocida de severidad alta o critica.
+                                npm audit --omit=dev --audit-level="$NPM_AUDIT_LEVEL"
+
                                 echo "Dependencias backend instaladas correctamente"
                             '''
                         } else {
                             bat '''
                                 npm ci --cache .npm --prefer-offline
+                                if errorlevel 1 exit /b 1
+
+                                npm audit --omit=dev --audit-level=%NPM_AUDIT_LEVEL%
+                                if errorlevel 1 exit /b 1
 
                                 echo Dependencias backend instaladas correctamente
                             '''
