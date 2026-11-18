@@ -6,9 +6,9 @@
  * venta, el reintento recibe esa misma venta en lugar de duplicarla y descontar
  * el stock dos veces.
  */
-export const newIdempotencyKey = () => {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
+export const newIdempotencyKey = (cryptoImpl = globalThis.crypto) => {
+  if (typeof cryptoImpl?.randomUUID === "function") {
+    return cryptoImpl.randomUUID();
   }
 
   // Navegadores sin randomUUID: marca de tiempo y azar, solo con caracteres que
