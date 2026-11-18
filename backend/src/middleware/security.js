@@ -14,6 +14,9 @@ const SECURITY_HEADERS = {
   "Strict-Transport-Security": "max-age=15552000; includeSubDomains",
   "Cross-Origin-Opener-Policy": "same-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  // Las respuestas de la API son datos autenticados: ningun navegador ni
+  // intermediario debe guardarlas (aviso 10049 del escaneo OWASP ZAP).
+  "Cache-Control": "no-store",
 };
 
 const securityHeaders = (req, res, next) => {
