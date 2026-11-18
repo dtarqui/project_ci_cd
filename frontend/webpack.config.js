@@ -4,6 +4,7 @@ const webpack = require("webpack");
 const dotenv = require("dotenv");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { GenerateSW } = require("workbox-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const env = dotenv.config().parsed || {};
 const envKeys = Object.keys(env).reduce((acc, key) => {
@@ -98,13 +99,24 @@ module.exports = (_env, argv = {}) => ({
         exclude: /node_modules/,
         use: { loader: "babel-loader" },
       },
-      { test: /\.css$/, use: ["style-loader", "css-loader"] },
+      // En produccion el CSS va en archivos propios y no en etiquetas <style>: asi la
+      // Content-Security-Policy (vercel.json) no necesita permitir estilos en linea.
+      {
+        test: /\.css$/,
+        use: [
+          argv.mode === "production" ? MiniCssExtractPlugin.loader : "style-loader",
+          "css-loader",
+        ],
+      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({ template: "./public/index.html", favicon: "./public/favicon.svg" }),
     new webpack.DefinePlugin(envKeys),
     new CopyPublicFilesPlugin(PWA_FILES),
+    ...(argv.mode === "production"
+      ? [new MiniCssExtractPlugin({ filename: "static/css/[name].[contenthash:8].css", chunkFilename: "static/css/[name].[contenthash:8].chunk.css" })]
+      : []),
     ...(argv.mode === "production" ? [serviceWorker()] : []),
   ],
   devServer: {
