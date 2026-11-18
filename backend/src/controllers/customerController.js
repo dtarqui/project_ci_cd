@@ -8,9 +8,9 @@ const {
   validateCityAgainstCatalog,
 } = require("../utils/validators");
 const { createCustomerRepository } = require("../repositories/customerRepository");
-const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
-const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
+const { parsePagination } = require("../utils/queryHelpers");
+const { filterSortCustomers } = require("../utils/listQueries");
 const { createCatalogRepository } = require("../repositories/catalogRepository");
 const { createSaleRepository } = require("../repositories/saleRepository");
 
@@ -34,14 +34,6 @@ const revisarCiudad = async (city) => {
   const check = validateCityAgainstCatalog(city, ciudades.map((c) => c.name));
 
   return check.isValid ? null : { error: check.error, code: check.code };
-};
-
-const CUSTOMER_SORTS = {
-  email: (a, b) => a.email.localeCompare(b.email),
-  spending: (a, b) => b.totalSpent - a.totalSpent,
-  purchases: (a, b) => b.purchases - a.purchases,
-  registered: (a, b) => new Date(b.registeredDate) - new Date(a.registeredDate),
-  default: (a, b) => a.name.localeCompare(b.name),
 };
 
 /**
@@ -80,25 +72,17 @@ const createCustomer = async (req, res) => {
  */
 const getCustomers = async (req, res) => {
   const { search = "", status = "", sort = "name" } = req.query;
+  const query = { search, status, sort };
 
-  let customers = await customerRepository.list();
-
-  customers = filterByText(customers, ["name", "email", "phone"], search);
-
-  // Filtrar por estado (coincidencia exacta, no parcial)
-  if (status) {
-    customers = customers.filter(
-      (c) => c.status.toLowerCase() === status.toLowerCase(),
-    );
-  }
-
-  // Ordenar
-  customers = applySort(customers, CUSTOMER_SORTS, sort);
-
+  // Con `page`, se pagina en el repositorio; sin el, lista completa filtrada.
   const pagination = parsePagination(req.query);
-  const result = pagination
-    ? paginate(customers, pagination)
-    : { data: customers, total: customers.length };
+  let result;
+  if (pagination) {
+    result = await customerRepository.listPage(query, pagination);
+  } else {
+    const customers = filterSortCustomers(await customerRepository.list(), query);
+    result = { data: customers, total: customers.length };
+  }
 
   sendSuccess(res, {
     data: result.data,

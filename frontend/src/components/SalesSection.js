@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MdSearch,
   MdReceiptLong,
@@ -12,6 +12,7 @@ import {
 import { saleService, customerService, productService, handleApiError } from "../services/api";
 import useEntityList from "../hooks/useEntityList";
 import { formatCurrency, formatDate } from "../utils/format";
+import { newIdempotencyKey } from "../utils/idempotency";
 import SalesForm from "./SalesForm";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
@@ -133,7 +134,12 @@ const SalesSection = () => {
     }
   };
 
+  // Clave de la venta en curso: se conserva entre reintentos y se renueva al
+  // registrar la venta o al abrir el formulario para una venta nueva.
+  const saleKeyRef = useRef(null);
+
   const handleOpenForm = () => {
+    saleKeyRef.current = newIdempotencyKey();
     setFormOpen(true);
     loadFormOptions();
   };
@@ -161,7 +167,11 @@ const SalesSection = () => {
 
   const handleCreateSale = async (saleData) => {
     try {
-      await saleService.createSale(saleData);
+      if (!saleKeyRef.current) {
+        saleKeyRef.current = newIdempotencyKey();
+      }
+      await saleService.createSale(saleData, saleKeyRef.current);
+      saleKeyRef.current = null;
       await Promise.all([loadSales(), reloadMetrics()]);
       setFormOpen(false);
       setFormError("");

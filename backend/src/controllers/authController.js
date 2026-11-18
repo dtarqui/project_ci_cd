@@ -11,8 +11,11 @@ const { extractToken } = require("../utils/helpers");
 const { createUserRepository } = require("../repositories/userRepository");
 const { UserDao } = require("../mappers/userDao");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
+const { createLoginAttemptLimiter, clientIp } = require("../middleware/security");
+const { logEvent } = require("../utils/logger");
 
 const userRepository = createUserRepository();
+const loginLimiter = createLoginAttemptLimiter();
 
 /**
  * Maneja el registro de usuarios
@@ -102,14 +105,31 @@ const login = async (req, res) => {
   }
 
   const { username, password } = req.body;
+
+  const limit = loginLimiter.check(req);
+  if (limit.blocked) {
+    logEvent("warn", "auth.login_blocked", { username, ip: clientIp(req) });
+    res.setHeader("Retry-After", String(limit.retryAfterSeconds));
+    return sendError(res, 429, {
+      error: "Demasiados intentos fallidos. Intenta de nuevo más tarde.",
+      code: "TOO_MANY_LOGIN_ATTEMPTS",
+      retryAfterSeconds: limit.retryAfterSeconds,
+    });
+  }
+
   const user = await userRepository.findByCredentials(username, password);
 
   if (!user) {
+    const failures = loginLimiter.registerFailure(req);
+    logEvent("warn", "auth.login_failed", { username, ip: clientIp(req), failures });
     return sendError(res, 401, {
       error: "Credenciales inválidas",
       code: "INVALID_CREDENTIALS",
     });
   }
+
+  loginLimiter.reset(req);
+  logEvent("info", "auth.login_succeeded", { userId: user.id, ip: clientIp(req) });
 
   const userWithoutPassword = userRepository.sanitizeUser(user);
   const token = createAuthToken(user.id, {

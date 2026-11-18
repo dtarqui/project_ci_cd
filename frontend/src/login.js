@@ -97,7 +97,7 @@ export default function Login({ onLogin, mode }) {
   };
 
   return (
-    <div className="login-container">
+    <main className="login-container">
       <div className="login-card">
         <div className="login-header">
           <h1>Mi Tienda</h1>
@@ -115,6 +115,8 @@ export default function Login({ onLogin, mode }) {
         >
           <button
             type="button"
+            role="tab"
+            aria-selected={!isRegisterMode}
             className={`mode-button ${!isRegisterMode ? "active" : ""}`}
             onClick={() => navigate("/login")}
             disabled={loading}
@@ -123,6 +125,8 @@ export default function Login({ onLogin, mode }) {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={isRegisterMode}
             className={`mode-button ${isRegisterMode ? "active" : ""}`}
             onClick={() => navigate("/register")}
             disabled={loading}
@@ -195,6 +199,7 @@ export default function Login({ onLogin, mode }) {
                 <button
                   type="button"
                   className="password-toggle"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={loading}
                 >
@@ -221,6 +226,11 @@ export default function Login({ onLogin, mode }) {
                     <button
                       type="button"
                       className="password-toggle"
+                      aria-label={
+                        showConfirmPassword
+                          ? "Ocultar confirmación de contraseña"
+                          : "Mostrar confirmación de contraseña"
+                      }
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
@@ -273,7 +283,7 @@ export default function Login({ onLogin, mode }) {
           </div>
         </form>
       </div>
-    </div>
+    </main>
   );
 }
 

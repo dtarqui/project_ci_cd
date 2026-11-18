@@ -56,4 +56,29 @@ const paginate = (items, { page, pageSize }) => {
   };
 };
 
-module.exports = { applySort, parsePagination, paginate };
+/**
+ * Pagina en la base de datos: cuenta las filas que cumplen el filtro y lee solo
+ * las de la página pedida, en lugar de traer la tabla completa y recortarla en
+ * memoria. Devuelve la misma forma que `paginate`.
+ * @param {Object} delegate - modelo de Prisma (prisma.product, tx.sale, ...)
+ * @param {{where: Object, orderBy: Array, include?: Object}} query
+ * @param {{page: number, pageSize: number}} pagination
+ * @param {Function} map - transforma cada fila (por defecto, identidad)
+ */
+const pageFromDb = async (delegate, { where, orderBy, include }, { page, pageSize }, map = (row) => row) => {
+  const total = await delegate.count({ where });
+  const totalPages = Math.max(Math.ceil(total / pageSize), 1);
+  const safePage = Math.min(page, totalPages);
+
+  const rows = await delegate.findMany({
+    where,
+    orderBy,
+    skip: (safePage - 1) * pageSize,
+    take: pageSize,
+    ...(include ? { include } : {}),
+  });
+
+  return { data: rows.map(map), page: safePage, pageSize, total, totalPages };
+};
+
+module.exports = { applySort, parsePagination, paginate, pageFromDb };

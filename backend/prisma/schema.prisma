@@ -110,24 +110,32 @@ model Product {
 }
 
 model Sale {
-  id            Int        @id @default(autoincrement())
-  customerId    Int        @map("customer_id")
-  customer      Customer   @relation(fields: [customerId], references: [id])
-  customerName  String     @map("customer_name")
-  userId        Int?       @map("user_id")
-  user          User?      @relation(fields: [userId], references: [id])
-  userName      String?    @map("user_name")
-  subtotal      Float
-  discount      Float      @default(0)
-  total         Float
-  status        String     @default("Completada")
-  paymentMethod String?    @map("payment_method")
-  notes         String?
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
-  items         SaleItem[]
+  id             Int        @id @default(autoincrement())
+  customerId     Int        @map("customer_id")
+  customer       Customer   @relation(fields: [customerId], references: [id])
+  customerName   String     @map("customer_name")
+  userId         Int?       @map("user_id")
+  user           User?      @relation(fields: [userId], references: [id])
+  userName       String?    @map("user_name")
+  subtotal       Float
+  discount       Float      @default(0)
+  total          Float
+  status         String     @default("Completada")
+  paymentMethod  String?    @map("payment_method")
+  notes          String?
+  // Clave que el cliente envia en Idempotency-Key: un reintento con la misma
+  // clave devuelve la venta ya registrada en lugar de duplicarla.
+  idempotencyKey String?    @unique @map("idempotency_key")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  items          SaleItem[]
 
+  // PostgreSQL no indexa las claves foraneas por su cuenta: sin estos indices,
+  // filtrar las ventas de un cliente o leer las lineas de una venta recorre la
+  // tabla completa. createdAt ordena el listado paginado.
   @@index([userId])
+  @@index([customerId])
+  @@index([createdAt])
   @@map("sales")
 }
 
@@ -142,5 +150,7 @@ model SaleItem {
   price     Float
   total     Float
 
+  @@index([saleId])
+  @@index([productId])
   @@map("sale_items")
 }

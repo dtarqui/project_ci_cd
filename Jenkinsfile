@@ -147,7 +147,7 @@ pipeline {
         // Variables que el pipeline reemplaza en cada despliegue del backend (KEY=VALUE por linea).
         // En este caso de estudio abren CORS a cualquier origen, porque el frontend llama al
         // backend en otro dominio. Es una decision del caso, no de la plantilla.
-        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=*\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=*\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key"
 
         // Conexion del frontend con el backend desplegado (etapas Frontend Build y Deploy Vercel)
         // FRONTEND_API_URL_VAR: variable de build del frontend que recibe la URL del backend.

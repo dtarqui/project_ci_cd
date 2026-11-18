@@ -15,6 +15,8 @@ const express = require("express");
 const cors = require("cors");
 const { corsOptions } = require("./config/cors");
 const { notFoundHandler, errorHandler } = require("./middleware/auth");
+const { securityHeaders } = require("./middleware/security");
+const { requestLogger } = require("./utils/logger");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const customerRoutes = require("./routes/customerRoutes");
@@ -34,6 +36,13 @@ const createApp = () => {
   const app = express();
 
   // ==================== MIDDLEWARE ====================
+
+  // Sin la cabecera X-Powered-By, que delataba el framework.
+  app.disable("x-powered-by");
+
+  // Registro estructurado de cada peticion y cabeceras de seguridad.
+  app.use(requestLogger);
+  app.use(securityHeaders);
 
   // CORS (origen/métodos/headers permitidos configurados en ./config/cors.js)
   app.use(cors(corsOptions));

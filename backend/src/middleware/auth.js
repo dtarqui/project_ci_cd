@@ -5,6 +5,7 @@
 
 const { extractToken, verifyAuthToken } = require("../utils/helpers");
 const { sendError } = require("../utils/httpResponses");
+const { logEvent } = require("../utils/logger");
 
 /**
  * Middleware para validar token Bearer
@@ -88,7 +89,16 @@ const notFoundHandler = (req, res) => {
  * @param {Function} _next - Next middleware
  */
 const errorHandler = (err, req, res, _next) => {
-  console.error("Error interno del servidor:", err);
+  // Se registra el código del error (P1001, P2024, etc., en los de Prisma) para
+  // poder distinguir una falla de la base de datos de un error de la aplicación.
+  logEvent("error", "http.unhandled_error", {
+    requestId: req.requestId,
+    method: req.method,
+    path: (req.originalUrl || "").split("?")[0],
+    errorCode: err?.code ?? null,
+    errorName: err?.name ?? "Error",
+    message: err?.message,
+  });
   sendError(res, 500, {
     error: "Error interno del servidor",
     code: "INTERNAL_ERROR",

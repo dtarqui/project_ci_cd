@@ -8,19 +8,12 @@ const {
 } = require("../utils/validators");
 const { createProductRepository } = require("../repositories/productRepository");
 const { createSaleRepository } = require("../repositories/saleRepository");
-const { filterByText } = require("../utils/helpers");
 const { sendSuccess, sendError } = require("../utils/httpResponses");
-const { applySort, parsePagination, paginate } = require("../utils/queryHelpers");
+const { parsePagination } = require("../utils/queryHelpers");
+const { filterSortProducts } = require("../utils/listQueries");
 
 const productRepository = createProductRepository();
 const saleRepository = createSaleRepository();
-
-const PRODUCT_SORTS = {
-  price: (a, b) => a.price - b.price,
-  stock: (a, b) => b.stock - a.stock,
-  sales: (a, b) => b.sales - a.sales,
-  default: (a, b) => a.name.localeCompare(b.name),
-};
 
 /**
  * Crea un nuevo producto
@@ -53,19 +46,19 @@ const createProduct = async (req, res) => {
  */
 const getProducts = async (req, res) => {
   const { search = "", category = "", sort = "name" } = req.query;
+  const query = { search, category, sort };
 
-  let products = await productRepository.list();
-
-  products = filterByText(products, ["name"], search);
-  products = filterByText(products, ["category"], category);
-
-  // Ordenar
-  products = applySort(products, PRODUCT_SORTS, sort);
-
+  // Con `page`, se pagina en el repositorio (en la base de datos, sin leer la
+  // tabla completa); sin el, se devuelve la lista completa filtrada, que el
+  // frontend usa en los selectores.
   const pagination = parsePagination(req.query);
-  const result = pagination
-    ? paginate(products, pagination)
-    : { data: products, total: products.length };
+  let result;
+  if (pagination) {
+    result = await productRepository.listPage(query, pagination);
+  } else {
+    const products = filterSortProducts(await productRepository.list(), query);
+    result = { data: products, total: products.length };
+  }
 
   sendSuccess(res, {
     data: result.data,

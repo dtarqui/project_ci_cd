@@ -7,6 +7,8 @@ const { CustomerDao } = require("../mappers/customerDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 const { createRepository } = require("./factory");
+const { filterSortCustomers, customerQuery } = require("../utils/listQueries");
+const { paginate, pageFromDb } = require("../utils/queryHelpers");
 
 /**
  * Borrado logico: `deletedAt` con fecha significa borrado; null, activo.
@@ -25,6 +27,11 @@ const estaActivo = (customer) => !customer.deletedAt;
 class InMemoryCustomerRepository {
   async list() {
     return getMockData().customers.filter(estaActivo);
+  }
+
+  /** Pagina despues de filtrar y ordenar en memoria. */
+  async listPage(query, pagination) {
+    return paginate(filterSortCustomers(await this.list(), query), pagination);
   }
 
   async findById(id) {
@@ -101,26 +108,43 @@ class InMemoryCustomerRepository {
 }
 
 class DatabaseCustomerRepository {
+  /**
+   * @param {Object|null} client - cliente de una transaccion de Prisma; sin el,
+   *   se usa el cliente compartido.
+   */
+  constructor(client = null) {
+    this.client = client;
+  }
+
+  db() {
+    return this.client || getPrismaClient();
+  }
+
   async list() {
-    return getPrismaClient().customer.findMany({
+    return this.db().customer.findMany({
       where: { deletedAt: null },
       orderBy: { id: "asc" },
     });
   }
 
+  /** Filtra, ordena y pagina en la base de datos (ver utils/listQueries.js). */
+  async listPage(query, pagination) {
+    return pageFromDb(this.db().customer, customerQuery(query), pagination);
+  }
+
   async findById(id) {
-    return getPrismaClient().customer.findFirst({ where: { id, deletedAt: null } });
+    return this.db().customer.findFirst({ where: { id, deletedAt: null } });
   }
 
   /** Resuelve tambien los borrados, para leer los datos desde una venta pasada. */
   async findByIdIncludingDeleted(id) {
-    return getPrismaClient().customer.findUnique({ where: { id } });
+    return this.db().customer.findUnique({ where: { id } });
   }
 
   async create(payload) {
     const now = new Date().toISOString();
 
-    return getPrismaClient().customer.create({
+    return this.db().customer.create({
       data: {
         name: payload.name,
         email: payload.email,
@@ -148,7 +172,7 @@ class DatabaseCustomerRepository {
     if (updates.status) data.status = updates.status;
 
     try {
-      return await getPrismaClient().customer.update({ where: { id }, data });
+      return await this.db().customer.update({ where: { id }, data });
     } catch (error) {
       if (isRecordNotFoundError(error)) return null;
       throw error;
@@ -159,7 +183,7 @@ class DatabaseCustomerRepository {
     // updateMany y no update: `where` admite deletedAt, asi que un cliente ya
     // borrado no cuenta y el segundo intento devuelve null en vez de volver a
     // marcarlo con otra fecha.
-    const { count } = await getPrismaClient().customer.updateMany({
+    const { count } = await this.db().customer.updateMany({
       where: { id, deletedAt: null },
       data: { deletedAt: new Date() },
     });
@@ -168,7 +192,7 @@ class DatabaseCustomerRepository {
       return null;
     }
 
-    return getPrismaClient().customer.findUnique({ where: { id } });
+    return this.db().customer.findUnique({ where: { id } });
   }
 
   async updateStats(id, { totalSpentDelta = 0, purchasesDelta = 0, lastPurchase }) {
@@ -187,7 +211,7 @@ class DatabaseCustomerRepository {
       data.lastPurchase = lastPurchase;
     }
 
-    return getPrismaClient().customer.update({ where: { id }, data });
+    return this.db().customer.update({ where: { id }, data });
   }
 }
 

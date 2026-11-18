@@ -8,6 +8,8 @@ const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 const { calculateProductStatus } = require("../utils/helpers");
 const { createRepository } = require("./factory");
+const { filterSortProducts, productQuery } = require("../utils/listQueries");
+const { paginate, pageFromDb } = require("../utils/queryHelpers");
 
 /**
  * Borrado logico, por el mismo motivo que en clientes: sale_items referencia
@@ -19,6 +21,11 @@ const estaActivo = (product) => !product.deletedAt;
 class InMemoryProductRepository {
   async list() {
     return getMockData().products.filter(estaActivo);
+  }
+
+  /** Pagina despues de filtrar y ordenar en memoria. */
+  async listPage(query, pagination) {
+    return paginate(filterSortProducts(await this.list(), query), pagination);
   }
 
   async findById(id) {
@@ -138,24 +145,41 @@ class InMemoryProductRepository {
 }
 
 class DatabaseProductRepository {
+  /**
+   * @param {Object|null} client - cliente de una transaccion de Prisma; sin el,
+   *   se usa el cliente compartido.
+   */
+  constructor(client = null) {
+    this.client = client;
+  }
+
+  db() {
+    return this.client || getPrismaClient();
+  }
+
   async list() {
-    return getPrismaClient().product.findMany({
+    return this.db().product.findMany({
       where: { deletedAt: null },
       orderBy: { id: "asc" },
     });
   }
 
+  /** Filtra, ordena y pagina en la base de datos (ver utils/listQueries.js). */
+  async listPage(query, pagination) {
+    return pageFromDb(this.db().product, productQuery(query), pagination);
+  }
+
   async findById(id) {
-    return getPrismaClient().product.findFirst({ where: { id, deletedAt: null } });
+    return this.db().product.findFirst({ where: { id, deletedAt: null } });
   }
 
   /** Resuelve tambien los borrados, para leer los datos desde una venta pasada. */
   async findByIdIncludingDeleted(id) {
-    return getPrismaClient().product.findUnique({ where: { id } });
+    return this.db().product.findUnique({ where: { id } });
   }
 
   async findManyByIds(ids) {
-    return getPrismaClient().product.findMany({
+    return this.db().product.findMany({
       where: { id: { in: ids }, deletedAt: null },
     });
   }
@@ -164,7 +188,7 @@ class DatabaseProductRepository {
     const now = new Date().toISOString();
     const stock = parseInt(payload.stock, 10);
 
-    return getPrismaClient().product.create({
+    return this.db().product.create({
       data: {
         name: payload.name,
         category: payload.category,
@@ -190,7 +214,7 @@ class DatabaseProductRepository {
     }
 
     try {
-      return await getPrismaClient().product.update({ where: { id }, data });
+      return await this.db().product.update({ where: { id }, data });
     } catch (error) {
       if (isRecordNotFoundError(error)) return null;
       throw error;
@@ -198,7 +222,7 @@ class DatabaseProductRepository {
   }
 
   async delete(id) {
-    const { count } = await getPrismaClient().product.updateMany({
+    const { count } = await this.db().product.updateMany({
       where: { id, deletedAt: null },
       data: { deletedAt: new Date() },
     });
@@ -207,7 +231,7 @@ class DatabaseProductRepository {
       return null;
     }
 
-    return getPrismaClient().product.findUnique({ where: { id } });
+    return this.db().product.findUnique({ where: { id } });
   }
 
   /**
@@ -220,7 +244,7 @@ class DatabaseProductRepository {
    * @returns {{ok: true}|{ok: false, productId, availableStock, requestedQuantity}}
    */
   async reserveStock(items, saleDate) {
-    const prisma = getPrismaClient();
+    const prisma = this.db();
     const reservadas = [];
 
     for (const item of items) {
@@ -253,7 +277,7 @@ class DatabaseProductRepository {
 
   /** Devuelve el stock reservado cuando la venta no llega a registrarse. */
   async releaseStock(items) {
-    const prisma = getPrismaClient();
+    const prisma = this.db();
     for (const item of items) {
       await prisma.product.updateMany({
         where: { id: item.productId },
@@ -272,7 +296,7 @@ class DatabaseProductRepository {
    * atomico es el descuento, no esta etiqueta derivada.
    */
   async refreshStatus(id) {
-    const prisma = getPrismaClient();
+    const prisma = this.db();
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return;
     const status = calculateProductStatus(product.stock);

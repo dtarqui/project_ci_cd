@@ -10,7 +10,7 @@ const corsOptions = {
     "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD",
   allowedHeaders:
     process.env.CORS_ALLOW_HEADERS ||
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key",
   credentials: false,
   optionsSuccessStatus: 204,
 };

@@ -7,6 +7,8 @@ const { SaleDao } = require("../mappers/saleDao");
 const { getMockData } = require("../db/dataStore");
 const { getPrismaClient, isRecordNotFoundError } = require("../db/prismaClient");
 const { createRepository } = require("./factory");
+const { filterSortSales, saleQuery } = require("../utils/listQueries");
+const { paginate, pageFromDb } = require("../utils/queryHelpers");
 
 // Aplana la relación SaleItem[] de Prisma a la misma forma que usa el
 // frontend/InMemorySaleRepository: { productId, name, quantity, price, total }.
@@ -16,6 +18,8 @@ const mapSaleFromDb = (sale) => {
   }
 
   const { items, ...rest } = sale;
+  // La clave de idempotencia es un detalle interno del registro: no se expone.
+  delete rest.idempotencyKey;
 
   return {
     ...rest,
@@ -29,16 +33,41 @@ const mapSaleFromDb = (sale) => {
   };
 };
 
+// Claves de idempotencia del modo memoria: clave -> id de la venta. Viven en el
+// mismo almacen que las ventas, de modo que se reinician con el.
+const idempotencyKeys = () => {
+  const data = getMockData();
+  if (!data.idempotencyKeys) {
+    data.idempotencyKeys = {};
+  }
+  return data.idempotencyKeys;
+};
+
 class InMemorySaleRepository {
   async list() {
     return [...getMockData().sales];
+  }
+
+  /** Pagina despues de filtrar y ordenar en memoria. */
+  async listPage(query, pagination) {
+    return paginate(filterSortSales(await this.list(), query), pagination);
   }
 
   async findById(id) {
     return getMockData().sales.find((sale) => sale.id === id) || null;
   }
 
+  async findByIdempotencyKey(key) {
+    const saleId = idempotencyKeys()[key];
+    return saleId === undefined ? null : this.findById(saleId);
+  }
+
   async create(payload) {
+    if (payload.idempotencyKey && idempotencyKeys()[payload.idempotencyKey] !== undefined) {
+      // Misma respuesta que la restriccion UNIQUE de la base de datos.
+      throw Object.assign(new Error("Clave de idempotencia repetida"), { code: "P2002" });
+    }
+
     const sales = getMockData().sales;
     const nextId = sales.length > 0 ? Math.max(...sales.map((sale) => sale.id)) + 1 : 1;
 
@@ -58,6 +87,9 @@ class InMemorySaleRepository {
     });
 
     sales.push(sale);
+    if (payload.idempotencyKey) {
+      idempotencyKeys()[payload.idempotencyKey] = sale.id;
+    }
     return sale;
   }
 
@@ -126,8 +158,20 @@ class InMemorySaleRepository {
 }
 
 class DatabaseSaleRepository {
+  /**
+   * @param {Object|null} client - cliente de una transaccion de Prisma; sin el,
+   *   se usa el cliente compartido.
+   */
+  constructor(client = null) {
+    this.client = client;
+  }
+
+  db() {
+    return this.client || getPrismaClient();
+  }
+
   async list() {
-    const sales = await getPrismaClient().sale.findMany({
+    const sales = await this.db().sale.findMany({
       include: { items: true },
       orderBy: { id: "asc" },
     });
@@ -135,8 +179,18 @@ class DatabaseSaleRepository {
     return sales.map(mapSaleFromDb);
   }
 
+  /** Filtra, ordena y pagina en la base de datos (ver utils/listQueries.js). */
+  async listPage(query, pagination) {
+    return pageFromDb(
+      this.db().sale,
+      { ...saleQuery(query), include: { items: true } },
+      pagination,
+      mapSaleFromDb
+    );
+  }
+
   async findById(id) {
-    const sale = await getPrismaClient().sale.findUnique({
+    const sale = await this.db().sale.findUnique({
       where: { id },
       include: { items: true },
     });
@@ -144,19 +198,29 @@ class DatabaseSaleRepository {
     return mapSaleFromDb(sale);
   }
 
+  async findByIdempotencyKey(key) {
+    const sale = await this.db().sale.findUnique({
+      where: { idempotencyKey: key },
+      include: { items: true },
+    });
+
+    return mapSaleFromDb(sale);
+  }
+
   async create(payload) {
-    const sale = await getPrismaClient().sale.create({
+    const sale = await this.db().sale.create({
       data: {
         customerId: payload.customerId,
         customerName: payload.customerName,
         userId: payload.userId ?? null,
         userName: payload.userName ?? null,
         subtotal: payload.subtotal,
-          discount: payload.discount,
+        discount: payload.discount,
         total: payload.total,
         status: payload.status,
         paymentMethod: payload.paymentMethod,
         notes: payload.notes || "",
+        ...(payload.idempotencyKey ? { idempotencyKey: payload.idempotencyKey } : {}),
         items: {
           create: payload.items.map((item) => ({
             productId: item.productId,
@@ -193,15 +257,15 @@ class DatabaseSaleRepository {
    * de `sales` existe y referencia al cliente.
    */
   async countByCustomer(customerId) {
-    return getPrismaClient().sale.count({ where: { customerId } });
+    return this.db().sale.count({ where: { customerId } });
   }
 
   async countItemsByProduct(productId) {
-    return getPrismaClient().saleItem.count({ where: { productId } });
+    return this.db().saleItem.count({ where: { productId } });
   }
 
   async cancel(id) {
-    const { count } = await getPrismaClient().sale.updateMany({
+    const { count } = await this.db().sale.updateMany({
       where: { id, status: { not: "Anulada" } },
       data: { status: "Anulada" },
     });
@@ -221,7 +285,7 @@ class DatabaseSaleRepository {
     if (updates.notes !== undefined) data.notes = updates.notes;
 
     try {
-      const sale = await getPrismaClient().sale.update({
+      const sale = await this.db().sale.update({
         where: { id },
         data,
         include: { items: true },

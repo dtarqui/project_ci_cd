@@ -9,7 +9,12 @@ jest.mock("../components/SalesForm", () => {
     if (!props.isOpen) return null;
     return (
       <div data-testid="sales-form">
-        <button onClick={() => props.onSave({ customerId: 1, items: [] })}>
+        <button
+          onClick={() =>
+            // Como el formulario real, captura el error que onSave vuelve a lanzar.
+            Promise.resolve(props.onSave({ customerId: 1, items: [] })).catch(() => {})
+          }
+        >
           Submit
         </button>
         <button onClick={props.onClose}>Close</button>
@@ -263,5 +268,26 @@ describe("Componente SalesSection", () => {
       expect(saleService.createSale).toHaveBeenCalled();
       expect(saleService.getSales).toHaveBeenCalled();
     });
+  });
+
+  it("envia una clave de idempotencia y la reutiliza al reintentar tras un error", async () => {
+    const user = userEvent.setup();
+    saleService.createSale
+      .mockRejectedValueOnce(new Error("Network Error"))
+      .mockResolvedValueOnce({});
+    render(<SalesSection />);
+
+    await user.click(await screen.findByRole("button", { name: /nueva venta/i }));
+    await user.click(await screen.findByText("Submit"));
+    await waitFor(() => expect(saleService.createSale).toHaveBeenCalledTimes(1));
+
+    await user.click(await screen.findByText("Submit"));
+    await waitFor(() => expect(saleService.createSale).toHaveBeenCalledTimes(2));
+
+    const [, firstKey] = saleService.createSale.mock.calls[0];
+    const [, secondKey] = saleService.createSale.mock.calls[1];
+    expect(typeof firstKey).toBe("string");
+    expect(firstKey.length).toBeGreaterThanOrEqual(8);
+    expect(secondKey).toBe(firstKey);
   });
 });

@@ -26,6 +26,7 @@ const makeRepos = ({
 } = {}) => {
   const productRepository = {
     findById: jest.fn((id) => Promise.resolve(products.find((p) => p.id === id) || null)),
+    findManyByIds: jest.fn((ids) => Promise.resolve(products.filter((p) => ids.includes(p.id)))),
     reserveStock: jest.fn(() => Promise.resolve(reserveResult)),
     releaseStock: jest.fn(() => Promise.resolve()),
   };

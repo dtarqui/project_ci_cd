@@ -171,8 +171,17 @@ export const saleService = {
     return response.data;
   },
 
-  createSale: async (saleData) => {
-    const response = await api.post("/api/sales", saleData);
+  /**
+   * @param {Object} saleData
+   * @param {string} [idempotencyKey] - la misma clave en cada reintento de una
+   *   venta evita registrarla dos veces (cabecera Idempotency-Key).
+   */
+  createSale: async (saleData, idempotencyKey) => {
+    const response = await api.post(
+      "/api/sales",
+      saleData,
+      idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined
+    );
     return response.data;
   },
 

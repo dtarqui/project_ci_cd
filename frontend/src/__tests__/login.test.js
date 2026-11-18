@@ -42,6 +42,26 @@ describe("Pruebas de Login", () => {
       expect(screen.getByRole("button", { name: "Ingresar" })).toBeInTheDocument();
     });
 
+    test("es accesible: region principal, pestañas y botones con nombre", () => {
+      renderLogin();
+
+      expect(screen.getByRole("main")).toBeInTheDocument();
+      const tabs = screen.getAllByRole("tab");
+      expect(tabs).toHaveLength(2);
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "false");
+      expect(screen.getByRole("button", { name: "Mostrar contraseña" })).toBeInTheDocument();
+    });
+
+    test("en registro, la pestaña activa y el botón de confirmación tienen nombre", () => {
+      renderLogin("register");
+
+      expect(screen.getAllByRole("tab")[1]).toHaveAttribute("aria-selected", "true");
+      expect(
+        screen.getByRole("button", { name: "Mostrar confirmación de contraseña" })
+      ).toBeInTheDocument();
+    });
+
     test("debe renderizar el botón para mostrar/ocultar contraseña", () => {
       renderLogin();
       expect(screen.getByTestId("icon-visibility-off")).toBeInTheDocument();

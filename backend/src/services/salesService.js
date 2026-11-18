@@ -7,7 +7,7 @@
 
 const buildSaleFromRequest = async (
   { customerId, items, discount = 0, paymentMethod, notes, status },
-  { productRepository, customerRepository, saleRepository, user = null }
+  { productRepository, customerRepository, saleRepository, user = null, idempotencyKey = null }
 ) => {
   const customer = await customerRepository.findById(customerId);
 
@@ -28,11 +28,16 @@ const buildSaleFromRequest = async (
     requestedByProduct.set(item.productId, requestedQty + item.quantity);
   }
 
+  // Una sola consulta para todos los productos de la venta. Antes cada producto
+  // se leia dos veces dentro de bucles (consultas N+1).
+  const productos = await productRepository.findManyByIds([...requestedByProduct.keys()]);
+  const productById = new Map(productos.map((product) => [product.id, product]));
+
   // Comprobacion previa: sirve para rechazar temprano y con el nombre del
   // producto a la vista. La garantia real esta en reserveStock, mas abajo; esta
   // lectura por si sola no impide que otra venta se lleve la misma unidad.
   for (const [productId, requestedQty] of requestedByProduct.entries()) {
-    const product = await productRepository.findById(productId);
+    const product = productById.get(productId);
 
     if (!product) {
       return {
@@ -57,15 +62,8 @@ const buildSaleFromRequest = async (
   }
 
   for (const item of items) {
-    const product = await productRepository.findById(item.productId);
-
-    if (!product) {
-      return {
-        error: "Producto no encontrado",
-        code: "PRODUCT_NOT_FOUND",
-        status: 404,
-      };
-    }
+    // Todos los productos ya se comprobaron en el bucle anterior.
+    const product = productById.get(item.productId);
 
     const lineTotal = parseFloat((product.price * item.quantity).toFixed(2));
     subtotal += lineTotal;
@@ -115,7 +113,7 @@ const buildSaleFromRequest = async (
     const reserva = await productRepository.reserveStock(saleItems, saleDate);
 
     if (!reserva.ok) {
-      const producto = await productRepository.findById(reserva.productId);
+      const producto = productById.get(reserva.productId);
       return {
         error: `Stock insuficiente para ${producto ? producto.name : "el producto"}`,
         code: "INSUFFICIENT_STOCK",
@@ -143,6 +141,7 @@ const buildSaleFromRequest = async (
       status: finalStatus,
       paymentMethod,
       notes: notes || "",
+      ...(idempotencyKey ? { idempotencyKey } : {}),
     });
   } catch (error) {
     // La venta no se registro: se devuelve el stock ya reservado.

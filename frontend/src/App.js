@@ -1,26 +1,35 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./login";
-import Dashboard from "./dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./styles.css";
 import "./components/ui/ui.css";
 
+// El tablero y sus graficos (Recharts) se descargan solo despues de iniciar
+// sesion: la pantalla de acceso deja de cargar la aplicacion completa (antes,
+// unos 143 kB de JavaScript que esa pantalla no usaba).
+const Dashboard = lazy(() => import("./dashboard"));
+
+function PageLoader() {
+  return (
+    <div className="loading-container" role="status">
+      <div className="loading-spinner"></div>
+      <p>Cargando...</p>
+    </div>
+  );
+}
+
 function AppRoutes() {
   const { user, loading, login, logout } = useAuth();
 
   if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Cargando...</p>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
     <BrowserRouter>
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Login Route */}
         <Route
@@ -79,6 +88,7 @@ function AppRoutes() {
         {/* Catch-all - Redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
