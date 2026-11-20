@@ -24,6 +24,7 @@ const READINESS_MODELS = [
   "saleItem",
   "city",
   "category",
+  "revokedToken",
 ];
 
 const defaultGetPrismaClient = () =>

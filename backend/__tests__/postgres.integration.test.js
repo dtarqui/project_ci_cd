@@ -182,6 +182,10 @@ describe("Esquema", () => {
   it("/health/ready consulta cada tabla en la base", async () => {
     const res = await request(app).get("/health/ready").expect(200);
     expect(res.body.repositoryMode).toBe("database");
+    expect(res.body.checks.map((check) => check.model).sort()).toEqual(
+      ["category", "city", "customer", "product", "revokedToken", "sale", "saleItem", "user"]
+    );
+    expect(res.body.checks.every((check) => check.ok)).toBe(true);
   });
 });
 
