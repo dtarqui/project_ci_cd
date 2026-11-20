@@ -6,9 +6,12 @@ Esta guia resume ejemplos practicos de los endpoints activos del backend.
 
 `http://localhost:4000`
 
+Las rutas se publican en `/api/v1/v1`. `/api` sigue disponible como alias de la misma version y responde
+con las cabeceras `Deprecation` y `Link` hacia la ruta nueva.
+
 ## Autenticacion
 
-### POST `/api/auth/register`
+### POST `/api/v1/auth/register`
 
 Body:
 
@@ -37,7 +40,7 @@ Respuesta esperada (`201`):
 }
 ```
 
-### POST `/api/auth/login`
+### POST `/api/v1/auth/login`
 
 Body:
 
@@ -64,7 +67,10 @@ Respuesta esperada (`200`):
 }
 ```
 
-### POST `/api/auth/logout`
+### POST `/api/v1/auth/logout`
+
+El header `Authorization: Bearer <JWT_TOKEN>` es opcional: si se envia y la sesion esta activa, el
+token queda revocado en el servidor.
 
 Respuesta esperada (`200`):
 
@@ -76,7 +82,21 @@ Respuesta esperada (`200`):
 }
 ```
 
-### GET `/api/auth/me`
+### POST `/api/v1/auth/logout-all`
+
+Protegido. Invalida todos los tokens del usuario autenticado.
+
+Respuesta esperada (`200`):
+
+```json
+{
+  "success": true,
+  "message": "Se cerraron todas las sesiones",
+  "timestamp": "2026-11-18T12:00:00.000Z"
+}
+```
+
+### GET `/api/v1/auth/me`
 
 Header:
 
@@ -99,7 +119,7 @@ Respuesta esperada (`200`):
 
 ## Perfil de usuario (protegido)
 
-### GET `/api/users/me`
+### GET `/api/v1/users/me`
 
 Header:
 
@@ -107,7 +127,7 @@ Header:
 Authorization: Bearer <JWT_TOKEN>
 ```
 
-### PUT `/api/users/me`
+### PUT `/api/v1/users/me`
 
 Header:
 
@@ -126,7 +146,7 @@ Body de ejemplo:
 }
 ```
 
-### DELETE `/api/users/me`
+### DELETE `/api/v1/users/me`
 
 Header:
 
@@ -145,7 +165,7 @@ Body:
 
 ## Productos (protegido)
 
-### GET `/api/products`
+### GET `/api/v1/products`
 
 Query opcional:
 - `search`
@@ -154,13 +174,13 @@ Query opcional:
 
 Ejemplo:
 
-`GET /api/products?search=laptop&category=Electronica&sort=price`
+`GET /api/v1/products?search=laptop&category=Electronica&sort=price`
 
-### GET `/api/products/:id`
+### GET `/api/v1/products/:id`
 
-Ejemplo: `GET /api/products/1`
+Ejemplo: `GET /api/v1/products/1`
 
-### POST `/api/products`
+### POST `/api/v1/products`
 
 Body:
 
@@ -173,7 +193,11 @@ Body:
 }
 ```
 
-### PUT `/api/products/:id`
+### PUT `/api/v1/products/:id`
+
+Opcional: header `If-Match` con el `ETag` de la consulta. Si el producto cambio desde entonces,
+responde `412` con `code: "PRECONDITION_FAILED"` y el `ETag` actual. Lo mismo vale para
+`PUT /api/v1/customers/:id`.
 
 Body:
 
@@ -184,13 +208,13 @@ Body:
 }
 ```
 
-### DELETE `/api/products/:id`
+### DELETE `/api/v1/products/:id`
 
-Ejemplo: `DELETE /api/products/10`
+Ejemplo: `DELETE /api/v1/products/10`
 
 ## Clientes (protegido)
 
-### GET `/api/customers`
+### GET `/api/v1/customers`
 
 Query opcional:
 - `search`
@@ -199,9 +223,9 @@ Query opcional:
 
 Ejemplo:
 
-`GET /api/customers?search=juan&status=Activo&sort=spending`
+`GET /api/v1/customers?search=juan&status=Activo&sort=spending`
 
-### GET `/api/customers/cities`
+### GET `/api/v1/customers/cities`
 
 Catalogo de ciudades atendidas. Es el mismo contra el que validan `POST` y `PUT`,
 y el que el formulario usa para ofrecer la lista en vez de un campo libre.
@@ -230,11 +254,11 @@ Respuesta esperada (`200`):
 }
 ```
 
-### GET `/api/customers/:id`
+### GET `/api/v1/customers/:id`
 
-Ejemplo: `GET /api/customers/1`
+Ejemplo: `GET /api/v1/customers/1`
 
-### POST `/api/customers`
+### POST `/api/v1/customers`
 
 `phone` son los 8 digitos nacionales, sin codigo de pais: el negocio opera solo en
 Bolivia, asi que `+591` seria el mismo prefijo en todas las filas. Se acepta si
@@ -254,7 +278,7 @@ Body:
 }
 ```
 
-### PUT `/api/customers/:id`
+### PUT `/api/v1/customers/:id`
 
 Body:
 
@@ -271,21 +295,21 @@ Errores propios de estos dos endpoints:
 | Codigo | Cuando |
 |---|---|
 | `INVALID_PHONE` | El telefono no tiene 8 digitos, o no empieza en 2, 3 o 4 (fija) ni en 6 o 7 (movil) |
-| `INVALID_CITY` | La ciudad no esta en `GET /api/customers/cities` |
+| `INVALID_CITY` | La ciudad no esta en `GET /api/v1/customers/cities` |
 
-### DELETE `/api/customers/:id`
+### DELETE `/api/v1/customers/:id`
 
-Ejemplo: `DELETE /api/customers/5`
+Ejemplo: `DELETE /api/v1/customers/5`
 
 Es **borrado logico**: marca `deleted_at` y conserva la fila, porque las ventas
-referencian al cliente. Deja de aparecer en `GET /api/customers`, `GET /:id`
+referencian al cliente. Deja de aparecer en `GET /api/v1/customers`, `GET /:id`
 responde 404 y un segundo `DELETE` tambien. Las ventas ya registradas siguen
-resolviendo sus datos. Lo mismo en `DELETE /api/products/:id`. Detalle en
+resolviendo sus datos. Lo mismo en `DELETE /api/v1/products/:id`. Detalle en
 `README.md`, seccion "Borrado de clientes y productos".
 
 ## Ventas (protegido)
 
-### GET `/api/sales`
+### GET `/api/v1/sales`
 
 Query opcional:
 - `status` (`Completada`, `Pendiente`, `Anulada`)
@@ -293,13 +317,13 @@ Query opcional:
 
 Ejemplo:
 
-`GET /api/sales?status=Pendiente&customerId=2`
+`GET /api/v1/sales?status=Pendiente&customerId=2`
 
-### GET `/api/sales/:id`
+### GET `/api/v1/sales/:id`
 
-Ejemplo: `GET /api/sales/1`
+Ejemplo: `GET /api/v1/sales/1`
 
-### POST `/api/sales`
+### POST `/api/v1/sales`
 
 Body:
 
@@ -317,7 +341,7 @@ Body:
 }
 ```
 
-### PUT `/api/sales/:id`
+### PUT `/api/v1/sales/:id`
 
 Body:
 
@@ -329,13 +353,13 @@ Body:
 }
 ```
 
-### PUT `/api/sales/:id/cancel`
+### PUT `/api/v1/sales/:id/cancel`
 
-Ejemplo: `PUT /api/sales/2/cancel`
+Ejemplo: `PUT /api/v1/sales/2/cancel`
 
 ## Dashboard y health
 
-### GET `/api/dashboard/data`
+### GET `/api/v1/dashboard/data`
 
 Header:
 

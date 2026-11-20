@@ -3,9 +3,13 @@
 Aplicacion web full-stack para gestion comercial de una tienda, con autenticacion JWT, dashboard de metricas y modulos CRUD para productos, clientes y ventas.
 
 ## Estado actual del proyecto
-- Backend Express modular con rutas protegidas por token.
-- Frontend React (Webpack) con login, registro y dashboard por secciones.
-- Testing automatizado en frontend y backend con Jest + reportes de cobertura.
+- Backend Express modular: API REST en `/api/v1`, sesiones JWT revocables (`logout`, `logout-all`) y
+  control de ediciones concurrentes con `ETag` / `If-Match` (412).
+- Frontend React (Webpack) con login, registro y dashboard por secciones. Es una aplicacion web
+  progresiva (Workbox): se instala, abre sin conexion con las ultimas lecturas y guarda las ventas
+  hechas sin red para reenviarlas con su clave de idempotencia.
+- Testing automatizado en frontend y backend con Jest + reportes de cobertura, incluida una suite de
+  integracion del backend contra un PostgreSQL efimero (`embedded-postgres`).
 - Pipeline CI/CD en `Jenkinsfile` con lint, tests, build, despliegue opcional a Vercel y generacion de metricas de investigacion en `docs/metrics/`.
 
 ## Requisitos
@@ -69,9 +73,9 @@ Para activar el modo `database`:
    DATABASE_URL=postgresql://postgres.xxxxxxxx:password@aws-0-<region>.pooler.supabase.com:5432/postgres
    ```
 
-3. Aplicar el schema (`backend/prisma/schema.prisma`, con las 7 entidades
-   `users`, `customers`, `products`, `sales`, `sale_items`, `cities` y
-   `categories`):
+3. Aplicar el schema (`backend/prisma/schema.prisma`, con las 8 tablas
+   `users`, `customers`, `products`, `sales`, `sale_items`, `cities`,
+   `categories` y `revoked_tokens`):
 
    ```bash
    cd backend
@@ -92,8 +96,8 @@ seccion 3).
 ## Roles de usuario
 Cada usuario tiene un `role`: `admin` o `vendedor` (default). Ambos roles
 pueden iniciar sesión y usar el dashboard/productos/clientes/ventas; solo
-`admin` puede eliminar productos y clientes (`DELETE /api/products/:id`,
-`DELETE /api/customers/:id` responden 403 `FORBIDDEN_ROLE` para `vendedor`).
+`admin` puede eliminar productos y clientes (`DELETE /api/v1/products/:id`,
+`DELETE /api/v1/customers/:id` responden 403 `FORBIDDEN_ROLE` para `vendedor`).
 El frontend oculta el botón de eliminar cuando el usuario autenticado no es
 `admin`. Usuarios demo: `admin/admin123` (admin), `demo/demo123` y
 `test/test123` (vendedor).
@@ -122,23 +126,29 @@ Frontend (`frontend/package.json`):
 - `npm run lint`
 
 ## API y rutas clave
-- Autenticacion: `POST /api/auth/register`, `POST /api/auth/login`,
-  `POST /api/auth/logout`, `GET /api/auth/me`
-- Perfil del usuario autenticado: `GET`, `PUT` y `DELETE /api/users/me`
-- Dashboard: `GET /api/dashboard/data`
-- CRUD completo de `/api/products` y `/api/customers` (el `DELETE` de ambos exige rol `admin`)
-- `GET /api/customers/cities`: catálogo de ciudades atendidas, con su prefijo postal y
+La API se publica en `/api/v1`. `/api` sigue disponible como alias de la misma version y responde con
+las cabeceras `Deprecation` y `Link` hacia la ruta nueva.
+
+- Autenticacion: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`,
+  `POST /api/v1/auth/logout` (revoca el token si se envia), `POST /api/v1/auth/logout-all` (invalida
+  todos los tokens del usuario) y `GET /api/v1/auth/me`
+- Perfil del usuario autenticado: `GET`, `PUT` y `DELETE /api/v1/users/me`
+- Dashboard: `GET /api/v1/dashboard/data`
+- CRUD completo de `/api/v1/products` y `/api/v1/customers` (el `DELETE` de ambos exige rol `admin`).
+  La consulta y la edicion devuelven la version en `ETag`; un `PUT` con `If-Match` desactualizado
+  responde 412 `PRECONDITION_FAILED`
+- `GET /api/v1/customers/cities`: catálogo de ciudades atendidas, con su prefijo postal y
   código de área. Es la fuente única: el formulario ofrece esa lista y el `POST`/`PUT`
   de clientes rechaza cualquier otra ciudad
-- Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/sales`
+- Ventas: `GET`, `POST`, `GET /:id`, `PUT /:id` y `PUT /:id/cancel` sobre `/api/v1/sales`
   (una venta se anula con `cancel`; no hay borrado)
 - Catalogos administrables: `GET`, `POST`, `PUT /:id` y `DELETE /:id` sobre
-  `/api/catalogs/cities` y `/api/catalogs/categories`. La lectura esta abierta a cualquier
+  `/api/v1/catalogs/cities` y `/api/v1/catalogs/categories`. La lectura esta abierta a cualquier
   usuario autenticado; la escritura exige rol `admin`, y la baja es logica
 - `GET /health`: estado del servicio y version del backend (`version`, tomada de
   `backend/package.json`)
-- `GET /health/ready`: en modo `database` consulta cada tabla con las columnas que espera
-  Prisma y responde 503 si alguna falla. La usa la verificacion posterior al despliegue del
+- `GET /health/ready`: en modo `database` consulta cada tabla, `revoked_tokens` incluida, con las
+  columnas que espera Prisma y responde 503 si alguna falla. La usa la verificacion posterior al despliegue del
   pipeline
 
 Listado por recurso en `backend/README.md`; ejemplos de uso en
@@ -148,9 +158,11 @@ Listado por recurso en `backend/README.md`; ejemplos de uso en
 El pipeline definido en `Jenkinsfile` incluye:
 - Checkout desde GitHub (`main`) y limpieza de los reportes de pruebas y cobertura del build
   anterior.
-- Instalacion de dependencias frontend/backend.
+- Instalacion de dependencias frontend/backend y auditoria de las de produccion
+  (`npm audit --omit=dev`, nivel `high` segun `NPM_AUDIT_LEVEL`; bloqueante).
 - Lint frontend y backend (bloqueante).
-- Tests frontend y backend con publicacion JUnit + coverage HTML (bloqueante).
+- Tests frontend y backend con publicacion JUnit + coverage HTML (bloqueante). Los del backend
+  incluyen la suite contra un PostgreSQL efimero (`__tests__/postgres.integration.test.js`).
 - Verificacion de cobertura con `scripts/ci/check-coverage.js` despues de cada etapa de
   pruebas: compara la cobertura real contra el `coverageThreshold.global` del
   `jest.config.js` de cada componente y detiene el pipeline antes de desplegar si alguna
