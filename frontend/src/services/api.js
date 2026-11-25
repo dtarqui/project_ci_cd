@@ -1,22 +1,29 @@
 import axios from "axios";
 
-const rawApiBaseUrl = process.env.API_BASE_URL;
-
-const API_BASE_URL = rawApiBaseUrl
-  ? rawApiBaseUrl.replace(/\/+$/, "")
-  : process.env.NODE_ENV === "production"
-    ? "/"
-    : "http://localhost:4000";
-
-// Configuración de axios - Compatible con rewrites de Vercel
+// La API se llama siempre por el mismo origen del frontend: en Vercel, la regla
+// "/api/:path*" de vercel.json la reenvia al backend, y en desarrollo lo hace el
+// proxy del servidor de webpack. Asi la cookie HttpOnly con el token de
+// renovacion es del mismo sitio y ningun navegador la descarta como de terceros.
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/",
   headers: {
     "Content-Type": "application/json",
   },
-  // Solo enviar credenciales si es mismo dominio, en cross-origin no es necesario
-  withCredentials: false,
+  withCredentials: true,
 });
+
+/**
+ * Token de acceso de la sesion. Vive solo en memoria: no se guarda en
+ * localStorage, donde un script inyectado (XSS) podria leerlo. Al recargar la
+ * pagina se recupera con POST /auth/refresh, que usa la cookie HttpOnly.
+ */
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+  accessToken = token || null;
+};
+
+export const getAccessToken = () => accessToken;
 
 /**
  * Cabecera If-Match con la version del registro que el usuario abrio para editar
@@ -28,12 +35,44 @@ export const ifMatchFor = (updatedAt) => {
   return Number.isFinite(version) ? { headers: { "If-Match": `"${version}"` } } : undefined;
 };
 
-// Interceptor para agregar token de autorización
+const AUTH_PATHS = ["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh", "/api/v1/auth/logout"];
+const isAuthRequest = (config) => AUTH_PATHS.some((path) => (config?.url || "").startsWith(path));
+
+let refreshing = null;
+
+/**
+ * Pide un token de acceso nuevo con la cookie de renovacion. Las llamadas
+ * simultaneas comparten la misma peticion, porque cada renovacion rota el token
+ * de la cookie. Si otra pestana lo acaba de rotar (REFRESH_TOKEN_ROTATED), la
+ * cookie ya trae el nuevo y basta reintentar una vez.
+ * @returns {Promise<{user: Object, token: string}>}
+ */
+export const refreshSession = () => {
+  if (!refreshing) {
+    const attempt = () => api.post("/api/v1/auth/refresh").then((response) => response.data);
+    refreshing = attempt()
+      .catch((error) => {
+        if (error?.response?.data?.code === "REFRESH_TOKEN_ROTATED") {
+          return attempt();
+        }
+        throw error;
+      })
+      .then((data) => {
+        setAccessToken(data.token);
+        return data;
+      })
+      .finally(() => {
+        refreshing = null;
+      });
+  }
+  return refreshing;
+};
+
+// Interceptor para agregar el token de acceso
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -42,16 +81,26 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar respuestas de error
+// Ante un 401, renueva el token una vez y repite la peticion; si la renovacion
+// tambien falla, la sesion termino y se avisa a la aplicacion.
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado o inválido
-      // Solo limpiar localStorage, dejar que el componente maneje el error
-      localStorage.removeItem("token");
+  async (error) => {
+    const config = error.config;
+    if (error.response?.status === 401 && config && !config._retried && !isAuthRequest(config)) {
+      config._retried = true;
+      try {
+        await refreshSession();
+        config.headers = { ...(config.headers || {}), Authorization: `Bearer ${accessToken}` };
+        return api.request(config);
+      } catch {
+        // la sesion ya no se puede renovar: se trata como 401
+      }
+    }
+    if (error.response?.status === 401 && !isAuthRequest(config)) {
+      setAccessToken(null);
       localStorage.removeItem("user");
       // Crear evento personalizado para que App.js se entere
       window.dispatchEvent(new Event("unauthorized"));
@@ -73,9 +122,15 @@ export const authService = {
     return response.data;
   },
 
+  refresh: () => refreshSession(),
+
   logout: async () => {
-    const response = await api.post("/api/v1/auth/logout");
-    return response.data;
+    try {
+      const response = await api.post("/api/v1/auth/logout");
+      return response.data;
+    } finally {
+      setAccessToken(null);
+    }
   },
 
   getMe: async () => {

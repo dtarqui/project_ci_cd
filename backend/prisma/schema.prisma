@@ -82,6 +82,24 @@ model RevokedToken {
   @@map("revoked_tokens")
 }
 
+// Alertas de seguridad: reutilizacion de un token de renovacion ya rotado,
+// bloqueo de una cuenta por intentos fallidos y rafagas de accesos denegados.
+// Se conservan aunque el usuario se borre (sin clave foranea), porque la alerta
+// puede referirse a un nombre de usuario que no existe.
+model SecurityAlert {
+  id        Int      @id @default(autoincrement())
+  type      String
+  severity  String
+  userId    Int?     @map("user_id")
+  username  String?
+  ip        String?
+  details   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("security_alerts")
+}
+
 model Customer {
   id             Int       @id @default(autoincrement())
   name           String

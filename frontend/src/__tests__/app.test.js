@@ -2,12 +2,13 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../App";
-import { authService } from "../services/api";
+import { authService, setAccessToken } from "../services/api";
 
 jest.mock("../services/api", () => ({
   authService: {
-    getMe: jest.fn(),
+    refresh: jest.fn(),
   },
+  setAccessToken: jest.fn(),
 }));
 
 jest.mock("../login", () => {
@@ -46,11 +47,8 @@ describe("Pruebas de App", () => {
     localStorage.clear();
   });
 
-  test("debe renderizar login cuando no hay token guardado", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return null;
-      return null;
-    });
+  test("debe renderizar login cuando no hay sesión que renovar", async () => {
+    authService.refresh.mockRejectedValue({ response: { status: 401 } });
 
     render(<App />);
 
@@ -58,17 +56,13 @@ describe("Pruebas de App", () => {
       expect(screen.getByTestId("login-component")).toBeInTheDocument();
     });
 
-    expect(authService.getMe).not.toHaveBeenCalled();
+    expect(authService.refresh).toHaveBeenCalledTimes(1);
   });
 
-  test("debe renderizar dashboard cuando getMe retorna usuario válido", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return "valid-token";
-      return null;
-    });
-
-    authService.getMe.mockResolvedValue({
+  test("debe renderizar dashboard cuando la renovación devuelve un usuario válido", async () => {
+    authService.refresh.mockResolvedValue({
       user: { id: 1, name: "Test User", username: "test" },
+      token: "token-renovado",
     });
 
     render(<App />);
@@ -78,20 +72,15 @@ describe("Pruebas de App", () => {
       expect(screen.getByTestId("user-name")).toHaveTextContent("Welcome Test User");
     });
 
-    expect(authService.getMe).toHaveBeenCalledTimes(1);
+    expect(authService.refresh).toHaveBeenCalledTimes(1);
     expect(localStorage.setItem).toHaveBeenCalledWith(
       "user",
       JSON.stringify({ id: 1, name: "Test User", username: "test" })
     );
   });
 
-  test("debe volver a login cuando getMe falla y limpiar sesión", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return "expired-token";
-      return null;
-    });
-
-    authService.getMe.mockRejectedValue(new Error("Token inválido"));
+  test("debe volver a login cuando la renovación falla y limpiar sesión", async () => {
+    authService.refresh.mockRejectedValue(new Error("Token inválido"));
 
     render(<App />);
 
@@ -100,15 +89,9 @@ describe("Pruebas de App", () => {
     });
 
     expect(localStorage.removeItem).toHaveBeenCalledWith("user");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
   });
 
   test("debe manejar login exitoso", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return null;
-      return null;
-    });
-
     const user = userEvent.setup();
 
     render(<App />);
@@ -127,17 +110,14 @@ describe("Pruebas de App", () => {
       "user",
       JSON.stringify({ id: 1, name: "Test User", username: "test" })
     );
-    expect(localStorage.setItem).toHaveBeenCalledWith("token", "test-token");
+    expect(setAccessToken).toHaveBeenCalledWith("test-token");
+    expect(localStorage.setItem).not.toHaveBeenCalledWith("token", expect.anything());
   });
 
   test("debe manejar logout", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return "valid-token";
-      return null;
-    });
-
-    authService.getMe.mockResolvedValue({
+    authService.refresh.mockResolvedValue({
       user: { id: 1, name: "Test User", username: "test" },
+      token: "token-renovado",
     });
 
     const user = userEvent.setup();
@@ -155,17 +135,12 @@ describe("Pruebas de App", () => {
     });
 
     expect(localStorage.removeItem).toHaveBeenCalledWith("user");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
   });
 
   test("debe limpiar usuario al recibir evento unauthorized", async () => {
-    localStorage.getItem.mockImplementation((key) => {
-      if (key === "token") return "valid-token";
-      return null;
-    });
-
-    authService.getMe.mockResolvedValue({
+    authService.refresh.mockResolvedValue({
       user: { id: 1, name: "Test User", username: "test" },
+      token: "token-renovado",
     });
 
     render(<App />);

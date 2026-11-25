@@ -7,6 +7,7 @@ const router = express.Router();
 const {
   register,
   login,
+  refresh,
   logout,
   logoutAll,
   getMe,
@@ -23,6 +24,12 @@ router.post("/register", asyncHandler(register));
  * POST /api/auth/login - Iniciar sesión
  */
 router.post("/login", asyncHandler(login));
+
+/**
+ * POST /api/auth/refresh - Renueva la sesion con el token de la cookie HttpOnly y
+ * lo rota. Devuelve un token de acceso nuevo.
+ */
+router.post("/refresh", asyncHandler(refresh));
 
 /**
  * POST /api/auth/logout - Cerrar sesión: revoca el token de la petición, si trae

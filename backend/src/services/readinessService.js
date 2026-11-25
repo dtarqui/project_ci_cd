@@ -25,6 +25,7 @@ const READINESS_MODELS = [
   "city",
   "category",
   "revokedToken",
+  "securityAlert",
 ];
 
 const defaultGetPrismaClient = () =>

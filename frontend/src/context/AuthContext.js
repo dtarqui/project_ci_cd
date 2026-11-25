@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { authService } from "../services/api";
+import { authService, setAccessToken } from "../services/api";
 import { isNetworkError } from "../utils/offlineSales";
 
 const readSavedUser = () => {
@@ -19,32 +19,28 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const hydrateSession = async () => {
-      const savedToken = localStorage.getItem("token");
-
-      if (!savedToken) {
-        setLoading(false);
-        return;
-      }
+      // Las versiones anteriores guardaban el token en localStorage: se descarta.
+      localStorage.removeItem("token");
 
       try {
-        const response = await authService.getMe();
+        // El token de acceso no se guarda: se recupera con la cookie HttpOnly del
+        // token de renovacion, que el JavaScript de la pagina no puede leer.
+        const response = await authService.refresh();
         if (response?.user?.id) {
           setUser(response.user);
           localStorage.setItem("user", JSON.stringify(response.user));
         } else {
           localStorage.removeItem("user");
-          localStorage.removeItem("token");
         }
       } catch (error) {
-        // Sin conexion no se puede validar la sesion: se conserva la guardada para
-        // trabajar sin red (modo sin conexion). El servidor la vuelve a comprobar en
-        // cada peticion y, si ya no es valida, responde 401 y la sesion se cierra.
+        // Sin conexion no se puede renovar la sesion: se conserva el usuario guardado
+        // para trabajar sin red (modo sin conexion). Al volver la red, la primera
+        // peticion renueva el token; si la sesion ya no es valida, se cierra.
         const savedUser = readSavedUser();
         if (isNetworkError(error) && savedUser?.id) {
           setUser(savedUser);
         } else {
           localStorage.removeItem("user");
-          localStorage.removeItem("token");
         }
       } finally {
         setLoading(false);
@@ -72,15 +68,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData, token) => {
+    setAccessToken(token);
     setUser(userData);
+    // Solo el perfil, para mostrarlo sin conexion; nunca el token.
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
   };
 
   const logout = () => {
+    setAccessToken(null);
     setUser(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
     // Las lecturas guardadas para trabajar sin conexion no quedan en el
     // dispositivo despues de cerrar sesion (ver webpack.config.js).
     if (typeof window !== "undefined" && window.caches) {

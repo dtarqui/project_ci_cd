@@ -24,6 +24,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const salesRoutes = require("./routes/salesRoutes");
 const userRoutes = require("./routes/userRoutes");
 const catalogRoutes = require("./routes/catalogRoutes");
+const securityRoutes = require("./routes/securityRoutes");
 const { asyncHandler } = require("./utils/asyncHandler");
 const { checkReadiness } = require("./services/readinessService");
 const { version } = require("../package.json");
@@ -110,6 +111,7 @@ const createApp = () => {
     app.use(`${prefix}/sales`, salesRoutes);
     app.use(`${prefix}/users`, userRoutes);
     app.use(`${prefix}/catalogs`, catalogRoutes);
+    app.use(`${prefix}/security`, securityRoutes);
   }
 
   // ==================== ERROR HANDLING ====================

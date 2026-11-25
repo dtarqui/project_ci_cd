@@ -156,9 +156,11 @@ pipeline {
 
         // Conexion del frontend con el backend desplegado (etapas Frontend Build y Deploy Vercel)
         // FRONTEND_API_URL_VAR: variable de build del frontend que recibe la URL del backend.
+        // Vacia en este caso: el cliente llama a la API por el mismo origen del frontend, que
+        // la reenvia al backend, para que la cookie del token de renovacion sea del mismo sitio.
         // FRONTEND_BACKEND_URL_FILE / _TOKEN: archivo del frontend donde se reemplaza el marcador
         // por el dominio del backend (rewrites de Vercel).
-        FRONTEND_API_URL_VAR = "API_BASE_URL"
+        FRONTEND_API_URL_VAR = ""
         FRONTEND_BACKEND_URL_FILE = "vercel.json"
         FRONTEND_BACKEND_URL_TOKEN = "__BACKEND_URL__"
 
@@ -866,7 +868,7 @@ pipeline {
                                     powershell -NoProfile -Command "$url=$env:BACKEND_VERCEL_URL; $file=$env:FRONTEND_BACKEND_URL_FILE; if ($url -and $file -and (Test-Path $file)) { $backendHost=$url -replace '^https?://',''; (Get-Content $file) -replace [regex]::Escape($env:FRONTEND_BACKEND_URL_TOKEN),$backendHost | Set-Content $file; Get-Content $file }"
                                 )
 
-                                if not "%BACKEND_VERCEL_URL%"=="" (
+                                if not "%BACKEND_VERCEL_URL%"=="" if not "%FRONTEND_API_URL_VAR%"=="" (
                                     echo %FRONTEND_API_URL_VAR%=%BACKEND_VERCEL_URL%> .env
                                 )
                                 

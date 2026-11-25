@@ -7,6 +7,10 @@ const { extractToken, verifyAuthToken } = require("../utils/helpers");
 const { sendError } = require("../utils/httpResponses");
 const { logEvent } = require("../utils/logger");
 const { checkSession } = require("../services/sessionService");
+const { raiseAlert, createAccessDeniedMonitor } = require("../services/securityAlerts");
+const { clientIp } = require("./security");
+
+const accessDeniedMonitor = createAccessDeniedMonitor();
 
 /**
  * Middleware para validar token Bearer.
@@ -80,15 +84,31 @@ const authenticateToken = async (req, res, next) => {
  * authenticateToken, ya que depende de req.user.role.
  * @param {...string} roles - Roles permitidos (ej. "admin")
  */
-const requireRole = (...roles) => (req, res, next) => {
+const requireRole = (...roles) => async (req, res, next) => {
   if (!req.user || !roles.includes(req.user.role)) {
+    // Varios rechazos seguidos del mismo usuario sugieren que esta probando
+    // operaciones reservadas: se emite una alerta al alcanzar el umbral.
+    if (req.user && accessDeniedMonitor.record(req.user.id)) {
+      await raiseAlert({
+        type: "access_denied_burst",
+        severity: "medium",
+        userId: req.user.id,
+        username: req.user.username,
+        ip: clientIp(req),
+        details: {
+          count: accessDeniedMonitor.threshold,
+          windowMinutes: accessDeniedMonitor.windowMs / 60000,
+          lastPath: (req.originalUrl || "").split("?")[0],
+        },
+      });
+    }
     return sendError(res, 403, {
       error: "No tienes permisos para realizar esta acción",
       code: "FORBIDDEN_ROLE",
     });
   }
 
-  next();
+  return next();
 };
 
 /**

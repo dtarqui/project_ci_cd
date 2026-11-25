@@ -216,7 +216,13 @@ class InMemoryUserRepository {
       }
     }
 
-    tokens.set(jti, { userId, expiresAt: new Date(expiresAt).getTime() });
+    tokens.set(jti, { userId, expiresAt: new Date(expiresAt).getTime(), revokedAt: now });
+  }
+
+  /** Momento en que se revoco un token (ms epoch), o null si no esta revocado. */
+  async getRevokedAt(jti) {
+    const entry = jti ? revokedTokens().get(jti) : null;
+    return entry ? entry.revokedAt ?? 0 : null;
   }
 
   /** Invalida todos los tokens del usuario. Devuelve la nueva version, o null. */
@@ -349,6 +355,18 @@ class DatabaseUserRepository {
       skipDuplicates: true,
     });
     await prisma.revokedToken.deleteMany({ where: { expiresAt: { lt: new Date() } } });
+  }
+
+  /** Momento en que se revoco un token (ms epoch), o null si no esta revocado. */
+  async getRevokedAt(jti) {
+    if (!jti) {
+      return null;
+    }
+    const row = await getPrismaClient().revokedToken.findUnique({
+      where: { jti },
+      select: { createdAt: true },
+    });
+    return row ? row.createdAt.getTime() : null;
   }
 
   /** Invalida todos los tokens del usuario. Devuelve la nueva version, o null. */

@@ -6,7 +6,10 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { STOCK_THRESHOLDS } = require("../config/constants");
 
-const DEFAULT_JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1h";
+// El token de acceso es breve y vive solo en la memoria del navegador; el de
+// renovacion, mas largo, viaja en una cookie HttpOnly (ver utils/authCookies.js).
+const DEFAULT_JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
+const DEFAULT_REFRESH_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 const DEFAULT_JWT_ALGORITHM = process.env.JWT_ALGORITHM || "HS256";
 const ALLOWED_HMAC_ALGORITHMS = ["HS256", "HS384", "HS512"];
 
@@ -96,15 +99,9 @@ const extractToken = (authHeader) => {
   return authHeader.replace("Bearer ", "");
 };
 
-/**
- * Crea un token JWT firmado para un usuario
- * @param {number} userId - ID del usuario
- * @param {Object} extraPayload - Claims adicionales
- * @returns {string} JWT firmado
- */
-const createAuthToken = (userId, extraPayload = {}) => {
+const signToken = (payload, expiresIn) => {
   const signOptions = {
-    expiresIn: DEFAULT_JWT_EXPIRES_IN,
+    expiresIn,
     algorithm: getJwtAlgorithm(),
   };
 
@@ -116,11 +113,6 @@ const createAuthToken = (userId, extraPayload = {}) => {
     signOptions.audience = process.env.JWT_AUDIENCE;
   }
 
-  const payload = {
-    sub: userId,
-    ...extraPayload,
-  };
-
   // Identificador unico del token: permite revocarlo al cerrar sesion.
   signOptions.jwtid = crypto.randomUUID();
 
@@ -128,11 +120,26 @@ const createAuthToken = (userId, extraPayload = {}) => {
 };
 
 /**
- * Verifica y decodifica un JWT
- * @param {string} token - Token a validar
- * @returns {Object|null} Payload decodificado o null
+ * Crea el token de acceso (JWT) de un usuario
+ * @param {number} userId - ID del usuario
+ * @param {Object} extraPayload - Claims adicionales
+ * @returns {string} JWT firmado
  */
-const verifyAuthToken = (token) => {
+const createAuthToken = (userId, extraPayload = {}) =>
+  signToken({ sub: userId, ...extraPayload, typ: "access" }, DEFAULT_JWT_EXPIRES_IN);
+
+/**
+ * Crea el token de renovacion de un usuario. Solo sirve en POST /auth/refresh,
+ * que lo rota en cada uso; lleva la version de sesiones (ver) para que cerrar
+ * todas las sesiones tambien lo invalide.
+ * @returns {{token: string, expiresAt: number}} token y vencimiento (segundos epoch)
+ */
+const createRefreshToken = (userId, version = 0) => {
+  const token = signToken({ sub: userId, ver: version, typ: "refresh" }, DEFAULT_REFRESH_EXPIRES_IN);
+  return { token, expiresAt: jwt.decode(token).exp };
+};
+
+const verifyToken = (token) => {
   if (!token || typeof token !== "string") {
     return null;
   }
@@ -154,6 +161,23 @@ const verifyAuthToken = (token) => {
   } catch (_error) {
     return null;
   }
+};
+
+/**
+ * Verifica un token de acceso. Rechaza los de renovacion: no deben servir para
+ * llamar a la API aunque su firma sea valida.
+ * @param {string} token - Token a validar
+ * @returns {Object|null} Payload decodificado o null
+ */
+const verifyAuthToken = (token) => {
+  const payload = verifyToken(token);
+  return payload && payload.typ !== "refresh" ? payload : null;
+};
+
+/** Verifica un token de renovacion. @returns {Object|null} */
+const verifyRefreshToken = (token) => {
+  const payload = verifyToken(token);
+  return payload && payload.typ === "refresh" ? payload : null;
 };
 
 /**
@@ -179,6 +203,9 @@ module.exports = {
   filterByText,
   extractToken,
   createAuthToken,
+  createRefreshToken,
   verifyAuthToken,
+  verifyRefreshToken,
   normalizePhone,
+  DEFAULT_JWT_EXPIRES_IN,
 };

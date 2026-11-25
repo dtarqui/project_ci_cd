@@ -2,12 +2,13 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { authService } from "../services/api";
+import { authService, setAccessToken } from "../services/api";
 
 jest.mock("../services/api", () => ({
   authService: {
-    getMe: jest.fn(),
+    refresh: jest.fn(),
   },
+  setAccessToken: jest.fn(),
 }));
 
 function Harness() {
@@ -46,25 +47,28 @@ const useFakeLocalStorage = () => {
   });
 };
 
+const sinSesion = () => authService.refresh.mockRejectedValue({ response: { status: 401 } });
+
 describe("AuthContext / useAuth", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useFakeLocalStorage();
   });
 
-  it("debe iniciar sin usuario cuando no hay token guardado", async () => {
+  it("debe iniciar sin usuario cuando la cookie no permite renovar la sesión", async () => {
+    sinSesion();
     renderWithProvider();
 
     await waitFor(() => {
       expect(screen.getByTestId("user-name")).toHaveTextContent("sin sesión");
     });
-    expect(authService.getMe).not.toHaveBeenCalled();
+    expect(authService.refresh).toHaveBeenCalledTimes(1);
   });
 
-  it("debe hidratar la sesión cuando hay un token válido", async () => {
-    store.token = "valid-token";
-    authService.getMe.mockResolvedValue({
+  it("debe recuperar la sesión con la cookie de renovación al abrir la aplicación", async () => {
+    authService.refresh.mockResolvedValue({
       user: { id: 5, name: "Usuario Guardado" },
+      token: "token-renovado",
     });
 
     renderWithProvider();
@@ -73,11 +77,12 @@ describe("AuthContext / useAuth", () => {
       expect(screen.getByTestId("user-name")).toHaveTextContent("Usuario Guardado");
     });
     expect(store.user).toContain("Usuario Guardado");
+    expect(store.token).toBeUndefined();
   });
 
-  it("debe limpiar la sesión cuando getMe falla", async () => {
-    store.token = "expired-token";
-    authService.getMe.mockRejectedValue(new Error("Token inválido"));
+  it("debe descartar el token que guardaban las versiones anteriores", async () => {
+    store.token = "token-viejo";
+    sinSesion();
 
     renderWithProvider();
 
@@ -87,7 +92,20 @@ describe("AuthContext / useAuth", () => {
     expect(store.token).toBeUndefined();
   });
 
-  it("debe iniciar sesión y guardar en localStorage", async () => {
+  it("debe limpiar el usuario guardado cuando la renovación responde sin usuario", async () => {
+    store.user = JSON.stringify({ id: 5, name: "Usuario Guardado" });
+    authService.refresh.mockResolvedValue({});
+
+    renderWithProvider();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("user-name")).toHaveTextContent("sin sesión");
+    });
+    expect(store.user).toBeUndefined();
+  });
+
+  it("debe iniciar sesión con el token en memoria y el perfil en localStorage", async () => {
+    sinSesion();
     renderWithProvider();
 
     await waitFor(() => {
@@ -97,10 +115,13 @@ describe("AuthContext / useAuth", () => {
     await userEvent.click(screen.getByRole("button", { name: "Login" }));
 
     expect(screen.getByTestId("user-name")).toHaveTextContent("Nueva Sesión");
-    expect(store.token).toBe("token-123");
+    expect(setAccessToken).toHaveBeenCalledWith("token-123");
+    expect(store.user).toContain("Nueva Sesión");
+    expect(store.token).toBeUndefined();
   });
 
-  it("debe cerrar sesión y limpiar localStorage", async () => {
+  it("debe cerrar sesión y olvidar el token y el perfil", async () => {
+    sinSesion();
     renderWithProvider();
 
     await waitFor(() => {
@@ -113,14 +134,14 @@ describe("AuthContext / useAuth", () => {
     await userEvent.click(screen.getByRole("button", { name: "Logout" }));
 
     expect(screen.getByTestId("user-name")).toHaveTextContent("sin sesión");
-    expect(store.token).toBeUndefined();
+    expect(setAccessToken).toHaveBeenLastCalledWith(null);
     expect(store.user).toBeUndefined();
   });
 
   it("debe limpiar el usuario cuando se recibe el evento unauthorized", async () => {
-    store.token = "valid-token";
-    authService.getMe.mockResolvedValue({
+    authService.refresh.mockResolvedValue({
       user: { id: 5, name: "Usuario Guardado" },
+      token: "token-renovado",
     });
 
     renderWithProvider();
@@ -137,6 +158,7 @@ describe("AuthContext / useAuth", () => {
   });
 
   it("debe actualizar el usuario cuando se recibe el evento user-updated", async () => {
+    sinSesion();
     renderWithProvider();
 
     await waitFor(() => {
@@ -153,6 +175,7 @@ describe("AuthContext / useAuth", () => {
   });
 
   it("debe ignorar el evento user-updated cuando no trae un id válido", async () => {
+    sinSesion();
     renderWithProvider();
 
     await waitFor(() => {

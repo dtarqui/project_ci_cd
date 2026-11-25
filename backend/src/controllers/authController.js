@@ -2,7 +2,15 @@
  * Auth Controller - Lógica de autenticación
  */
 
-const { createAuthToken, verifyAuthToken } = require("../utils/helpers");
+const {
+  createAuthToken,
+  createRefreshToken,
+  verifyAuthToken,
+  verifyRefreshToken,
+  DEFAULT_JWT_EXPIRES_IN,
+} = require("../utils/helpers");
+const { readRefreshCookie, setRefreshCookie, clearRefreshCookie } = require("../utils/authCookies");
+const { raiseAlert } = require("../services/securityAlerts");
 const {
   validateLoginCredentials,
   validateUserRegistration,
@@ -17,6 +25,31 @@ const { logEvent } = require("../utils/logger");
 
 const userRepository = createUserRepository();
 const loginLimiter = createLoginAttemptLimiter();
+
+// Dos pestanas pueden renovar a la vez con el mismo token: la segunda llega con un
+// token que la primera acaba de rotar. Dentro de este margen no se trata como robo.
+const reuseGraceMs = () => {
+  const configured = Number(process.env.REFRESH_REUSE_GRACE_MS);
+  return Number.isFinite(configured) && configured >= 0 ? configured : 10000;
+};
+
+/**
+ * Emite el par de tokens de una sesion: el de acceso viaja en la respuesta y el
+ * frontend lo guarda solo en memoria; el de renovacion, en una cookie HttpOnly.
+ * @returns {string} token de acceso
+ */
+const issueSession = (res, user) => {
+  const version = user.tokenVersion ?? 0;
+  const token = createAuthToken(user.id, {
+    username: user.username,
+    name: user.name,
+    role: user.role,
+    ver: version,
+  });
+  const refreshToken = createRefreshToken(user.id, version);
+  setRefreshCookie(res, refreshToken.token, refreshToken.expiresAt);
+  return token;
+};
 
 /**
  * Maneja el registro de usuarios
@@ -75,19 +108,14 @@ const register = async (req, res) => {
   });
 
   const safeUser = userRepository.sanitizeUser(createdUser);
-  const token = createAuthToken(safeUser.id, {
-    username: safeUser.username,
-    name: safeUser.name,
-    role: safeUser.role,
-    ver: createdUser.tokenVersion ?? 0,
-  });
+  const token = issueSession(res, createdUser);
 
   return sendSuccess(
     res,
     {
       user: safeUser,
       token,
-      expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+      expiresIn: DEFAULT_JWT_EXPIRES_IN,
     },
     201
   );
@@ -124,6 +152,15 @@ const login = async (req, res) => {
   if (!user) {
     const failures = loginLimiter.registerFailure(req);
     logEvent("warn", "auth.login_failed", { username, ip: clientIp(req), failures });
+    if (failures === loginLimiter.maxAttempts) {
+      await raiseAlert({
+        type: "account_locked",
+        severity: "high",
+        username: String(username).trim().toLowerCase(),
+        ip: clientIp(req),
+        details: { failures, windowMinutes: loginLimiter.windowMs / 60000 },
+      });
+    }
     return sendError(res, 401, {
       error: "Credenciales inválidas",
       code: "INVALID_CREDENTIALS",
@@ -134,17 +171,77 @@ const login = async (req, res) => {
   logEvent("info", "auth.login_succeeded", { userId: user.id, ip: clientIp(req) });
 
   const userWithoutPassword = userRepository.sanitizeUser(user);
-  const token = createAuthToken(user.id, {
-    username: user.username,
-    name: user.name,
-    role: user.role,
-    ver: user.tokenVersion ?? 0,
-  });
+  const token = issueSession(res, user);
 
   sendSuccess(res, {
     user: userWithoutPassword,
     token,
-    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+    expiresIn: DEFAULT_JWT_EXPIRES_IN,
+  });
+};
+
+/**
+ * Renueva la sesion con el token de la cookie y lo rota: el token usado queda
+ * revocado y se emite uno nuevo. Si llega un token ya rotado fuera del margen de
+ * las pestanas simultaneas, alguien lo copio: se cierran todas las sesiones del
+ * usuario y se emite una alerta critica.
+ */
+const refresh = async (req, res) => {
+  const payload = verifyRefreshToken(readRefreshCookie(req));
+
+  if (!payload) {
+    clearRefreshCookie(res);
+    return sendError(res, 401, {
+      error: "La sesión expiró. Inicia sesión de nuevo.",
+      code: "INVALID_REFRESH_TOKEN",
+    });
+  }
+
+  const userId = Number(payload.sub);
+  const revokedAt = await userRepository.getRevokedAt(payload.jti);
+
+  if (revokedAt !== null) {
+    clearRefreshCookie(res);
+
+    if (Date.now() - revokedAt < reuseGraceMs()) {
+      return sendError(res, 401, {
+        error: "El token de renovación ya se usó.",
+        code: "REFRESH_TOKEN_ROTATED",
+      });
+    }
+
+    await revokeAllSessions(userId);
+    await raiseAlert({
+      type: "refresh_token_reuse",
+      severity: "critical",
+      userId,
+      ip: clientIp(req),
+      details: { rotatedSecondsAgo: Math.round((Date.now() - revokedAt) / 1000) },
+    });
+    return sendError(res, 401, {
+      error: "Por seguridad se cerraron todas las sesiones. Inicia sesión de nuevo.",
+      code: "REFRESH_TOKEN_REUSED",
+    });
+  }
+
+  const user = await userRepository.findById(userId);
+
+  if (!user || (user.tokenVersion ?? 0) !== Number(payload.ver ?? 0)) {
+    clearRefreshCookie(res);
+    return sendError(res, 401, {
+      error: "La sesión ya no es válida. Inicia sesión de nuevo.",
+      code: "SESSION_REVOKED",
+    });
+  }
+
+  await revokeToken({ id: userId, jti: payload.jti, tokenExp: payload.exp });
+  const token = issueSession(res, user);
+  logEvent("info", "auth.token_refreshed", { userId });
+
+  return sendSuccess(res, {
+    user: userRepository.sanitizeUser(user),
+    token,
+    expiresIn: DEFAULT_JWT_EXPIRES_IN,
   });
 };
 
@@ -169,6 +266,17 @@ const logout = async (req, res) => {
     }
   }
 
+  // El token de renovacion de la cookie tambien deja de servir.
+  const refreshPayload = verifyRefreshToken(readRefreshCookie(req));
+  if (refreshPayload) {
+    await revokeToken({
+      id: Number(refreshPayload.sub),
+      jti: refreshPayload.jti,
+      tokenExp: refreshPayload.exp,
+    });
+  }
+  clearRefreshCookie(res);
+
   sendSuccess(res, {
     message: "Sesión cerrada correctamente",
     timestamp: new Date().toISOString(),
@@ -190,6 +298,7 @@ const logoutAll = async (req, res) => {
   }
 
   logEvent("info", "auth.sessions_revoked", { userId: req.user.id });
+  clearRefreshCookie(res);
 
   return sendSuccess(res, {
     message: "Se cerraron todas las sesiones",
@@ -261,6 +370,7 @@ const getMe = async (req, res) => {
 module.exports = {
   register,
   login,
+  refresh,
   logout,
   logoutAll,
   getMe,

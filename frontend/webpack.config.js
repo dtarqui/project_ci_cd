@@ -60,7 +60,8 @@ const serviceWorker = () =>
     navigateFallbackDenylist: [/^\/api\//],
     runtimeCaching: [
       {
-        // La API esta en otro dominio: el patron debe cubrir la URL completa.
+        // La API se llama por el mismo origen (regla /api de vercel.json); el patron
+        // cubre la URL completa, de modo que vale para cualquier dominio.
         urlPattern: /^https?:\/\/[^/]+\/api\/v1\/(products|customers|catalogs|dashboard|sales)(\/|\?|$)/,
         method: "GET",
         handler: "NetworkFirst",
@@ -124,6 +125,9 @@ module.exports = (_env, argv = {}) => ({
     historyApiFallback: true,
     port: 3000,
     hot: true,
+    // Mismo origen que en Vercel (regla "/api/:path*" de vercel.json): la cookie
+    // del token de renovacion no es de terceros. BACKEND_DEV_URL cambia el destino.
+    proxy: [{ context: ["/api"], target: process.env.BACKEND_DEV_URL || "http://localhost:4000" }],
   },
   resolve: { extensions: [".js", ".jsx"] },
 });

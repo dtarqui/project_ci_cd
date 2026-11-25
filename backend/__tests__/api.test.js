@@ -62,9 +62,14 @@ describe("Pruebas de API Backend", () => {
             username: "demo",
             name: "Usuario Demo",
           },
-          expiresIn: "1h",
+          expiresIn: "15m",
         });
         expect(response.body.token).toEqual(expect.any(String));
+        // El token de renovacion viaja en una cookie HttpOnly, Secure y SameSite=Strict.
+        const cookie = (response.headers["set-cookie"] || []).find((c) => c.startsWith("rt="));
+        expect(cookie).toEqual(expect.stringContaining("HttpOnly"));
+        expect(cookie).toEqual(expect.stringContaining("SameSite=Strict"));
+        expect(cookie).toEqual(expect.stringContaining("Path=/api/v1/auth"));
       });
 
       test("debe iniciar sesión del usuario admin correctamente", async () => {

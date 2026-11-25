@@ -183,7 +183,7 @@ describe("Esquema", () => {
     const res = await request(app).get("/health/ready").expect(200);
     expect(res.body.repositoryMode).toBe("database");
     expect(res.body.checks.map((check) => check.model).sort()).toEqual(
-      ["category", "city", "customer", "product", "revokedToken", "sale", "saleItem", "user"]
+      ["category", "city", "customer", "product", "revokedToken", "sale", "saleItem", "securityAlert", "user"]
     );
     expect(res.body.checks.every((check) => check.ok)).toBe(true);
   });
@@ -419,5 +419,35 @@ describe("Sesiones", () => {
     // Un login nuevo emite un token con la version vigente.
     sellerToken = await login("vendedor_int");
     await request(app).get("/api/v1/products").set(auth(sellerToken)).expect(200);
+  });
+
+  it("renovar rota el token en la base; reutilizarlo cierra las sesiones y deja una alerta", async () => {
+    process.env.REFRESH_REUSE_GRACE_MS = "0";
+    try {
+      const inicio = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ username: "admin_int", password: PASSWORD })
+        .expect(200);
+      const cookie = inicio.headers["set-cookie"].find((c) => c.startsWith("rt=")).split(";")[0];
+
+      const renovada = await request(app).post("/api/v1/auth/refresh").set("Cookie", cookie).expect(200);
+      const reutilizada = await request(app).post("/api/v1/auth/refresh").set("Cookie", cookie).expect(401);
+      expect(reutilizada.body.code).toBe("REFRESH_TOKEN_REUSED");
+      await request(app).get("/api/v1/products").set(auth(renovada.body.token)).expect(401);
+
+      const admin = await prisma.user.findUnique({ where: { username: "admin_int" } });
+      const alerta = await prisma.securityAlert.findFirst({
+        where: { type: "refresh_token_reuse", userId: admin.id },
+        orderBy: { id: "desc" },
+      });
+      expect(alerta).toMatchObject({ severity: "critical" });
+
+      // El administrador vuelve a entrar y consulta la alerta en la API.
+      adminToken = await login("admin_int");
+      const lista = await request(app).get("/api/v1/security/alerts").set(auth(adminToken)).expect(200);
+      expect(lista.body.data.map((a) => a.type)).toContain("refresh_token_reuse");
+    } finally {
+      delete process.env.REFRESH_REUSE_GRACE_MS;
+    }
   });
 });

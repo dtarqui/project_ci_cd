@@ -90,6 +90,9 @@ const createLoginAttemptLimiter = ({
     reset(req) {
       attempts.delete(keyFor(req));
     },
+
+    maxAttempts,
+    windowMs,
   };
 };
 
