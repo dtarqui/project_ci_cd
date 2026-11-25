@@ -16,7 +16,8 @@ de validacion (ejecuciones n.o 37 a 47):
 | Vercel CLI | 65.0.0 | `VERCEL_CLI_VERSION` en el Jenkinsfile |
 
 La serie de validacion uso Node.js 18.20.4, sin soporte desde el 30-04-2025; el
-pipeline paso a Node.js 24, la LTS vigente y la del equipo de desarrollo. Para
+pipeline paso a Node.js 24, la LTS vigente y la del equipo de desarrollo, desde la ejecucion n.o 58
+(SUCCESS, 965 pruebas sin fallos, 424,7 s). Para
 actualizar cualquier version se cambia en su archivo, se reconstruye la imagen
 (`docker compose up -d --build`) y se lanzan ejecuciones nuevas.
 Los paquetes `git` y `curl` se instalan desde los repositorios de Debian de la
