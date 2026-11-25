@@ -367,7 +367,26 @@ Header:
 Authorization: Bearer <JWT_TOKEN>
 ```
 
-Respuesta esperada: metricas agregadas de dashboard (cards, series y distribuciones).
+Respuesta esperada: indicadores y series agregadas, sin las tablas completas de productos, clientes y
+ventas. En modo `database` los calcula PostgreSQL en tres consultas (ventas por dia y por ciudad, lineas por
+producto y por dia, clientes por segmento), dentro de una transaccion de lectura repetible.
+
+```json
+{
+  "dailySales": "1.2K Bs.",
+  "totalOrders": 52,
+  "activeCustomers": 18,
+  "averageTicket": "86.40",
+  "branchSales": [{ "name": "Sucursal La Paz", "revenue": 1830.5, "value": 41 }],
+  "salesTrend": [{ "day": "Lun", "sales": 12, "revenue": 640, "orders": 5 }],
+  "productSales": [{ "product": "Cuaderno", "quantity": 30, "revenue": 450 }],
+  "monthlySales": [{ "month": "Nov", "sales": 120, "revenue": 4493.2 }],
+  "categoryDistribution": [{ "name": "Papeleria", "items": 60, "value": 50 }],
+  "customerSegments": [{ "segment": "VIP", "count": 1, "revenue": 3200 }],
+  "topProducts": [{ "name": "Cuaderno", "sales": 30, "revenue": 450, "trend": "+50%" }],
+  "timestamp": "2026-11-24T12:00:00.000Z"
+}
+```
 
 ### GET `/health`
 
@@ -402,7 +421,8 @@ Respuesta esperada (200):
     { "model": "sale", "ok": true },
     { "model": "saleItem", "ok": true },
     { "model": "city", "ok": true },
-    { "model": "category", "ok": true }
+    { "model": "category", "ok": true },
+    { "model": "revokedToken", "ok": true }
   ]
 }
 ```

@@ -103,8 +103,12 @@ const buildProductSales = (sales) => {
     .slice(0, DASHBOARD_SLICE_SIZES.PRODUCT_SALES);
 };
 
-const buildTopProducts = (sales) => {
-  const topBase = buildProductSales(sales)
+/**
+ * Los productos mas vendidos por ingreso, a partir de la lista de productSales
+ * (los mas vendidos por cantidad). La usan el modo en memoria y la base.
+ */
+const topProductsFrom = (productSales) => {
+  const topBase = [...productSales]
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, DASHBOARD_SLICE_SIZES.TOP_PRODUCTS);
 
@@ -128,23 +132,29 @@ const buildTopProducts = (sales) => {
   });
 };
 
-const buildBranchSales = (sales, customers) => {
+const buildTopProducts = (sales) => topProductsFrom(buildProductSales(sales));
+
+const branchNameOf = (city) => {
+  const cityName = (city || "General").trim();
+  return cityName.toLowerCase().startsWith("sucursal") ? cityName : `Sucursal ${cityName}`;
+};
+
+/**
+ * Ventas por sucursal a partir de filas { city, revenue }, en el orden en que
+ * aparecio cada ciudad. Dos ciudades con el mismo nombre de sucursal se suman.
+ */
+const branchSalesFromRows = (rows) => {
   const branchMap = new Map();
 
-  for (const sale of sales) {
-    const customer = customers.find((c) => c.id === sale.customerId);
-    const cityName = (customer?.city || "General").trim();
-    const branchName = cityName.toLowerCase().startsWith("sucursal")
-      ? cityName
-      : `Sucursal ${cityName}`;
-
+  for (const row of rows) {
+    const branchName = branchNameOf(row.city);
     const current = branchMap.get(branchName) || {
       name: branchName,
       revenue: 0,
       value: 0,
     };
 
-    current.revenue = parseFloat((current.revenue + sale.total).toFixed(2));
+    current.revenue = parseFloat((current.revenue + row.revenue).toFixed(2));
     branchMap.set(branchName, current);
   }
 
@@ -160,22 +170,28 @@ const buildBranchSales = (sales, customers) => {
   }));
 };
 
-const buildCategoryDistribution = (sales, products) => {
+const buildBranchSales = (sales, customers) =>
+  branchSalesFromRows(
+    sales.map((sale) => ({
+      city: customers.find((c) => c.id === sale.customerId)?.city,
+      revenue: sale.total,
+    }))
+  );
+
+/** Distribucion por categoria a partir de filas { name, items }. */
+const categoryDistributionFromRows = (rows) => {
   const categoryMap = new Map();
 
-  for (const sale of sales) {
-    for (const item of sale.items) {
-      const product = products.find((p) => p.id === item.productId);
-      const categoryName = product?.category || "Otros";
-      const current = categoryMap.get(categoryName) || {
-        name: categoryName,
-        items: 0,
-        value: 0,
-      };
+  for (const row of rows) {
+    const categoryName = row.name || "Otros";
+    const current = categoryMap.get(categoryName) || {
+      name: categoryName,
+      items: 0,
+      value: 0,
+    };
 
-      current.items += item.quantity;
-      categoryMap.set(categoryName, current);
-    }
+    current.items += row.items;
+    categoryMap.set(categoryName, current);
   }
 
   const categories = [...categoryMap.values()].sort((a, b) => b.items - a.items);
@@ -186,6 +202,16 @@ const buildCategoryDistribution = (sales, products) => {
     value: totalItems > 0 ? Math.round((category.items / totalItems) * 100) : 0,
   }));
 };
+
+const buildCategoryDistribution = (sales, products) =>
+  categoryDistributionFromRows(
+    sales.flatMap((sale) =>
+      sale.items.map((item) => ({
+        name: products.find((p) => p.id === item.productId)?.category,
+        items: item.quantity,
+      }))
+    )
+  );
 
 const buildCustomerSegments = (customers) => {
   const segments = [
@@ -249,6 +275,90 @@ const buildDynamicDashboardData = ({ products, customers, sales }) => {
   };
 };
 
+/**
+ * Compone el tablero a partir de los agregados que calcula la base de datos
+ * (DatabaseDashboardRepository.getAggregates). Devuelve la misma forma que
+ * buildDynamicDashboardData, que el modo en memoria sigue usando.
+ */
+const round2 = (value) => parseFloat((value || 0).toFixed(2));
+
+/** Los mas vendidos de las filas por producto: mayor cantidad y, a igualdad, el que aparecio antes. */
+const topByQuantity = (rows, quantityKey, firstKey, nameKey, revenueKey) =>
+  rows
+    .filter((row) => row[quantityKey] > 0)
+    .sort((a, b) => b[quantityKey] - a[quantityKey] || a[firstKey] - b[firstKey])
+    .slice(0, DASHBOARD_SLICE_SIZES.PRODUCT_SALES)
+    .map((row) => ({ product: row[nameKey], quantity: row[quantityKey], revenue: round2(row[revenueKey]) }));
+
+/**
+ * Compone el tablero a partir de los agregados que calcula la base de datos
+ * (DatabaseDashboardRepository.getAggregates): ventas validas por dia
+ * ({ dia, orders, revenue }) y por ciudad ({ city, revenue, primera }), lineas
+ * por dia ({ dia, quantity }) y por producto, y los totales de clientes.
+ * Devuelve la misma forma que buildDynamicDashboardData, que el modo en memoria
+ * sigue usando. Los dias son fechas UTC con formato AAAA-MM-DD.
+ */
+const buildDashboardFromAggregates = ({
+  todayKey,
+  salesByDay,
+  salesByCity,
+  itemsByDay,
+  itemsByProduct,
+  customers,
+}) => {
+  const unitsByDay = new Map(itemsByDay.map((row) => [row.dia, row.quantity || 0]));
+  const days = [...salesByDay].sort((a, b) => a.dia.localeCompare(b.dia));
+  const totalOrders = days.reduce((sum, day) => sum + day.orders, 0);
+  const validRevenue = days.reduce((sum, day) => sum + day.revenue, 0);
+  const todayTotal = days.find((day) => day.dia === todayKey)?.revenue || 0;
+
+  const months = new Map();
+  for (const day of days) {
+    const key = day.dia.slice(0, 7);
+    const month = months.get(key) || { key, sales: 0, revenue: 0 };
+    month.sales += unitsByDay.get(day.dia) || 0;
+    month.revenue += day.revenue;
+    months.set(key, month);
+  }
+
+  const products = [...itemsByProduct].sort((a, b) => (a.primera ?? Infinity) - (b.primera ?? Infinity));
+
+  return {
+    dailySales: formatMoneyShort(todayTotal),
+    totalOrders,
+    activeCustomers: customers.activeCustomers,
+    averageTicket: totalOrders > 0 ? (validRevenue / totalOrders).toFixed(2) : "0.00",
+    branchSales: branchSalesFromRows(
+      [...salesByCity]
+        .sort((a, b) => a.primera - b.primera)
+        .map(({ city, revenue }) => ({ city, revenue: round2(revenue) }))
+    ),
+    salesTrend: days.slice(-DASHBOARD_SLICE_SIZES.DAILY_TREND).map((day) => ({
+      day: WEEKDAY_LABELS[new Date(`${day.dia}T00:00:00Z`).getUTCDay()],
+      sales: unitsByDay.get(day.dia) || 0,
+      revenue: round2(day.revenue),
+      orders: day.orders,
+    })),
+    productSales: topByQuantity(itemsByProduct, "quantity", "primera", "name", "revenue"),
+    monthlySales: [...months.values()].slice(-DASHBOARD_SLICE_SIZES.MONTHLY_TREND).map((month) => ({
+      month: MONTH_LABELS[Number(month.key.slice(5, 7)) - 1],
+      sales: month.sales,
+      revenue: round2(month.revenue),
+    })),
+    categoryDistribution: categoryDistributionFromRows(
+      products.filter((row) => row.quantity > 0).map((row) => ({ name: row.category, items: row.quantity }))
+    ),
+    customerSegments: customers.segments.map(({ segment, count, revenue }) => ({
+      segment,
+      count,
+      revenue: round2(revenue),
+    })),
+    topProducts: topProductsFrom(
+      topByQuantity(itemsByProduct, "quantityCompletada", "primeraCompletada", "nameCompletada", "revenueCompletada")
+    ),
+  };
+};
+
 module.exports = {
   WEEKDAY_LABELS,
   MONTH_LABELS,
@@ -258,8 +368,12 @@ module.exports = {
   buildMonthlyTrend,
   buildProductSales,
   buildTopProducts,
+  topProductsFrom,
   buildBranchSales,
+  branchSalesFromRows,
   buildCategoryDistribution,
+  categoryDistributionFromRows,
   buildCustomerSegments,
   buildDynamicDashboardData,
+  buildDashboardFromAggregates,
 };

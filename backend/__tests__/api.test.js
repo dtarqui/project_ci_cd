@@ -250,10 +250,11 @@ describe("Pruebas de API Backend", () => {
         .set("Authorization", `Bearer ${validJwt}`)
         .expect(200);
 
+      // Solo indicadores y series agregadas: las tablas completas ya no viajan.
+      expect(response.body).not.toHaveProperty("products");
+      expect(response.body).not.toHaveProperty("customers");
+      expect(response.body).not.toHaveProperty("sales");
       expect(response.body).toEqual(expect.objectContaining({
-        products: expect.any(Array),
-        customers: expect.any(Array),
-        sales: expect.any(Array),
         dailySales: expect.any(String),
         totalOrders: expect.any(Number),
         activeCustomers: expect.any(Number),

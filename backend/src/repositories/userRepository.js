@@ -47,9 +47,12 @@ const verifyPassword = (password, storedHash) => {
     return false;
   }
 
-  // Compatibilidad con seeds legacy en texto plano.
+  // Solo se aceptan contrasenas derivadas con scrypt. La compatibilidad con
+  // contrasenas guardadas en texto plano se retiro: la semilla de la base y el
+  // registro siempre las derivaron, y el modo en memoria deriva las suyas al
+  // cargarlas (normalizeSeedUser).
   if (!storedHash.startsWith(`${HASH_PREFIX}$`)) {
-    return password === storedHash;
+    return false;
   }
 
   const parts = storedHash.split("$");

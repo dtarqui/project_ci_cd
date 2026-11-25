@@ -312,6 +312,67 @@ describe("Consultas en la base", () => {
 
     await request(app).get("/api/v1/customers?page=1&search=integracion").set(auth(adminToken)).expect(200);
   });
+
+  it("el tablero agregado en la base coincide con la agregacion en la aplicacion", async () => {
+    // Casos de borde propios, ademas de las ventas de las pruebas anteriores: un
+    // cliente con ciudad, otro dado de baja, un producto sin categoria y una
+    // venta anulada, en fechas fijas a mediodia UTC.
+    const conCiudad = await prisma.customer.create({
+      data: { name: "Cliente del tablero", city: "Cochabamba", totalSpent: 1600 },
+    });
+    const deBaja = await prisma.customer.create({
+      data: { name: "Cliente dado de baja", city: "Oruro", deletedAt: new Date() },
+    });
+    const cuaderno = await createProduct(0, "Cuaderno del tablero");
+    const sinCategoria = await prisma.product.create({ data: { name: "Sin categoria", price: 7.5, stock: 0 } });
+    const venta = (cliente, status, producto, quantity, fecha) =>
+      prisma.sale.create({
+        data: {
+          customerId: cliente.id,
+          customerName: cliente.name,
+          subtotal: producto.price * quantity,
+          total: producto.price * quantity,
+          status,
+          createdAt: new Date(fecha),
+          items: {
+            create: [
+              {
+                productId: producto.id,
+                name: producto.name,
+                quantity,
+                price: producto.price,
+                total: producto.price * quantity,
+              },
+            ],
+          },
+        },
+      });
+    await venta(conCiudad, "Completada", cuaderno, 3, "2026-08-14T12:00:00Z");
+    await venta(deBaja, "Completada", sinCategoria, 2, "2026-09-02T12:00:00Z");
+    await venta(conCiudad, "Anulada", cuaderno, 5, "2026-09-02T12:30:00Z");
+
+    // Referencia: la agregacion en la aplicacion sobre las mismas filas, en orden de id.
+    const { buildDynamicDashboardData } = require("../src/services/dashboardService");
+    const { mapSaleFromDb } = require("../src/repositories/saleRepository");
+    const [products, customers, sales] = await Promise.all([
+      prisma.product.findMany({ where: { deletedAt: null }, orderBy: { id: "asc" } }),
+      prisma.customer.findMany({ where: { deletedAt: null }, orderBy: { id: "asc" } }),
+      prisma.sale.findMany({ include: { items: { orderBy: { id: "asc" } } }, orderBy: { id: "asc" } }),
+    ]);
+    const esperado = buildDynamicDashboardData({ products, customers, sales: sales.map(mapSaleFromDb) });
+
+    const res = await request(app).get("/api/v1/dashboard/data").set(auth(adminToken)).expect(200);
+    const { timestamp, salesTrend, monthlySales, ...resto } = res.body;
+    const { salesTrend: diasEsperados, monthlySales: mesesEsperados, ...restoEsperado } = esperado;
+
+    expect(timestamp).toEqual(expect.any(String));
+    expect(resto).toEqual(restoEsperado);
+    expect(resto.categoryDistribution.map((c) => c.name)).toEqual(expect.arrayContaining(["Otros"]));
+    // La etiqueta del dia y del mes depende de la zona horaria del proceso; se comparan las cifras.
+    const cifras = (serie) => serie.map(({ day: _dia, month: _mes, ...valores }) => valores);
+    expect(cifras(salesTrend)).toEqual(cifras(diasEsperados));
+    expect(cifras(monthlySales)).toEqual(cifras(mesesEsperados));
+  });
 });
 
 describe("Concurrencia optimista", () => {

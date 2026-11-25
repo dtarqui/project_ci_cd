@@ -36,6 +36,8 @@ const mockPrisma = {
     update: jest.fn(),
     delete: jest.fn(),
   },
+  $queryRaw: jest.fn(),
+  $transaction: jest.fn(),
 };
 
 jest.mock("@prisma/client", () => ({
@@ -469,10 +471,18 @@ describe("DatabaseUserRepository", () => {
     expect(result).toBeNull();
   });
 
-  it("findByCredentials() retorna el usuario si la contraseña coincide (hash legacy en texto plano)", async () => {
+  it("findByCredentials() rechaza una contraseña guardada en texto plano aunque coincida", async () => {
     mockPrisma.user.findFirst.mockResolvedValue({ id: 1, username: "admin", passwordHash: "plainpass" });
     const result = await repo.findByCredentials("admin", "plainpass");
-    expect(result).toEqual({ id: 1, username: "admin", passwordHash: "plainpass" });
+    expect(result).toBeNull();
+  });
+
+  it("findByCredentials() retorna el usuario si la contraseña coincide con su hash scrypt", async () => {
+    const { hashPassword } = require("../src/repositories/userRepository");
+    const passwordHash = hashPassword("Clave-de-prueba-1");
+    mockPrisma.user.findFirst.mockResolvedValue({ id: 1, username: "admin", passwordHash });
+    const result = await repo.findByCredentials("admin", "Clave-de-prueba-1");
+    expect(result).toEqual({ id: 1, username: "admin", passwordHash });
   });
 
   it("createUser() normaliza el payload y genera passwordHash", async () => {
@@ -521,24 +531,120 @@ describe("DatabaseUserRepository", () => {
 });
 
 describe("DatabaseDashboardRepository", () => {
-  it("getSourceData() combina products/customers/sales y aplana los items de venta", async () => {
-    mockPrisma.product.findMany.mockResolvedValue([{ id: 1 }]);
-    mockPrisma.customer.findMany.mockResolvedValue([{ id: 1 }]);
-    mockPrisma.sale.findMany.mockResolvedValue([
+  // Respuestas de las tres consultas de agregacion, en el orden de getAggregates.
+  const filas = () => [
+    [
+      { dia: "2026-11-16", city: null, orders: 2, revenue: 400, primera: 1, porCiudad: 0 },
+      { dia: "2026-11-17", city: null, orders: 2, revenue: 600, primera: 3, porCiudad: 0 },
+      { dia: null, city: "La Paz", orders: 2, revenue: 750, primera: 1, porCiudad: 1 },
+      { dia: null, city: "General", orders: 1, revenue: 200, primera: 4, porCiudad: 1 },
+      { dia: null, city: "Sucursal La Paz", orders: 1, revenue: 50, primera: 2, porCiudad: 1 },
+    ],
+    [
+      { dia: "2026-11-16", quantity: 6, porProducto: 0 },
+      { dia: "2026-11-17", quantity: 3, porProducto: 0 },
       {
-        id: 1,
-        items: [{ productId: 1, name: "P", quantity: 1, price: 10, total: 10 }],
+        productId: 1, dia: null, quantity: 6, revenue: 300, primera: 1, name: "Cuaderno", category: "Papeleria",
+        quantityCompletada: 6, revenueCompletada: 300, primeraCompletada: 1, nameCompletada: "Cuaderno", porProducto: 1,
       },
-    ]);
+      {
+        productId: 2, dia: null, quantity: 3, revenue: 700, primera: 2, name: "Lapiz", category: null,
+        quantityCompletada: 3, revenueCompletada: 700, primeraCompletada: 2, nameCompletada: "Lapiz", porProducto: 1,
+      },
+      {
+        productId: 3, dia: null, quantity: null, revenue: null, primera: null, name: null, category: "Hogar",
+        quantityCompletada: null, revenueCompletada: null, primeraCompletada: null, nameCompletada: null, porProducto: 1,
+      },
+    ],
+    [
+      {
+        activeCustomers: 3,
+        vipCount: 1,
+        vipRevenue: 3200,
+        frecuenteCount: 0,
+        frecuenteRevenue: 0,
+        regularCount: 1,
+        regularRevenue: 600.556,
+        nuevoCount: 2,
+        nuevoRevenue: 40,
+      },
+    ],
+  ];
 
-    const repo = new DatabaseDashboardRepository();
-    const result = await repo.getSourceData();
+  const prepararMocks = () => {
+    filas().forEach((resultado) => mockPrisma.$queryRaw.mockReturnValueOnce(resultado));
+    mockPrisma.$transaction.mockImplementation(async (consultas) => consultas);
+  };
 
-    expect(result.products).toEqual([{ id: 1 }]);
-    expect(result.customers).toEqual([{ id: 1 }]);
-    expect(result.sales[0].items).toEqual([
-      { productId: 1, name: "P", quantity: 1, price: 10, total: 10 },
+  it("getAggregates() lanza tres consultas en una transaccion de lectura repetible", async () => {
+    prepararMocks();
+
+    const result = await new DatabaseDashboardRepository().getAggregates(new Date("2026-11-17T12:00:00Z"));
+
+    expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(3);
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith(expect.any(Array), { isolationLevel: "RepeatableRead" });
+    expect(result.todayKey).toBe("2026-11-17");
+    expect(result.salesByDay.map((d) => d.dia)).toEqual(["2026-11-16", "2026-11-17"]);
+    expect(result.salesByCity.map((c) => c.city)).toEqual(["La Paz", "General", "Sucursal La Paz"]);
+    expect(result.itemsByProduct).toHaveLength(3);
+    expect(result.customers.segments.map((s) => s.segment)).toEqual(["VIP", "Frecuente", "Regular", "Nuevo"]);
+  });
+
+  it("getDashboardData() compone el tablero a partir de los agregados", async () => {
+    prepararMocks();
+    jest.useFakeTimers().setSystemTime(new Date("2026-11-17T12:00:00Z"));
+
+    let data;
+    try {
+      data = await new DatabaseDashboardRepository().getDashboardData();
+    } finally {
+      jest.useRealTimers();
+    }
+
+    expect(data.totalOrders).toBe(4);
+    expect(data.averageTicket).toBe("250.00");
+    expect(data.dailySales).toBe("600.00 Bs.");
+    expect(data.salesTrend).toEqual([
+      { day: "Lun", sales: 6, revenue: 400, orders: 2 },
+      { day: "Mar", sales: 3, revenue: 600, orders: 2 },
     ]);
-    expect(result.baseDashboard).toEqual({});
+    expect(data.monthlySales).toEqual([{ month: "Nov", sales: 9, revenue: 1000 }]);
+    // "La Paz" y "Sucursal La Paz" son la misma sucursal; el orden de aparicion decide los empates.
+    expect(data.branchSales).toEqual([
+      { name: "Sucursal La Paz", revenue: 800, value: 80 },
+      { name: "Sucursal General", revenue: 200, value: 20 },
+    ]);
+    expect(data.productSales).toEqual([
+      { product: "Cuaderno", quantity: 6, revenue: 300 },
+      { product: "Lapiz", quantity: 3, revenue: 700 },
+    ]);
+    expect(data.categoryDistribution).toEqual([
+      { name: "Papeleria", items: 6, value: 67 },
+      { name: "Otros", items: 3, value: 33 },
+    ]);
+    expect(data.customerSegments[2]).toEqual({ segment: "Regular", count: 1, revenue: 600.56 });
+    expect(data.topProducts.map((p) => p.name)).toEqual(["Lapiz", "Cuaderno"]);
+    expect(data).not.toHaveProperty("sales");
+  });
+
+  it("getDashboardData() sin ventas devuelve ceros y series vacias", async () => {
+    mockPrisma.$queryRaw
+      .mockReturnValueOnce([])
+      .mockReturnValueOnce([])
+      .mockReturnValueOnce([
+        {
+          activeCustomers: 0, vipCount: 0, vipRevenue: 0, frecuenteCount: 0, frecuenteRevenue: 0,
+          regularCount: 0, regularRevenue: 0, nuevoCount: 0, nuevoRevenue: 0,
+        },
+      ]);
+    mockPrisma.$transaction.mockImplementation(async (consultas) => consultas);
+
+    const data = await new DatabaseDashboardRepository().getDashboardData();
+
+    expect(data.totalOrders).toBe(0);
+    expect(data.averageTicket).toBe("0.00");
+    expect(data.dailySales).toBe("0.00 Bs.");
+    expect(data.salesTrend).toEqual([]);
+    expect(data.topProducts).toEqual([]);
   });
 });

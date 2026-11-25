@@ -3,23 +3,19 @@
  */
 
 const { createDashboardRepository } = require("../repositories/dashboardRepository");
-const { buildDynamicDashboardData } = require("../services/dashboardService");
 
 const dashboardRepository = createDashboardRepository();
 
 /**
- * Obtiene datos del dashboard
+ * Obtiene los indicadores y las series agregadas del tablero. La respuesta ya
+ * no incluye las tablas completas de productos, clientes y ventas, que el
+ * frontend no usaba y que crecian con el volumen de datos.
  */
 const getDashboardData = async (req, res) => {
-  const sourceData = await dashboardRepository.getSourceData();
-  const dynamicData = buildDynamicDashboardData(sourceData);
+  const data = await dashboardRepository.getDashboardData();
 
   res.json({
-    ...sourceData.baseDashboard,
-    products: sourceData.products,
-    customers: sourceData.customers,
-    sales: sourceData.sales,
-    ...dynamicData,
+    ...data,
     timestamp: new Date().toISOString(),
   });
 };
