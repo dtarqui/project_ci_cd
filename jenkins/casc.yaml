@@ -11,18 +11,19 @@ jenkins:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
 
-# Nombre 'Node18' debe coincidir con `tools { nodejs 'Node18' }` en el
+# Nombre 'Node24' debe coincidir con `tools { nodejs 'Node24' }` en el
 # Jenkinsfile. Se descarga solo la primera vez que un pipeline lo requiere.
-# Node.js 18 esta fuera de soporte desde el 30-04-2025. Se mantiene la version
-# exacta con la que se valido el pipeline; migrar a una LTS vigente obliga a
-# renombrar la herramienta aqui y en el Jenkinsfile y a lanzar una serie nueva.
+# Node.js 24 es la version LTS vigente (soporte hasta el 30-04-2028) y la misma
+# del equipo de desarrollo. La serie de validacion (ejecuciones n.o 37 a 47) uso
+# Node.js 18.20.4, sin soporte desde el 30-04-2025. Cambiar de version obliga a
+# renombrar la herramienta aqui y en el Jenkinsfile y a lanzar ejecuciones nuevas.
 tool:
   nodejs:
     installations:
-      - name: "Node18"
+      - name: "Node24"
         properties:
           - installSource:
               installers:
                 - nodeJSInstaller:
-                    id: "18.20.4"
+                    id: "24.18.0"
                     npmPackagesRefreshHours: 72

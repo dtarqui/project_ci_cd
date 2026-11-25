@@ -2,22 +2,23 @@
 
 Parte de un Jenkins levantado con `docker compose up -d --build` desde esta
 carpeta (ver `.env.example`) y accesible en `http://localhost:8080` con el
-usuario admin. El tool `Node18` y los plugins base quedan configurados por
+usuario admin. El tool `Node24` y los plugins base quedan configurados por
 `casc.yaml`; falta configurar las credenciales y el correo, y crear el job.
 
-Las versiones del entorno estan fijadas en las que uso la serie de validacion
-(ejecuciones n.o 37 a 47):
+Las versiones del entorno estan fijadas. Salvo Node.js, son las que uso la serie
+de validacion (ejecuciones n.o 37 a 47):
 
 | Componente | Version | Donde se fija |
 |---|---|---|
 | Jenkins | 2.541.3 LTS con Java 17 (imagen `jenkins/jenkins:2.541.3-lts-jdk17` y su digest) | `Dockerfile` |
 | Plugins | Los 10 que usa el Jenkinsfile y sus 72 dependencias, cada uno con su version | `plugins.txt` |
-| Node.js | 18.20.4 (tool `Node18`) | `casc.yaml` |
+| Node.js | 24.18.0 LTS (tool `Node24`) | `casc.yaml` |
 | Vercel CLI | 65.0.0 | `VERCEL_CLI_VERSION` en el Jenkinsfile |
 
-Node.js 18 esta fuera de soporte desde el 30-04-2025. Para actualizar cualquier
-version se cambia en su archivo, se reconstruye la imagen
-(`docker compose up -d --build`) y se lanza una serie nueva de ejecuciones.
+La serie de validacion uso Node.js 18.20.4, sin soporte desde el 30-04-2025; el
+pipeline paso a Node.js 24, la LTS vigente y la del equipo de desarrollo. Para
+actualizar cualquier version se cambia en su archivo, se reconstruye la imagen
+(`docker compose up -d --build`) y se lanzan ejecuciones nuevas.
 Los paquetes `git` y `curl` se instalan desde los repositorios de Debian de la
 imagen base, sin version fija.
 
@@ -132,7 +133,7 @@ archivo.
 | `SMOKE_BACKEND_CHECKS`, `SMOKE_FRONTEND_CHECKS` | Comprobaciones sobre la version publicada (seccion 4) | `/health` y `/health/ready` en el backend; `/` en el frontend |
 
 Fuera de ese bloque solo quedan dos literales que Jenkins exige fijos: el tool
-`nodejs 'Node18'` (bloque `tools`) y la frecuencia de `pollSCM` (bloque
+`nodejs 'Node24'` (bloque `tools`) y la frecuencia de `pollSCM` (bloque
 `triggers`).
 
 **Importante: el repositorio es publico en GitHub.** No deben escribirse
@@ -292,7 +293,7 @@ mano no produce un valor valido de M2 (tiempo desde el commit hasta staging).
 
 ## 6. Que esperar del primer build
 
-- Descarga Node 18.20.4 (tool `Node18`), lo que puede tardar un minuto mas la
+- Descarga Node 24.18.0 (tool `Node24`), lo que puede tardar un minuto mas la
   primera vez.
 - Los stages de despliegue (`Deploy Backend Vercel`, `Deploy Vercel`) instalan
   el CLI de Vercel en la version de `VERCEL_CLI_VERSION` en cada build. Si el proyecto de
@@ -312,7 +313,7 @@ mano no produce un valor valido de M2 (tiempo desde el commit hasta staging).
 
 | Sintoma | Causa probable y solucion |
 |---|---|
-| Falla en "Environment Setup" con "Node.js no esta en PATH" | El tool de Jenkins no se llama exactamente `Node18` (revisar `Manage Jenkins > Tools`). |
+| Falla en "Environment Setup" con "Node.js no esta en PATH" | El tool de Jenkins no se llama exactamente `Node24` (revisar `Manage Jenkins > Tools`). |
 | Falla en "Deploy Backend Vercel" con "JWT_SECRET no configurado" **aunque la variable exista en el dashboard de Vercel** | Falta vincular el proyecto (`.vercel/project.json`): sin eso `vercel env ls` no sabe a que proyecto consultar y da un falso negativo. Ver seccion 3, punto 2. Revisar tambien que `JWT_SECRET` este en el entorno **Production**, no en Preview ni Development. |
 | No llega ningun correo | SMTP sin configurar (seccion 2), o `NOTIFICATION_EMAIL` mal escrito en el Jenkinsfile. |
 | `withCredentials` falla con "vercel-token" o "database-url" no encontrado | La credencial no existe o su ID no coincide con `VERCEL_TOKEN_CREDENTIAL_ID` / `DB_URL_CREDENTIAL_ID` (seccion 1). |

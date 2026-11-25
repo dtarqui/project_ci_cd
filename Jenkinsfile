@@ -87,9 +87,9 @@ pipeline {
     agent any
 
     // Usa la instalación NodeJS definida en Jenkins (Manage Jenkins > Tools > NodeJS installations)
-    // Asegúrate que el nombre aquí coincida con el configurado en la UI (ej: Node18)
+    // Asegúrate que el nombre aquí coincida con el configurado en la UI (ej: Node24)
     tools {
-        nodejs 'Node18'
+        nodejs 'Node24'
     }
 
     environment {
@@ -295,7 +295,7 @@ pipeline {
                             # Verificar Node.js
                             if ! command -v node >/dev/null 2>&1; then
                                 echo "Node.js no está en PATH en el agente." >&2
-                                echo "Verifica que el tool NodeJS en Jenkins se llame 'Node18' o ajusta el nombre en tools { nodejs '...' }." >&2
+                                echo "Verifica que el tool NodeJS en Jenkins se llame 'Node24' o ajusta el nombre en tools { nodejs '...' }." >&2
                                 exit 1
                             fi
 

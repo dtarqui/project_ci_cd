@@ -17,7 +17,7 @@ RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
 COPY casc.yaml /usr/share/jenkins/ref/casc.yaml
 
 # Salta el wizard de setup inicial: la identidad de admin y el tool NodeJS
-# 'Node18' (nombre que exige el Jenkinsfile) quedan definidos por casc.yaml.
+# 'Node24' (nombre que exige el Jenkinsfile) quedan definidos por casc.yaml.
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 ENV CASC_JENKINS_CONFIG="/usr/share/jenkins/ref/casc.yaml"
 
