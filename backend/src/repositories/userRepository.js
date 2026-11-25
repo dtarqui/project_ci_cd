@@ -350,8 +350,11 @@ class DatabaseUserRepository {
   async revokeToken({ jti, userId, expiresAt }) {
     const prisma = getPrismaClient();
 
+    // La fecha de revocacion la fija la aplicacion con su propio reloj, el mismo con el que
+    // la renovacion mide el margen de reutilizacion: el de Prisma o el de la base pueden ir
+    // unos milisegundos adelantados y hacer que un token recien rotado parezca del futuro.
     await prisma.revokedToken.createMany({
-      data: [{ jti, userId, expiresAt: new Date(expiresAt) }],
+      data: [{ jti, userId, expiresAt: new Date(expiresAt), createdAt: new Date() }],
       skipDuplicates: true,
     });
     await prisma.revokedToken.deleteMany({ where: { expiresAt: { lt: new Date() } } });

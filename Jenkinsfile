@@ -151,8 +151,9 @@ pipeline {
         // Variables que el pipeline reemplaza en cada despliegue del backend (KEY=VALUE por linea).
         // En este caso de estudio limitan CORS al dominio publico del frontend y al servidor
         // de desarrollo: otro sitio no puede llamar a la API desde el navegador de un usuario.
-        // Son valores del caso, no de la plantilla.
-        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=https://frontend-rho-ruby-19.vercel.app,http://localhost:3000\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key, If-Match"
+        // Son valores del caso, no de la plantilla. Fijan ademas la vigencia de los tokens: 15 min
+        // el de acceso y 7 dias el de renovacion, aunque el proyecto de Vercel tenga otro valor.
+        BACKEND_FORCED_ENV = "CORS_ALLOW_ORIGIN=https://frontend-rho-ruby-19.vercel.app,http://localhost:3000\nCORS_ALLOW_METHODS=GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD\nCORS_ALLOW_HEADERS=Origin, X-Requested-With, Content-Type, Accept, Authorization, Idempotency-Key, If-Match\nJWT_EXPIRES_IN=15m\nREFRESH_TOKEN_EXPIRES_IN=7d"
 
         // Conexion del frontend con el backend desplegado (etapas Frontend Build y Deploy Vercel)
         // FRONTEND_API_URL_VAR: variable de build del frontend que recibe la URL del backend.

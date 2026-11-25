@@ -66,16 +66,18 @@ const checkReadiness = async ({
     };
   }
 
-  const checks = await Promise.all(
-    models.map(async (model) => {
-      try {
-        await prisma[model].findFirst();
-        return { model, ok: true };
-      } catch (error) {
-        return { model, ok: false, code: error?.code || "QUERY_FAILED" };
-      }
-    })
-  );
+  // Una tras otra: cada instancia tiene una sola conexion, de modo que en paralelo las
+  // consultas solo esperarian turno, y con la maquina cargada esa espera puede agotar el
+  // tiempo del pool (P2024) aunque la base este disponible.
+  const checks = [];
+  for (const model of models) {
+    try {
+      await prisma[model].findFirst();
+      checks.push({ model, ok: true });
+    } catch (error) {
+      checks.push({ model, ok: false, code: error?.code || "QUERY_FAILED" });
+    }
+  }
 
   return {
     ready: checks.every((check) => check.ok),

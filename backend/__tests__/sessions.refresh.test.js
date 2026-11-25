@@ -102,7 +102,12 @@ describe("Token de renovación en cookie HttpOnly", () => {
     await request(app).get("/api/v1/products").set("Authorization", `Bearer ${primera.body.token}`).expect(401);
 
     const [alerta] = alertas();
-    expect(alerta).toMatchObject({ type: "refresh_token_reuse", severity: "critical", userId: sesion.user.id });
+    expect(alerta).toMatchObject({
+      type: "refresh_token_reuse",
+      severity: "critical",
+      userId: sesion.user.id,
+      username: sesion.username,
+    });
   });
 
   it("dentro del margen de pestañas simultáneas no se trata como robo", async () => {

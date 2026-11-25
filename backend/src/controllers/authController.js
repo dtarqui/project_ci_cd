@@ -210,11 +210,13 @@ const refresh = async (req, res) => {
       });
     }
 
+    const owner = await userRepository.findById(userId);
     await revokeAllSessions(userId);
     await raiseAlert({
       type: "refresh_token_reuse",
       severity: "critical",
       userId,
+      username: owner?.username ?? null,
       ip: clientIp(req),
       details: { rotatedSecondsAgo: Math.round((Date.now() - revokedAt) / 1000) },
     });
