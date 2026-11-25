@@ -10,10 +10,12 @@ Aplicacion web full-stack para gestion comercial de una tienda, con autenticacio
   hechas sin red para reenviarlas con su clave de idempotencia.
 - Testing automatizado en frontend y backend con Jest + reportes de cobertura, incluida una suite de
   integracion del backend contra un PostgreSQL efimero (`embedded-postgres`).
+- Tablero calculado en la base de datos: tres consultas de agregacion en una transaccion de lectura
+  repetible, sin enviar las tablas completas al cliente.
 - Pipeline CI/CD en `Jenkinsfile` con lint, tests, build, despliegue opcional a Vercel y generacion de metricas de investigacion en `docs/metrics/`.
 
 ## Requisitos
-- Node.js 18+
+- Node.js 24 LTS, la version del pipeline (24.18.0); el codigo admite Node.js 18 o superior
 - npm 9+
 - Docker (opcional, para backend)
 
